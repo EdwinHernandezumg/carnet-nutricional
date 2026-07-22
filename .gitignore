@@ -1,0 +1,22 @@
+# Configuración con datos sensibles (contraseñas de BD)
+config/config.php
+
+# Archivos de entorno
+.env
+
+# Dependencias
+/vendor/
+node_modules/
+
+# Archivos temporales y de sistema
+*.log
+*.tmp
+Thumbs.db
+desktop.ini
+
+# Carpetas del editor
+.vscode/
+.idea/
+
+# Respaldos de base de datos
+*.sql.bak

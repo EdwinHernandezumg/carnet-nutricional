@@ -24,22 +24,19 @@ class Auth
         $stmt->execute([':usuario' => $usuario]);
         $u = $stmt->fetch();
 
-        // Usuario no existe
         if (!$u) {
             return false;
         }
-
-        // Usuario dado de baja
         if (!$u['activo']) {
             return false;
         }
-
-        // Contraseña incorrecta
         if (!password_verify($contrasena, $u['contrasena_hash'])) {
             return false;
         }
 
-        // Credenciales correctas: guardamos los datos en la sesión
+        // Regeneramos el ID de sesión al autenticar (evita fijación de sesión).
+        session_regenerate_id(true);
+
         $_SESSION['usuario'] = [
             'id'        => $u['id_usuario'],
             'nombre'    => $u['nombre_completo'],
@@ -48,6 +45,7 @@ class Auth
             'id_rol'    => $u['id_rol'],
             'id_sector' => $u['id_sector'],
         ];
+        $_SESSION['ultima_actividad'] = time();
 
         return true;
     }
@@ -70,10 +68,39 @@ class Auth
         return self::autenticado() && $_SESSION['usuario']['rol'] === $rol;
     }
 
+    /**
+     * Exige que haya un usuario autenticado y que la sesión no haya expirado.
+     * Si algo falla, redirige al login. Se llama al inicio de cada acción protegida.
+     */
+    public static function exigirAutenticacion(): void
+    {
+        if (Sesion::expiroPorInactividad()) {
+            header('Location: ' . APP_URL . '/index.php?accion=inicio&expiro=1');
+            exit;
+        }
+        if (!self::autenticado()) {
+            header('Location: ' . APP_URL . '/index.php?accion=inicio');
+            exit;
+        }
+    }
+
+    /**
+     * Exige que el usuario tenga uno de los roles indicados.
+     * Si no, muestra un mensaje de acceso denegado.
+     */
+    public static function exigirRol(array $roles): void
+    {
+        self::exigirAutenticacion();
+        if (!in_array($_SESSION['usuario']['rol'], $roles, true)) {
+            http_response_code(403);
+            echo '<p style="font-family:sans-serif;padding:2rem;">Acceso denegado: no tiene permisos para esta acción.</p>';
+            exit;
+        }
+    }
+
     /** Cierra la sesión. */
     public static function logout(): void
     {
-        $_SESSION = [];
-        session_destroy();
+        Sesion::cerrar();
     }
 }

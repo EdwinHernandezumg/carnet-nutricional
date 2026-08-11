@@ -119,3 +119,58 @@ body {
     .barra-nav { margin-left: 0; }
     .fila { flex-direction: column; gap: 0; }
 }
+
+.campo-telefono { max-width: 200px; }
+.campo-telefono input { width: 100%; }
+
+
+.ficha-nino {
+    background: #fff;
+    border-left: 4px solid #2e75b6;
+    padding: 0.9rem 1.2rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    align-items: center;
+}
+.ficha-nino strong { color: #1f3864; font-size: 1.05rem; }
+.ficha-nino span { font-size: 0.88rem; color: #555; }
+
+.aviso-instrumento {
+    background: #eef4fb;
+    color: #1f3864;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+}
+
+.barra-acciones {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.subtitulo-seccion {
+    font-size: 1.1rem;
+    color: #1f3864;
+    margin: 1rem 0 0.75rem;
+}
+
+.formulario textarea {
+    width: 100%;
+    padding: 0.55rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.campo small { font-weight: normal; color: #888; font-size: 0.78rem; }
+
+.acciones-fila a { margin-right: 0.6rem; }

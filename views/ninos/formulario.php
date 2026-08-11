@@ -1,9 +1,5 @@
 <?php
-/**
- * Formulario de registro/edición de niño.
- * Variables esperadas: $sectores, $parajes, $nino (null si es nuevo),
- * $errores (array), $datos (valores previos en caso de error).
- */
+
 $esEdicion = isset($nino) && $nino;
 $datos = $datos ?? ($nino ?? []);
 $errores = $errores ?? [];
@@ -25,8 +21,8 @@ require __DIR__ . '/../layouts/encabezado.php';
 <?php endif; ?>
 
 <form method="post"
-      action="<?= APP_URL ?>/index.php?accion=<?= $esEdicion ? 'nino_actualizar&id=' . (int)$nino['id_nino'] : 'nino_guardar' ?>"
-      class="formulario">
+    action="<?= APP_URL ?>/index.php?accion=<?= $esEdicion ? 'nino_actualizar&id=' . (int)$nino['id_nino'] : 'nino_guardar' ?>"
+    class="formulario">
 
     <fieldset>
         <legend>Identificación del niño</legend>
@@ -35,12 +31,12 @@ require __DIR__ . '/../layouts/encabezado.php';
             <div class="campo">
                 <label for="nombres">Nombres *</label>
                 <input type="text" id="nombres" name="nombres" required
-                       value="<?= htmlspecialchars($datos['nombres'] ?? '') ?>">
+                    value="<?= htmlspecialchars($datos['nombres'] ?? '') ?>">
             </div>
             <div class="campo">
                 <label for="apellidos">Apellidos *</label>
                 <input type="text" id="apellidos" name="apellidos" required
-                       value="<?= htmlspecialchars($datos['apellidos'] ?? '') ?>">
+                    value="<?= htmlspecialchars($datos['apellidos'] ?? '') ?>">
             </div>
         </div>
 
@@ -48,7 +44,7 @@ require __DIR__ . '/../layouts/encabezado.php';
             <div class="campo">
                 <label for="fecha_nacimiento">Fecha de nacimiento *</label>
                 <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required
-                       value="<?= htmlspecialchars($datos['fecha_nacimiento'] ?? '') ?>">
+                    value="<?= htmlspecialchars($datos['fecha_nacimiento'] ?? '') ?>">
             </div>
             <div class="campo">
                 <label for="sexo">Sexo *</label>
@@ -61,15 +57,15 @@ require __DIR__ . '/../layouts/encabezado.php';
             <div class="campo">
                 <label for="cui">CUI (si tiene)</label>
                 <input type="text" id="cui" name="cui" maxlength="13"
-                       value="<?= htmlspecialchars($datos['cui'] ?? '') ?>">
+                    value="<?= htmlspecialchars($datos['cui'] ?? '') ?>">
             </div>
         </div>
 
         <div class="campo">
             <label for="etnia">Pueblo o comunidad lingüística</label>
             <input type="text" id="etnia" name="etnia"
-                   value="<?= htmlspecialchars($datos['etnia'] ?? '') ?>"
-                   placeholder="Maya k'iche', mestizo, etc.">
+                value="<?= htmlspecialchars($datos['etnia'] ?? '') ?>"
+                placeholder="Maya k'iche', mestizo, etc.">
         </div>
     </fieldset>
 
@@ -105,7 +101,7 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="campo">
             <label for="direccion">Dirección</label>
             <input type="text" id="direccion" name="direccion"
-                   value="<?= htmlspecialchars($datos['direccion'] ?? '') ?>">
+                value="<?= htmlspecialchars($datos['direccion'] ?? '') ?>">
         </div>
     </fieldset>
 
@@ -115,18 +111,22 @@ require __DIR__ . '/../layouts/encabezado.php';
             <div class="campo">
                 <label for="nombre_madre">Nombre de la madre o responsable</label>
                 <input type="text" id="nombre_madre" name="nombre_madre"
-                       value="<?= htmlspecialchars($datos['nombre_madre'] ?? '') ?>">
+                    value="<?= htmlspecialchars($datos['nombre_madre'] ?? '') ?>">
             </div>
             <div class="campo">
                 <label for="nombre_padre">Nombre del padre</label>
                 <input type="text" id="nombre_padre" name="nombre_padre"
-                       value="<?= htmlspecialchars($datos['nombre_padre'] ?? '') ?>">
+                    value="<?= htmlspecialchars($datos['nombre_padre'] ?? '') ?>">
             </div>
         </div>
-        <div class="campo">
+        <div class="campo campo-telefono">
             <label for="telefono">Teléfono</label>
-            <input type="text" id="telefono" name="telefono"
-                   value="<?= htmlspecialchars($datos['telefono'] ?? '') ?>">
+            <input type="tel" id="telefono" name="telefono"
+                maxlength="8" pattern="[0-9]{8}"
+                inputmode="numeric"
+                placeholder="8 dígitos"
+                title="Ingrese 8 dígitos"
+                value="<?= htmlspecialchars($datos['telefono'] ?? '') ?>">
         </div>
     </fieldset>
 
@@ -138,7 +138,7 @@ require __DIR__ . '/../layouts/encabezado.php';
 
 <!-- Filtra los parajes según el sector elegido -->
 <script>
-    (function () {
+    (function() {
         var selSector = document.getElementById('id_sector');
         var selParaje = document.getElementById('id_paraje');
         var opciones = Array.prototype.slice.call(selParaje.options);
@@ -146,7 +146,7 @@ require __DIR__ . '/../layouts/encabezado.php';
         function filtrar() {
             var sector = selSector.value;
             selParaje.innerHTML = '';
-            opciones.forEach(function (op) {
+            opciones.forEach(function(op) {
                 if (op.value === '' || op.getAttribute('data-sector') === sector) {
                     selParaje.appendChild(op);
                 }

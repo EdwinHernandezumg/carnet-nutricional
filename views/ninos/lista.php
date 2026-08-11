@@ -69,7 +69,8 @@ function edadTexto(string $fechaNac): string {
                             <?= htmlspecialchars($n['estado']) ?>
                         </span>
                     </td>
-                    <td>
+                      <td class="acciones-fila">
+                        <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>">Ver</a>
                         <?php if (Auth::tieneRol('enfermeria')): ?>
                             <a href="<?= APP_URL ?>/index.php?accion=nino_editar&id=<?= (int)$n['id_nino'] ?>">Editar</a>
                         <?php endif; ?>

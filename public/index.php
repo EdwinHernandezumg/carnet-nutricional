@@ -1,8 +1,4 @@
 <?php
-/**
- * Punto de entrada único del sistema (front controller).
- * Todas las peticiones pasan por aquí y se enrutan según la acción.
- */
 
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../src/core/Database.php';
@@ -11,6 +7,7 @@ require_once __DIR__ . '/../src/core/Bitacora.php';
 require_once __DIR__ . '/../src/core/Catalogo.php';
 require_once __DIR__ . '/../src/auth/Auth.php';
 require_once __DIR__ . '/../src/ninos/Nino.php';
+require_once __DIR__ . '/../src/mediciones/Medicion.php';
 
 Sesion::iniciar();
 
@@ -40,7 +37,7 @@ switch ($accion) {
         header('Location: ' . APP_URL . '/index.php?accion=inicio');
         exit;
 
-    // ---------- Niños ----------
+        // ---------- Niños ----------
     case 'ninos':
         Auth::exigirAutenticacion();
         $filtros = [
@@ -97,7 +94,10 @@ switch ($accion) {
         Auth::exigirRol(['enfermeria']);
         $idNino = (int)($_GET['id'] ?? 0);
         $nino = Nino::obtener($idNino);
-        if (!$nino) { echo 'Niño no encontrado.'; break; }
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
         $sectores = Catalogo::sectores();
         $parajes  = Catalogo::parajes();
         require __DIR__ . '/../views/ninos/formulario.php';
@@ -107,7 +107,10 @@ switch ($accion) {
         Auth::exigirRol(['enfermeria']);
         $idNino = (int)($_GET['id'] ?? 0);
         $nino = Nino::obtener($idNino);
-        if (!$nino) { echo 'Niño no encontrado.'; break; }
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
 
         $datos = obtenerDatosFormulario();
         $errores = validarNino($datos);
@@ -134,7 +137,76 @@ switch ($accion) {
         header('Location: ' . APP_URL . '/index.php?accion=ninos&ok=' . urlencode($msg));
         exit;
 
-    // ---------- Inicio / login ----------
+        // ---------- Historial y mediciones ----------
+    case 'nino_historial':
+        Auth::exigirAutenticacion();
+        $idNino = (int)($_GET['id'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+        $mediciones = Medicion::listarPorNino($idNino);
+        $mensaje = $_GET['ok'] ?? '';
+        require __DIR__ . '/../views/mediciones/historial.php';
+        break;
+
+    case 'medicion_nueva':
+        Auth::exigirRol(['enfermeria']);
+        $idNino = (int)($_GET['id_nino'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+        $edadMeses    = Nino::edadEnMeses($nino['fecha_nacimiento']);
+        $tipoSugerido = Medicion::tipoTallaSugerido($edadMeses);
+        $instrumento  = Medicion::instrumentoSugerido($edadMeses);
+        require __DIR__ . '/../views/mediciones/formulario.php';
+        break;
+
+    case 'medicion_guardar':
+        Auth::exigirRol(['enfermeria']);
+        $idNino = (int)($_GET['id_nino'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+
+        if ($nino['estado'] !== 'activo') {
+            echo 'No se pueden registrar mediciones para un niño no activo.';
+            break;
+        }
+
+        $fechaToma = $_POST['fecha_toma'] ?? date('Y-m-d');
+        $edadMeses = Nino::edadEnMeses($nino['fecha_nacimiento'], $fechaToma);
+
+        $datos = [
+            'id_nino'      => $idNino,
+            'fecha_toma'   => $fechaToma,
+            'peso_kg'      => $_POST['peso_kg'] ?? '',
+            'talla_cm'     => $_POST['talla_cm'] ?? '',
+            'tipo_talla'   => $_POST['tipo_talla'] ?? '',
+            'edad_meses'   => $edadMeses,
+            'observaciones' => trim($_POST['observaciones'] ?? ''),
+        ];
+
+        $errores = validarMedicion($datos, $nino['fecha_nacimiento']);
+
+        if ($errores) {
+            $tipoSugerido = Medicion::tipoTallaSugerido($edadMeses);
+            $instrumento  = Medicion::instrumentoSugerido($edadMeses);
+            require __DIR__ . '/../views/mediciones/formulario.php';
+            break;
+        }
+
+        Medicion::crear($datos, Auth::usuario()['id']);
+        $msg = 'Medición registrada correctamente.';
+        header('Location: ' . APP_URL . '/index.php?accion=nino_historial&id=' . $idNino . '&ok=' . urlencode($msg));
+        exit;
+
+        // ---------- Inicio / login ----------
     case 'inicio':
     default:
         if (Auth::autenticado() && !Sesion::expiroPorInactividad()) {
@@ -188,5 +260,49 @@ function validarNino(array $d): array
     if ($d['cui'] !== '' && !preg_match('/^\d{13}$/', $d['cui'])) {
         $errores[] = 'El CUI debe tener 13 dígitos numéricos, o dejarse vacío.';
     }
+    if ($d['telefono'] !== '' && !preg_match('/^\d{8}$/', $d['telefono'])) {
+        $errores[] = 'El teléfono debe tener 8 dígitos numéricos, o dejarse vacío.';
+    }
     return $errores;
 }
+
+
+function validarMedicion(array $d, string $fechaNacimiento): array
+{
+    $errores = [];
+
+    // Fecha de toma
+    if ($d['fecha_toma'] === '') {
+        $errores[] = 'La fecha de la toma es obligatoria.';
+    } else {
+        $toma = DateTime::createFromFormat('Y-m-d', $d['fecha_toma']);
+        $nac  = DateTime::createFromFormat('Y-m-d', $fechaNacimiento);
+        if (!$toma || $toma > new DateTime('now')) {
+            $errores[] = 'La fecha de la toma no puede ser futura.';
+        } elseif ($nac && $toma < $nac) {
+            $errores[] = 'La fecha de la toma no puede ser anterior al nacimiento.';
+        }
+    }
+
+    // Peso: rango plausible para menores de 7 años
+    if ($d['peso_kg'] === '' || !is_numeric($d['peso_kg'])) {
+        $errores[] = 'El peso es obligatorio y debe ser numérico.';
+    } elseif ($d['peso_kg'] <= 0 || $d['peso_kg'] >= 60) {
+        $errores[] = 'El peso debe estar entre 0.5 y 60 kg.';
+    }
+
+    // Talla: rango plausible
+    if ($d['talla_cm'] === '' || !is_numeric($d['talla_cm'])) {
+        $errores[] = 'La talla es obligatoria y debe ser numérica.';
+    } elseif ($d['talla_cm'] <= 30 || $d['talla_cm'] >= 150) {
+        $errores[] = 'La talla debe estar entre 30 y 150 cm.';
+    }
+
+    // Tipo de talla
+    if (!in_array($d['tipo_talla'], ['longitud', 'talla'], true)) {
+        $errores[] = 'Debe seleccionar el tipo de medición.';
+    }
+
+    return $errores;
+}
+

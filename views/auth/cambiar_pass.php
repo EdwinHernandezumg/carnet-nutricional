@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pantalla de cambio de contraseña obligatorio (primer ingreso tras reseteo).
  * Variables: $error (opcional)
@@ -7,12 +8,16 @@ $error = $error ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cambiar contraseña — <?= htmlspecialchars(APP_NOMBRE) ?></title>
     <link rel="stylesheet" href="<?= APP_URL ?>/css/estilos.css">
 </head>
+
+<script src="<?= APP_URL ?>/js/fuerza-contrasena.js"></script>
+
 <body class="pagina-login">
     <div class="tarjeta-login">
         <h1>Cambiar contraseña</h1>
@@ -24,6 +29,8 @@ $error = $error ?? null;
 
         <form method="post" action="<?= APP_URL ?>/index.php?accion=cambiar_pass_guardar">
             <label for="nueva">Nueva contraseña</label>
+            <div class="medidor-fuerza" data-para="nueva"></div>
+
             <input type="password" id="nueva" name="nueva" required minlength="8" autofocus>
 
             <label for="repetir">Repetir contraseña</label>
@@ -33,4 +40,5 @@ $error = $error ?? null;
         </form>
     </div>
 </body>
+
 </html>

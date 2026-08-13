@@ -9,6 +9,8 @@ require_once __DIR__ . '/../src/auth/Auth.php';
 require_once __DIR__ . '/../src/ninos/Nino.php';
 require_once __DIR__ . '/../src/mediciones/Medicion.php';
 require_once __DIR__ . '/../src/usuarios/Usuario.php';
+require_once __DIR__ . '/../src/core/Contrasena.php';
+
 
 
 Sesion::iniciar();
@@ -212,7 +214,7 @@ switch ($accion) {
         header('Location: ' . APP_URL . '/index.php?accion=nino_historial&id=' . $idNino . '&ok=' . urlencode($msg));
         exit;
 
-       // ---------- Cambio de contraseña obligatorio ----------
+        // ---------- Cambio de contraseña obligatorio ----------
     case 'cambiar_pass':
         Auth::exigirAutenticacion();
         require __DIR__ . '/../views/auth/cambiar_pass.php';
@@ -223,8 +225,9 @@ switch ($accion) {
         $nueva   = $_POST['nueva'] ?? '';
         $repetir = $_POST['repetir'] ?? '';
 
-        if (strlen($nueva) < 8) {
-            $error = 'La contraseña debe tener al menos 8 caracteres.';
+        $erroresPass = Contrasena::validar($nueva);
+        if ($erroresPass) {
+            $error = implode(' ', $erroresPass);
             require __DIR__ . '/../views/auth/cambiar_pass.php';
             break;
         }
@@ -239,7 +242,7 @@ switch ($accion) {
         header('Location: ' . APP_URL . '/index.php?accion=ninos');
         exit;
 
-    // ---------- Gestión de usuarios (solo administrador) ----------
+        // ---------- Gestión de usuarios (solo administrador) ----------
     case 'usuarios':
         Auth::exigirRol(['administrador']);
         $usuarios = Usuario::listar();
@@ -269,7 +272,8 @@ switch ($accion) {
         if ($datos['nombre_completo'] === '') $errores[] = 'El nombre es obligatorio.';
         if ($datos['usuario'] === '')         $errores[] = 'El nombre de usuario es obligatorio.';
         if ($datos['id_rol'] === '')          $errores[] = 'Debe seleccionar un rol.';
-        if (strlen($datos['contrasena']) < 8) $errores[] = 'La contraseña debe tener al menos 8 caracteres.';
+        $errores = array_merge($errores, Contrasena::validar($datos['contrasena']));
+        $errores[] = 'La contraseña debe tener al menos 8 caracteres.';
         if ($datos['usuario'] !== '' && Usuario::usuarioExiste($datos['usuario']))
             $errores[] = 'Ese nombre de usuario ya existe.';
 
@@ -309,7 +313,7 @@ switch ($accion) {
         header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Estado del usuario actualizado.'));
         exit;
 
-       
+
         // ---------- Inicio / login ----------
     case 'inicio':
     default:
@@ -409,4 +413,3 @@ function validarMedicion(array $d, string $fechaNacimiento): array
 
     return $errores;
 }
-

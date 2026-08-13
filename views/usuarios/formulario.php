@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Formulario de creación de usuario.
  * Variables: $roles, $sectores, $errores, $datos
@@ -26,14 +27,14 @@ require __DIR__ . '/../layouts/encabezado.php';
     <div class="campo">
         <label for="nombre_completo">Nombre completo *</label>
         <input type="text" id="nombre_completo" name="nombre_completo" required
-               value="<?= htmlspecialchars($datos['nombre_completo'] ?? '') ?>">
+            value="<?= htmlspecialchars($datos['nombre_completo'] ?? '') ?>">
     </div>
 
     <div class="fila">
         <div class="campo">
             <label for="usuario">Nombre de usuario *</label>
             <input type="text" id="usuario" name="usuario" required
-                   value="<?= htmlspecialchars($datos['usuario'] ?? '') ?>">
+                value="<?= htmlspecialchars($datos['usuario'] ?? '') ?>">
         </div>
         <div class="campo">
             <label for="id_rol">Rol *</label>
@@ -65,7 +66,9 @@ require __DIR__ . '/../layouts/encabezado.php';
     <div class="campo">
         <label for="contrasena">Contraseña inicial *</label>
         <input type="text" id="contrasena" name="contrasena" required minlength="8"
-               placeholder="Mínimo 8 caracteres">
+            placeholder="Mínimo 8 caracteres">
+        <div class="medidor-fuerza" data-para="contrasena"></div>
+
         <small>El usuario deberá cambiarla en su primer ingreso.</small>
     </div>
 
@@ -75,4 +78,6 @@ require __DIR__ . '/../layouts/encabezado.php';
     </div>
 </form>
 
+<script src="<?= APP_URL ?>/js/fuerza-contrasena.js"></script>
 <?php require __DIR__ . '/../layouts/pie.php'; ?>
+

@@ -66,9 +66,8 @@ require __DIR__ . '/../layouts/encabezado.php';
     <div class="campo">
         <label for="contrasena">Contraseña inicial *</label>
         <input type="text" id="contrasena" name="contrasena" required minlength="8"
-            placeholder="Mínimo 8 caracteres">
-        <div class="medidor-fuerza" data-para="contrasena"></div>
-
+           placeholder="Mínimo 8 caracteres" style="max-width: 250px;">
+        <div class="medidor-fuerza" data-para="contrasena" style="max-width: 250px;"></div>
         <small>El usuario deberá cambiarla en su primer ingreso.</small>
     </div>
 

@@ -14,7 +14,7 @@ class Auth
         $db = Database::obtener();
 
         $sql = "SELECT u.id_usuario, u.nombre_completo, u.usuario, u.contrasena_hash,
-                       u.activo, u.id_rol, u.id_sector, r.nombre AS rol
+                       u.activo, u.debe_cambiar_pass, u.id_rol, u.id_sector, r.nombre AS rol
                 FROM usuario u
                 JOIN rol r ON r.id_rol = u.id_rol
                 WHERE u.usuario = :usuario
@@ -44,6 +44,7 @@ class Auth
             'rol'       => $u['rol'],
             'id_rol'    => $u['id_rol'],
             'id_sector' => $u['id_sector'],
+            'debe_cambiar_pass' => (bool)$u['debe_cambiar_pass'],
         ];
         $_SESSION['ultima_actividad'] = time();
 
@@ -103,4 +104,19 @@ class Auth
     {
         Sesion::cerrar();
     }
+
+    /** Marca en la sesión que el usuario ya cambió su contraseña. */
+    public static function marcarPassCambiada(): void
+    {
+        if (isset($_SESSION['usuario'])) {
+            $_SESSION['usuario']['debe_cambiar_pass'] = false;
+        }
+    }
+
+    /** Indica si el usuario actual debe cambiar su contraseña. */
+    public static function debeCambiarPass(): bool
+    {
+        return !empty($_SESSION['usuario']['debe_cambiar_pass']);
+    }
+
 }

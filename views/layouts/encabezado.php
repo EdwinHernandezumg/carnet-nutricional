@@ -21,6 +21,9 @@ $segundos = Sesion::segundosRestantes();
         <?php if (Auth::tieneRol('enfermeria')): ?>
             <a href="<?= APP_URL ?>/index.php?accion=nino_nuevo">Registrar niño</a>
         <?php endif; ?>
+        <?php if (Auth::tieneRol('administrador')): ?>
+            <a href="<?= APP_URL ?>/index.php?accion=usuarios">Usuarios</a>
+        <?php endif; ?>
     </nav>
     <div class="barra-usuario">
         <span><?= htmlspecialchars($u['nombre']) ?> · <?= htmlspecialchars($u['rol']) ?></span>

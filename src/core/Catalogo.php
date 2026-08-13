@@ -26,4 +26,10 @@ class Catalogo
                 ORDER BY nombre";
         return $db->query($sql)->fetchAll();
     }
+
+      public static function roles(): array
+    {
+        $db = Database::obtener();
+        return $db->query("SELECT id_rol, nombre FROM rol ORDER BY id_rol")->fetchAll();
+    }
 }

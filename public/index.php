@@ -8,6 +8,8 @@ require_once __DIR__ . '/../src/core/Catalogo.php';
 require_once __DIR__ . '/../src/auth/Auth.php';
 require_once __DIR__ . '/../src/ninos/Nino.php';
 require_once __DIR__ . '/../src/mediciones/Medicion.php';
+require_once __DIR__ . '/../src/usuarios/Usuario.php';
+
 
 Sesion::iniciar();
 
@@ -22,6 +24,10 @@ switch ($accion) {
 
         if (Auth::login($usuario, $contrasena)) {
             Bitacora::registrar(Auth::usuario()['id'], 'login', 'usuario', Auth::usuario()['id'], 'Inicio de sesión');
+            if (Auth::debeCambiarPass()) {
+                header('Location: ' . APP_URL . '/index.php?accion=cambiar_pass');
+                exit;
+            }
             header('Location: ' . APP_URL . '/index.php?accion=ninos');
             exit;
         }
@@ -206,6 +212,104 @@ switch ($accion) {
         header('Location: ' . APP_URL . '/index.php?accion=nino_historial&id=' . $idNino . '&ok=' . urlencode($msg));
         exit;
 
+       // ---------- Cambio de contraseña obligatorio ----------
+    case 'cambiar_pass':
+        Auth::exigirAutenticacion();
+        require __DIR__ . '/../views/auth/cambiar_pass.php';
+        break;
+
+    case 'cambiar_pass_guardar':
+        Auth::exigirAutenticacion();
+        $nueva   = $_POST['nueva'] ?? '';
+        $repetir = $_POST['repetir'] ?? '';
+
+        if (strlen($nueva) < 8) {
+            $error = 'La contraseña debe tener al menos 8 caracteres.';
+            require __DIR__ . '/../views/auth/cambiar_pass.php';
+            break;
+        }
+        if ($nueva !== $repetir) {
+            $error = 'Las contraseñas no coinciden.';
+            require __DIR__ . '/../views/auth/cambiar_pass.php';
+            break;
+        }
+
+        Usuario::cambiarContrasenaPropia(Auth::usuario()['id'], $nueva);
+        Auth::marcarPassCambiada();
+        header('Location: ' . APP_URL . '/index.php?accion=ninos');
+        exit;
+
+    // ---------- Gestión de usuarios (solo administrador) ----------
+    case 'usuarios':
+        Auth::exigirRol(['administrador']);
+        $usuarios = Usuario::listar();
+        $mensaje  = $_GET['ok'] ?? '';
+        $temporal = $_SESSION['temporal_generada'] ?? '';
+        unset($_SESSION['temporal_generada']);
+        require __DIR__ . '/../views/usuarios/lista.php';
+        break;
+
+    case 'usuario_nuevo':
+        Auth::exigirRol(['administrador']);
+        $roles    = Catalogo::roles();
+        $sectores = Catalogo::sectores();
+        require __DIR__ . '/../views/usuarios/formulario.php';
+        break;
+
+    case 'usuario_guardar':
+        Auth::exigirRol(['administrador']);
+        $datos = [
+            'nombre_completo' => trim($_POST['nombre_completo'] ?? ''),
+            'usuario'         => trim($_POST['usuario'] ?? ''),
+            'id_rol'          => $_POST['id_rol'] ?? '',
+            'id_sector'       => $_POST['id_sector'] ?? '',
+            'contrasena'      => $_POST['contrasena'] ?? '',
+        ];
+        $errores = [];
+        if ($datos['nombre_completo'] === '') $errores[] = 'El nombre es obligatorio.';
+        if ($datos['usuario'] === '')         $errores[] = 'El nombre de usuario es obligatorio.';
+        if ($datos['id_rol'] === '')          $errores[] = 'Debe seleccionar un rol.';
+        if (strlen($datos['contrasena']) < 8) $errores[] = 'La contraseña debe tener al menos 8 caracteres.';
+        if ($datos['usuario'] !== '' && Usuario::usuarioExiste($datos['usuario']))
+            $errores[] = 'Ese nombre de usuario ya existe.';
+
+        if ($errores) {
+            $roles    = Catalogo::roles();
+            $sectores = Catalogo::sectores();
+            require __DIR__ . '/../views/usuarios/formulario.php';
+            break;
+        }
+
+        Usuario::crear($datos, Auth::usuario()['id']);
+        header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Usuario creado correctamente.'));
+        exit;
+
+    case 'usuario_restablecer':
+        Auth::exigirRol(['administrador']);
+        $idU = (int)($_POST['id'] ?? 0);
+        if ($idU > 0) {
+            $temporal = Usuario::restablecerContrasena($idU, Auth::usuario()['id']);
+            $_SESSION['temporal_generada'] = $temporal;
+        }
+        header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Contraseña restablecida.'));
+        exit;
+
+    case 'usuario_estado':
+        Auth::exigirRol(['administrador']);
+        $idU = (int)($_POST['id'] ?? 0);
+        $activo = ($_POST['activo'] ?? '1') === '1';
+        // Evita que el administrador se desactive a sí mismo.
+        if ($idU === Auth::usuario()['id']) {
+            header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('No puede cambiar su propio estado.'));
+            exit;
+        }
+        if ($idU > 0) {
+            Usuario::cambiarEstado($idU, $activo, Auth::usuario()['id']);
+        }
+        header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Estado del usuario actualizado.'));
+        exit;
+
+       
         // ---------- Inicio / login ----------
     case 'inicio':
     default:

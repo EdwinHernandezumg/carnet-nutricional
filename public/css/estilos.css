@@ -174,3 +174,37 @@ body {
 .campo small { font-weight: normal; color: #888; font-size: 0.78rem; }
 
 .acciones-fila a { margin-right: 0.6rem; }
+
+.caja-temporal {
+    background: #fff8e1;
+    border: 1px solid #f0d488;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.2rem;
+}
+.caja-temporal p { font-size: 0.85rem; color: #7a5c00; margin-top: 0.5rem; }
+.pass-temporal {
+    display: inline-block;
+    background: #1f3864;
+    color: #fff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    margin-left: 0.5rem;
+}
+
+.etiqueta-aviso { background: #fff3cd; color: #856404; margin-left: 0.3rem; }
+
+.enlace-boton {
+    background: none;
+    border: none;
+    color: #2e75b6;
+    cursor: pointer;
+    font-size: 0.88rem;
+    padding: 0;
+    text-decoration: none;
+}
+.enlace-boton:hover { text-decoration: underline; }
+.acciones-fila { white-space: nowrap; }
+.acciones-fila form { margin-right: 0.6rem; }

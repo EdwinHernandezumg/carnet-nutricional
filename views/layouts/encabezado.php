@@ -13,7 +13,7 @@ $segundos = Sesion::segundosRestantes();
 <body>
 <header class="barra-superior">
     <div class="barra-titulo">
-        <strong>Carnet Digital</strong>
+        <strong>Carnet <span class="marca-2">Digital</span></strong>
         <span class="barra-sub">Monitoreo Nutricional Infantil</span>
     </div>
     <nav class="barra-nav">

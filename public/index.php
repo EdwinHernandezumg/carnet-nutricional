@@ -10,7 +10,7 @@ require_once __DIR__ . '/../src/ninos/Nino.php';
 require_once __DIR__ . '/../src/mediciones/Medicion.php';
 require_once __DIR__ . '/../src/usuarios/Usuario.php';
 require_once __DIR__ . '/../src/core/Contrasena.php';
-
+require_once __DIR__ . '/../src/calculo/Calculo.php';
 
 
 Sesion::iniciar();
@@ -156,6 +156,15 @@ switch ($accion) {
         }
         $mediciones = Medicion::listarPorNino($idNino);
         $mensaje = $_GET['ok'] ?? '';
+        // Trae los indicadores calculados de cada medición
+        $db = Database::obtener();
+        $indicadoresPorMedicion = [];
+        foreach ($mediciones as $m) {
+            $stmt = $db->prepare("SELECT tipo, puntuacion_z, clasificacion
+                                  FROM indicador WHERE id_medicion = :id");
+            $stmt->execute([':id' => $m['id_medicion']]);
+            $indicadoresPorMedicion[$m['id_medicion']] = $stmt->fetchAll();
+        }
         require __DIR__ . '/../views/mediciones/historial.php';
         break;
 

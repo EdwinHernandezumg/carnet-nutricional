@@ -14,6 +14,17 @@ function edadLegibleH(int $meses): string {
     if ($m > 0)     $partes[] = $m . ($m === 1 ? ' mes' : ' meses');
     return $partes ? implode(' ', $partes) : 'menos de 1 mes';
 }
+
+function celdaZ(array $porTipo, string $tipo): string {
+    if (!isset($porTipo[$tipo])) return '<td>—</td>';
+    $z = (float)$porTipo[$tipo]['puntuacion_z'];
+    $clase = 'nivel-normal';
+    if ($z < -2) $clase = 'nivel-riesgo';
+    elseif ($z < -1) $clase = 'nivel-cerca';
+    return '<td><span class="etiqueta ' . $clase . '">'
+         . number_format($z, 2) . '</span></td>';
+}
+
 ?>
 
 <h1 class="titulo-pagina">Historial del niño</h1>
@@ -52,26 +63,34 @@ function edadLegibleH(int $meses): string {
                 <th>Edad</th>
                 <th>Peso (kg)</th>
                 <th>Talla (cm)</th>
-                <th>Tipo</th>
+                <th>P/E (Z)</th>
+                <th>T/E (Z)</th>
+                <th>P/T (Z)</th>
                 <th>Registró</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($mediciones as $m): ?>
-                <tr>
+                 <tr>
                     <td><?= htmlspecialchars($m['fecha_toma']) ?></td>
                     <td><?= edadLegibleH((int)$m['edad_meses']) ?></td>
                     <td><?= htmlspecialchars($m['peso_kg']) ?></td>
                     <td><?= htmlspecialchars($m['talla_cm']) ?></td>
-                    <td><?= $m['tipo_talla'] === 'longitud' ? 'Longitud' : 'Talla' ?></td>
+                    <?php
+                        $inds = $indicadoresPorMedicion[$m['id_medicion']] ?? [];
+                        $porTipo = [];
+                        foreach ($inds as $i) { $porTipo[$i['tipo']] = $i; }
+                        echo celdaZ($porTipo, 'peso_edad');
+                        echo celdaZ($porTipo, 'talla_edad');
+                        echo celdaZ($porTipo, 'peso_longitud') !== '<td>—</td>'
+                             ? celdaZ($porTipo, 'peso_longitud')
+                             : celdaZ($porTipo, 'peso_talla');
+                    ?>
                     <td><?= htmlspecialchars($m['registrado_por']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-    <p class="conteo"><?= count($mediciones) ?> medición(es).
-       <small>El cálculo de puntuación Z y las alertas se agregarán en el siguiente módulo.</small>
-    </p>
-<?php endif; ?>
+    <?php endif; ?>
 
 <?php require __DIR__ . '/../layouts/pie.php'; ?>

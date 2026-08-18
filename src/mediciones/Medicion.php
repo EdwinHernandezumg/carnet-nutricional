@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Gestión de mediciones antropométricas (CU-03).
  *
@@ -41,12 +42,14 @@ class Medicion
 
         $idMedicion = (int) $db->lastInsertId();
 
-        Bitacora::registrar($idUsuario, 'crear', 'medicion', $idMedicion,
-            "Medición del niño id {$datos['id_nino']}: {$datos['peso_kg']} kg, {$datos['talla_cm']} cm");
-
-        // Aquí, en CU-04, se invocará el cálculo del estado nutricional.
-        // Calculo::procesar($idMedicion);
-
+        Bitacora::registrar(
+            $idUsuario,
+            'crear',
+            'medicion',
+            $idMedicion,
+            "Medición del niño id {$datos['id_nino']}: {$datos['peso_kg']} kg, {$datos['talla_cm']} cm"
+        );
+        Calculo::procesar($idMedicion);
         return $idMedicion;
     }
 

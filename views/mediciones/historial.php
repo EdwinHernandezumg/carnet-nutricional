@@ -56,6 +56,9 @@ function celdaZ(array $porTipo, string $tipo): string {
         </a>
     <?php endif; ?>
     <a href="<?= APP_URL ?>/index.php?accion=ninos" class="btn-secundario">Volver al listado</a>
+     <a href="<?= APP_URL ?>/index.php?accion=nino_graficas&id=<?= (int)$nino['id_nino'] ?>" class="btn-primario">
+        Ver gráficas de crecimiento
+    </a>
 </div>
 
 <h2 class="subtitulo-seccion">Mediciones registradas</h2>

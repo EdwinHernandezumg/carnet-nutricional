@@ -294,3 +294,27 @@ body {
 .aviso-alerta.nivel-riesgo { background: #fdecea; color: #8f1d16; border-color: #d9534f; }
 .aviso-alerta.nivel-cerca  { background: #fff3cd; color: #7a5900; border-color: #e0a800; }
 .aviso-alerta.nivel-normal { background: var(--teal-claro); color: var(--teal-osc); border-color: var(--teal); }
+
+/* Gráficas de crecimiento */
+.grid-graficas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.2rem;
+    margin-top: 1rem;
+}
+.tarjeta-grafica {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 1px 8px rgba(20,48,74,0.06);
+}
+.tarjeta-grafica h3 {
+    color: var(--marino);
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    text-align: center;
+}
+/* La tercera gráfica ocupa todo el ancho si queda sola en su fila */
+@media (min-width: 720px) {
+    .grid-graficas { grid-template-columns: repeat(2, 1fr); }
+}

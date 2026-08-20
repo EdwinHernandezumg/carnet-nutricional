@@ -12,6 +12,8 @@ require_once __DIR__ . '/../src/usuarios/Usuario.php';
 require_once __DIR__ . '/../src/core/Contrasena.php';
 require_once __DIR__ . '/../src/calculo/Calculo.php';
 require_once __DIR__ . '/../src/alertas/Alerta.php';
+require_once __DIR__ . '/../src/calculo/GraficaCrecimiento.php';
+
 
 
 Sesion::iniciar();
@@ -174,7 +176,7 @@ switch ($accion) {
         );
         $stmtA->execute([':id' => $idNino]);
         $alertaActual = $stmtA->fetch();
-        
+
         $mensaje = $_GET['ok'] ?? '';
         require __DIR__ . '/../views/mediciones/historial.php';
         break;
@@ -344,6 +346,23 @@ switch ($accion) {
         $resumen  = Alerta::resumenNiveles();
         $sectores = Catalogo::sectores();
         require __DIR__ . '/../views/alertas/panel.php';
+        break;
+
+    case 'nino_graficas':
+        Auth::exigirAutenticacion();
+        $idNino = (int)($_GET['id'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+
+        $graficas = [
+            'peso_edad'  => GraficaCrecimiento::datos($idNino, 'peso_edad'),
+            'talla_edad' => GraficaCrecimiento::datos($idNino, 'talla_edad'),
+            'peso_talla' => GraficaCrecimiento::datos($idNino, 'peso_talla'),
+        ];
+        require __DIR__ . '/../views/mediciones/graficas.php';
         break;
 
 

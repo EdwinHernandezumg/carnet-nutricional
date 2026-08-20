@@ -50,6 +50,7 @@ class Medicion
             "Medición del niño id {$datos['id_nino']}: {$datos['peso_kg']} kg, {$datos['talla_cm']} cm"
         );
         Calculo::procesar($idMedicion);
+        Alerta::generar($idMedicion, $datos['id_nino']);
         return $idMedicion;
     }
 

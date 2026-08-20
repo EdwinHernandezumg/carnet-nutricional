@@ -42,6 +42,13 @@ function celdaZ(array $porTipo, string $tipo): string {
     <span class="etiqueta etiqueta-<?= $nino['estado'] === 'activo' ? 'activo' : 'egresado' ?>"><?= htmlspecialchars($nino['estado']) ?></span>
 </div>
 
+<?php if (!empty($alertaActual)): ?>
+        <div class="aviso-alerta <?= Alerta::claseNivel($alertaActual['nivel']) ?>">
+            <strong><?= htmlspecialchars(Alerta::etiquetaNivel($alertaActual['nivel'])) ?>:</strong>
+            <?= htmlspecialchars($alertaActual['descripcion']) ?>
+        </div>
+    <?php endif; ?>
+
 <div class="barra-acciones">
     <?php if (Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo'): ?>
         <a href="<?= APP_URL ?>/index.php?accion=medicion_nueva&id_nino=<?= (int)$nino['id_nino'] ?>" class="btn-primario">

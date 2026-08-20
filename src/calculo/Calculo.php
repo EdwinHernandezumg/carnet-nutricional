@@ -161,8 +161,8 @@ class Calculo
         return 'Obesidad';
     }
 
-    /**
-     * Nivel de alerta global de una medición (el más grave prevalece). Lo usa CU-05.
+       /**
+     * Nivel de alerta global de una medición (el más grave prevalece).
      */
     public static function nivelAlertaGlobal(int $idMedicion): array
     {
@@ -177,28 +177,55 @@ class Calculo
         $orden = ['normal' => 0, 'cerca_umbral' => 1, 'riesgo' => 2,
                   'sobrepeso' => 2, 'desnutricion_cronica' => 3, 'desnutricion_aguda' => 4];
 
+        // Nombre corto de cada indicador para los mensajes.
+        $nombreInd = [
+            'peso_edad'     => 'Peso para la edad',
+            'talla_edad'    => 'Talla para la edad',
+            'peso_longitud' => 'Peso para la longitud',
+            'peso_talla'    => 'Peso para la talla',
+        ];
+
         foreach ($indicadores as $ind) {
             $z = (float) $ind['puntuacion_z'];
-            $nivel = 'normal';
             $tipo = $ind['tipo'];
+            $nombre = $nombreInd[$tipo] ?? $tipo;
+            $nivel = 'normal';
+            $texto = '';
 
             if ($tipo === 'peso_longitud' || $tipo === 'peso_talla') {
-                if ($z < -2) $nivel = 'desnutricion_aguda';
-                elseif ($z < -1) $nivel = 'cerca_umbral';
-                elseif ($z > 2) $nivel = 'sobrepeso';
+                if ($z < -2) {
+                    $nivel = 'desnutricion_aguda';
+                    $texto = $ind['clasificacion'] . ' (Z=' . number_format($z, 2) . ')';
+                } elseif ($z < -1) {
+                    $nivel = 'cerca_umbral';
+                    $texto = $nombre . ' acercándose al umbral de desnutrición aguda (Z=' . number_format($z, 2) . ')';
+                } elseif ($z > 2) {
+                    $nivel = 'sobrepeso';
+                    $texto = $ind['clasificacion'] . ' (Z=' . number_format($z, 2) . ')';
+                }
             } elseif ($tipo === 'talla_edad') {
-                if ($z < -2) $nivel = 'desnutricion_cronica';
-                elseif ($z < -1) $nivel = 'cerca_umbral';
+                if ($z < -2) {
+                    $nivel = 'desnutricion_cronica';
+                    $texto = $ind['clasificacion'] . ' (Z=' . number_format($z, 2) . ')';
+                } elseif ($z < -1) {
+                    $nivel = 'cerca_umbral';
+                    $texto = $nombre . ' acercándose al umbral de retardo de talla (Z=' . number_format($z, 2) . ')';
+                }
             } elseif ($tipo === 'peso_edad') {
-                if ($z < -2) $nivel = 'riesgo';
-                elseif ($z < -1) $nivel = 'cerca_umbral';
+                if ($z < -2) {
+                    $nivel = 'riesgo';
+                    $texto = $ind['clasificacion'] . ' (Z=' . number_format($z, 2) . ')';
+                } elseif ($z < -1) {
+                    $nivel = 'cerca_umbral';
+                    $texto = $nombre . ' acercándose al umbral de bajo peso (Z=' . number_format($z, 2) . ')';
+                }
             }
 
             if ($orden[$nivel] > $orden[$peorNivel]) {
                 $peorNivel = $nivel;
             }
-            if ($nivel !== 'normal') {
-                $descripciones[] = $ind['clasificacion'] . ' (Z=' . number_format($z, 2) . ')';
+            if ($texto !== '') {
+                $descripciones[] = $texto;
             }
         }
 

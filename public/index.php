@@ -11,6 +11,7 @@ require_once __DIR__ . '/../src/mediciones/Medicion.php';
 require_once __DIR__ . '/../src/usuarios/Usuario.php';
 require_once __DIR__ . '/../src/core/Contrasena.php';
 require_once __DIR__ . '/../src/calculo/Calculo.php';
+require_once __DIR__ . '/../src/alertas/Alerta.php';
 
 
 Sesion::iniciar();
@@ -155,9 +156,9 @@ switch ($accion) {
             break;
         }
         $mediciones = Medicion::listarPorNino($idNino);
-        $mensaje = $_GET['ok'] ?? '';
-        // Trae los indicadores calculados de cada medición
+
         $db = Database::obtener();
+
         $indicadoresPorMedicion = [];
         foreach ($mediciones as $m) {
             $stmt = $db->prepare("SELECT tipo, puntuacion_z, clasificacion
@@ -165,6 +166,16 @@ switch ($accion) {
             $stmt->execute([':id' => $m['id_medicion']]);
             $indicadoresPorMedicion[$m['id_medicion']] = $stmt->fetchAll();
         }
+        $stmtA = $db->prepare(
+            "SELECT a.nivel, a.descripcion FROM alerta a
+             JOIN medicion m ON m.id_medicion = a.id_medicion
+             WHERE a.id_nino = :id AND a.estado = 'activa'
+             ORDER BY m.fecha_toma DESC, a.id_alerta DESC LIMIT 1"
+        );
+        $stmtA->execute([':id' => $idNino]);
+        $alertaActual = $stmtA->fetch();
+        
+        $mensaje = $_GET['ok'] ?? '';
         require __DIR__ . '/../views/mediciones/historial.php';
         break;
 
@@ -322,8 +333,21 @@ switch ($accion) {
         header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Estado del usuario actualizado.'));
         exit;
 
+        // Panel de seguimiento de alertas
+    case 'panel_alertas':
+        Auth::exigirAutenticacion();
+        $filtros = [
+            'id_sector' => $_GET['id_sector'] ?? '',
+            'nivel'     => $_GET['nivel'] ?? '',
+        ];
+        $ninos    = Alerta::panelSeguimiento($filtros);
+        $resumen  = Alerta::resumenNiveles();
+        $sectores = Catalogo::sectores();
+        require __DIR__ . '/../views/alertas/panel.php';
+        break;
 
-        // ---------- Inicio / login ----------
+
+    // ---------- Inicio / login ----------
     case 'inicio':
     default:
         if (Auth::autenticado() && !Sesion::expiroPorInactividad()) {

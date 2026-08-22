@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Gestión de usuarios por el administrador (RF-12).
  * Incluye la recuperación de contraseña gestionada por el administrador:
@@ -38,10 +39,17 @@ class Usuario
      * Crea un usuario nuevo. Devuelve el id.
      * La contraseña se recibe en texto y se guarda hasheada.
      */
-    public static function crear(array $d, int $idAdmin): int
+    /**
+     * Crea un usuario nuevo con una contraseña TEMPORAL generada automáticamente.
+     * Marca que debe cambiarla al primer ingreso. Devuelve la contraseña temporal
+     * en texto (para mostrarla una vez al administrador).
+     */
+    public static function crear(array $d, int $idAdmin): string
     {
         $db = Database::obtener();
-        $hash = password_hash($d['contrasena'], PASSWORD_DEFAULT);
+
+        $temporal = self::generarTemporal();
+        $hash = password_hash($temporal, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO usuario
                 (id_rol, id_puesto, id_sector, nombre_completo, usuario, contrasena_hash, debe_cambiar_pass)
@@ -56,9 +64,15 @@ class Usuario
         ]);
         $id = (int)$db->lastInsertId();
 
-        Bitacora::registrar($idAdmin, 'crear', 'usuario', $id,
-            "Alta de usuario {$d['usuario']} ({$d['nombre_completo']})");
-        return $id;
+        Bitacora::registrar(
+            $idAdmin,
+            'crear',
+            'usuario',
+            $id,
+            "Alta de usuario {$d['usuario']} ({$d['nombre_completo']})"
+        );
+
+        return $temporal;
     }
 
     /**
@@ -78,8 +92,13 @@ class Usuario
         );
         $stmt->execute([':hash' => $hash, ':id' => $idUsuario]);
 
-        Bitacora::registrar($idAdmin, 'restablecer_pass', 'usuario', $idUsuario,
-            'Restablecimiento de contraseña (temporal generada)');
+        Bitacora::registrar(
+            $idAdmin,
+            'restablecer_pass',
+            'usuario',
+            $idUsuario,
+            'Restablecimiento de contraseña (temporal generada)'
+        );
 
         return $temporal;
     }
@@ -98,8 +117,13 @@ class Usuario
         );
         $stmt->execute([':hash' => $hash, ':id' => $idUsuario]);
 
-        Bitacora::registrar($idUsuario, 'cambiar_pass', 'usuario', $idUsuario,
-            'Cambio de contraseña propia');
+        Bitacora::registrar(
+            $idUsuario,
+            'cambiar_pass',
+            'usuario',
+            $idUsuario,
+            'Cambio de contraseña propia'
+        );
     }
 
     /**
@@ -115,8 +139,13 @@ class Usuario
         );
         $stmt->execute([':activo' => $activo ? 1 : 0, ':id' => $idUsuario]);
 
-        Bitacora::registrar($idAdmin, $activo ? 'reactivar' : 'dar_baja', 'usuario', $idUsuario,
-            $activo ? 'Reactivación de usuario' : 'Baja de usuario');
+        Bitacora::registrar(
+            $idAdmin,
+            $activo ? 'reactivar' : 'dar_baja',
+            'usuario',
+            $idUsuario,
+            $activo ? 'Reactivación de usuario' : 'Baja de usuario'
+        );
     }
 
     /**

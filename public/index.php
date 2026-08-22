@@ -288,14 +288,11 @@ switch ($accion) {
             'usuario'         => trim($_POST['usuario'] ?? ''),
             'id_rol'          => $_POST['id_rol'] ?? '',
             'id_sector'       => $_POST['id_sector'] ?? '',
-            'contrasena'      => $_POST['contrasena'] ?? '',
         ];
         $errores = [];
         if ($datos['nombre_completo'] === '') $errores[] = 'El nombre es obligatorio.';
         if ($datos['usuario'] === '')         $errores[] = 'El nombre de usuario es obligatorio.';
         if ($datos['id_rol'] === '')          $errores[] = 'Debe seleccionar un rol.';
-        $errores = array_merge($errores, Contrasena::validar($datos['contrasena']));
-        $errores[] = 'La contraseña debe tener al menos 8 caracteres.';
         if ($datos['usuario'] !== '' && Usuario::usuarioExiste($datos['usuario']))
             $errores[] = 'Ese nombre de usuario ya existe.';
 
@@ -306,7 +303,8 @@ switch ($accion) {
             break;
         }
 
-        Usuario::crear($datos, Auth::usuario()['id']);
+        $temporal = Usuario::crear($datos, Auth::usuario()['id']);
+        $_SESSION['temporal_generada'] = $temporal;
         header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Usuario creado correctamente.'));
         exit;
 

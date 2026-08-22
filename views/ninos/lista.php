@@ -22,7 +22,7 @@ function edadTexto(string $fechaNac): string {
 
 <form method="get" action="<?= APP_URL ?>/index.php" class="filtros">
     <input type="hidden" name="accion" value="ninos">
-    <input type="text" name="texto" placeholder="Buscar por nombre o CUI"
+        <input type="text" name="texto" placeholder="Buscar por nombre"
            value="<?= htmlspecialchars($filtros['texto'] ?? '') ?>">
     <select name="id_sector">
         <option value="">Todos los sectores</option>

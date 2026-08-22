@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Gestión de los niños: registro, edición, consulta.
  * Incluye la regla de permisos por sector definida en el levantamiento:
@@ -39,8 +40,13 @@ class Nino
 
         $idNino = (int) $db->lastInsertId();
 
-        Bitacora::registrar($idUsuario, 'crear', 'nino', $idNino,
-            "Registro del niño {$datos['nombres']} {$datos['apellidos']}");
+        Bitacora::registrar(
+            $idUsuario,
+            'crear',
+            'nino',
+            $idNino,
+            "Registro del niño {$datos['nombres']} {$datos['apellidos']}"
+        );
 
         return $idNino;
     }
@@ -84,8 +90,13 @@ class Nino
             ':id_nino'          => $idNino,
         ]);
 
-        Bitacora::registrar($idUsuario, 'editar', 'nino', $idNino,
-            "Edición del niño {$datos['nombres']} {$datos['apellidos']}");
+        Bitacora::registrar(
+            $idUsuario,
+            'editar',
+            'nino',
+            $idNino,
+            "Edición del niño {$datos['nombres']} {$datos['apellidos']}"
+        );
     }
 
     /**
@@ -120,8 +131,10 @@ class Nino
         $params = [];
 
         if (!empty($filtros['texto'])) {
-            $where[] = "(n.nombres LIKE :texto OR n.apellidos LIKE :texto OR n.cui LIKE :texto)";
-            $params[':texto'] = '%' . $filtros['texto'] . '%';
+            $where[] = "(n.nombres LIKE :texto1 OR n.apellidos LIKE :texto2 OR CONCAT(n.nombres, ' ', n.apellidos) LIKE :texto3)";
+            $params[':texto1'] = '%' . $filtros['texto'] . '%';
+            $params[':texto2'] = '%' . $filtros['texto'] . '%';
+            $params[':texto3'] = '%' . $filtros['texto'] . '%';
         }
         if (!empty($filtros['id_sector'])) {
             $where[] = "n.id_sector = :id_sector";

@@ -19,6 +19,7 @@ $segundos = Sesion::segundosRestantes();
     <nav class="barra-nav">
         <a href="<?= APP_URL ?>/index.php?accion=panel_alertas">Seguimiento</a>
         <a href="<?= APP_URL ?>/index.php?accion=ninos">Niños</a>
+        <a href="<?= APP_URL ?>/index.php?accion=reportes">Reportes</a>
         <?php if (Auth::tieneRol('enfermeria')): ?>
             <a href="<?= APP_URL ?>/index.php?accion=nino_nuevo">Registrar niño</a>
         <?php endif; ?>

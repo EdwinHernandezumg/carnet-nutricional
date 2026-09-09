@@ -318,3 +318,16 @@ body {
 @media (min-width: 720px) {
     .grid-graficas { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Reportes consolidados */
+.lbl-filtro { font-size: 0.85rem; color: var(--gris-texto); display: flex; align-items: center; gap: 0.35rem; }
+.lbl-filtro input { padding: 0.45rem; border: 1px solid #cdd7e2; border-radius: 6px; font-size: 0.9rem; }
+
+.tabla-scroll { overflow-x: auto; }
+.tabla-reporte th, .tabla-reporte td { text-align: center; white-space: nowrap; }
+.tabla-reporte td:first-child, .tabla-reporte td:nth-child(2) { text-align: left; }
+.tabla-reporte .c-grave  { background: #fdecea; color: #b3261e; font-weight: 600; }
+.tabla-reporte .c-riesgo { background: #ffe8d6; color: #b5601f; font-weight: 600; }
+.tabla-reporte .c-cerca  { background: #fff3cd; color: #856404; font-weight: 600; }
+.tabla-reporte .c-normal { background: #e6f4ea; color: #1e7e34; }
+.tabla-reporte tfoot .fila-total td { background: var(--marino); color: #fff; }

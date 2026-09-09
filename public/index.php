@@ -13,6 +13,8 @@ require_once __DIR__ . '/../src/core/Contrasena.php';
 require_once __DIR__ . '/../src/calculo/Calculo.php';
 require_once __DIR__ . '/../src/alertas/Alerta.php';
 require_once __DIR__ . '/../src/calculo/GraficaCrecimiento.php';
+require_once __DIR__ . '/../src/reportes/Reporte.php';
+
 
 
 
@@ -362,6 +364,75 @@ switch ($accion) {
         ];
         require __DIR__ . '/../views/mediciones/graficas.php';
         break;
+
+    // ---------- Reportes consolidados ----------
+    case 'reportes':
+        Auth::exigirRol(['administrador', 'consulta', 'enfermeria']);
+        $filtros = [
+            'id_territorio' => $_GET['id_territorio'] ?? '',
+            'fecha_desde'   => $_GET['fecha_desde'] ?? '',
+            'fecha_hasta'   => $_GET['fecha_hasta'] ?? '',
+        ];
+        $filas       = Reporte::resumenPorSector($filtros);
+        $totales     = Reporte::totales($filas);
+        $territorios = Reporte::territorios();
+        require __DIR__ . '/../views/reportes/consolidado.php';
+        break;
+
+    case 'reporte_csv':
+        Auth::exigirRol(['administrador', 'consulta', 'enfermeria']);
+        $filtros = [
+            'id_territorio' => $_GET['id_territorio'] ?? '',
+            'fecha_desde'   => $_GET['fecha_desde'] ?? '',
+            'fecha_hasta'   => $_GET['fecha_hasta'] ?? '',
+        ];
+        $filas   = Reporte::resumenPorSector($filtros);
+        $totales = Reporte::totales($filas);
+        Bitacora::registrar(
+            Auth::usuario()['id'],
+            'exportar',
+            'reporte',
+            null,
+            'Descarga de reporte consolidado en CSV'
+        );
+        Reporte::descargarCSV($filas, $totales, 'reporte_nutricional_' . date('Y-m-d'));
+        break;
+
+    case 'reporte_imprimir':
+        Auth::exigirRol(['administrador', 'consulta', 'enfermeria']);
+        $filtros = [
+            'id_territorio' => $_GET['id_territorio'] ?? '',
+            'fecha_desde'   => $_GET['fecha_desde'] ?? '',
+            'fecha_hasta'   => $_GET['fecha_hasta'] ?? '',
+        ];
+        $filas   = Reporte::resumenPorSector($filtros);
+        $totales = Reporte::totales($filas);
+
+        // Texto descriptivo del alcance para el encabezado del documento.
+        $tituloFiltro = 'Todos los territorios';
+        if (!empty($filtros['id_territorio'])) {
+            foreach (Reporte::territorios() as $t) {
+                if ($t['id_territorio'] == $filtros['id_territorio']) {
+                    $tituloFiltro = 'Territorio ' . $t['numero'] . ' — ' . $t['nombre'];
+                }
+            }
+        }
+        if (!empty($filtros['fecha_desde']) || !empty($filtros['fecha_hasta'])) {
+            $tituloFiltro .= ' | Periodo: '
+                . ($filtros['fecha_desde'] ?: 'inicio')
+                . ' a ' . ($filtros['fecha_hasta'] ?: 'hoy');
+        }
+
+        Bitacora::registrar(
+            Auth::usuario()['id'],
+            'exportar',
+            'reporte',
+            null,
+            'Vista de impresión de reporte consolidado'
+        );
+        require __DIR__ . '/../views/reportes/imprimir.php';
+        break;
+
 
 
     // ---------- Inicio / login ----------

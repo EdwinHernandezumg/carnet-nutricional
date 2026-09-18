@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Historial del niño: datos y listado de mediciones.
  * Variables: $nino, $mediciones, $mensaje (opcional)
@@ -6,7 +7,8 @@
 $titulo = 'Historial del niño';
 require __DIR__ . '/../layouts/encabezado.php';
 
-function edadLegibleH(int $meses): string {
+function edadLegibleH(int $meses): string
+{
     $anios = intdiv($meses, 12);
     $m = $meses % 12;
     $partes = [];
@@ -15,14 +17,15 @@ function edadLegibleH(int $meses): string {
     return $partes ? implode(' ', $partes) : 'menos de 1 mes';
 }
 
-function celdaZ(array $porTipo, string $tipo): string {
+function celdaZ(array $porTipo, string $tipo): string
+{
     if (!isset($porTipo[$tipo])) return '<td>—</td>';
     $z = (float)$porTipo[$tipo]['puntuacion_z'];
     $clase = 'nivel-normal';
     if ($z < -2) $clase = 'nivel-riesgo';
     elseif ($z < -1) $clase = 'nivel-cerca';
     return '<td><span class="etiqueta ' . $clase . '">'
-         . number_format($z, 2) . '</span></td>';
+        . number_format($z, 2) . '</span></td>';
 }
 
 ?>
@@ -43,11 +46,11 @@ function celdaZ(array $porTipo, string $tipo): string {
 </div>
 
 <?php if (!empty($alertaActual)): ?>
-        <div class="aviso-alerta <?= Alerta::claseNivel($alertaActual['nivel']) ?>">
-            <strong><?= htmlspecialchars(Alerta::etiquetaNivel($alertaActual['nivel'])) ?>:</strong>
-            <?= htmlspecialchars($alertaActual['descripcion']) ?>
-        </div>
-    <?php endif; ?>
+    <div class="aviso-alerta <?= Alerta::claseNivel($alertaActual['nivel']) ?>">
+        <strong><?= htmlspecialchars(Alerta::etiquetaNivel($alertaActual['nivel'])) ?>:</strong>
+        <?= htmlspecialchars($alertaActual['descripcion']) ?>
+    </div>
+<?php endif; ?>
 
 <div class="barra-acciones">
     <?php if (Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo'): ?>
@@ -56,7 +59,7 @@ function celdaZ(array $porTipo, string $tipo): string {
         </a>
     <?php endif; ?>
     <a href="<?= APP_URL ?>/index.php?accion=ninos" class="btn-secundario">Volver al listado</a>
-     <a href="<?= APP_URL ?>/index.php?accion=nino_graficas&id=<?= (int)$nino['id_nino'] ?>" class="btn-primario">
+    <a href="<?= APP_URL ?>/index.php?accion=nino_graficas&id=<?= (int)$nino['id_nino'] ?>" class="btn-primario">
         Ver gráficas de crecimiento
     </a>
 </div>
@@ -81,26 +84,29 @@ function celdaZ(array $porTipo, string $tipo): string {
         </thead>
         <tbody>
             <?php foreach ($mediciones as $m): ?>
-                 <tr>
+                <tr>
                     <td><?= htmlspecialchars($m['fecha_toma']) ?></td>
                     <td><?= edadLegibleH((int)$m['edad_meses']) ?></td>
                     <td><?= htmlspecialchars($m['peso_kg']) ?></td>
                     <td><?= htmlspecialchars($m['talla_cm']) ?></td>
                     <?php
-                        $inds = $indicadoresPorMedicion[$m['id_medicion']] ?? [];
-                        $porTipo = [];
-                        foreach ($inds as $i) { $porTipo[$i['tipo']] = $i; }
-                        echo celdaZ($porTipo, 'peso_edad');
-                        echo celdaZ($porTipo, 'talla_edad');
-                        echo celdaZ($porTipo, 'peso_longitud') !== '<td>—</td>'
-                             ? celdaZ($porTipo, 'peso_longitud')
-                             : celdaZ($porTipo, 'peso_talla');
+                    $inds = $indicadoresPorMedicion[$m['id_medicion']] ?? [];
+                    $porTipo = [];
+                    foreach ($inds as $i) {
+                        $porTipo[$i['tipo']] = $i;
+                    }
+                    echo celdaZ($porTipo, 'peso_edad');
+                    echo celdaZ($porTipo, 'talla_edad');
+                    echo celdaZ($porTipo, 'peso_longitud') !== '<td>—</td>'
+                        ? celdaZ($porTipo, 'peso_longitud')
+                        : celdaZ($porTipo, 'peso_talla');
                     ?>
                     <td><?= htmlspecialchars($m['registrado_por']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-    <?php endif; ?>
+<?php endif; ?>
 
+<?php require __DIR__ . '/../carnet/secciones_historial.php'; ?>
 <?php require __DIR__ . '/../layouts/pie.php'; ?>

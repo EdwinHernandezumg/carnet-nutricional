@@ -331,3 +331,74 @@ body {
 .tabla-reporte .c-cerca  { background: #fff3cd; color: #856404; font-weight: 600; }
 .tabla-reporte .c-normal { background: #e6f4ea; color: #1e7e34; }
 .tabla-reporte tfoot .fila-total td { background: var(--marino); color: #fff; }
+
+/* =========================================================
+   AGREGAR AL FINAL de public/css/estilos.css
+   Vacunación, suplementación y citas
+   ========================================================= */
+
+/* Botón de WhatsApp */
+.btn-whatsapp {
+    display: inline-block;
+    background: #25d366;
+    color: #fff;
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+.btn-whatsapp:hover { background: #1da851; }
+
+.sin-telefono {
+    color: var(--gris-suave);
+    font-size: 0.82rem;
+    font-style: italic;
+    margin-right: 0.5rem;
+}
+
+.sub-dato { color: var(--gris-suave); font-size: 0.78rem; }
+
+/* Esquema de vacunación desplegable */
+.bloque-esquema {
+    background: #fff;
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin: 1rem 0 1.5rem;
+    box-shadow: 0 1px 6px rgba(20,48,74,0.06);
+}
+.bloque-esquema summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--teal-osc);
+    font-size: 0.92rem;
+}
+.grid-esquema {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.9rem;
+}
+.item-esquema {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+}
+.item-esquema strong { display: block; font-size: 0.86rem; }
+.item-esquema small { display: block; color: var(--gris-suave); font-size: 0.76rem; }
+.item-esquema .esq-fecha { color: var(--teal-osc); font-weight: 600; }
+.esq-marca { font-size: 0.9rem; line-height: 1.3; }
+.esq-ok { background: var(--teal-claro); }
+.esq-ok .esq-marca { color: var(--teal); }
+.esq-pendiente { background: #f4f6f9; }
+.esq-pendiente .esq-marca { color: #b9c2cc; }
+.nota-esquema {
+    font-size: 0.78rem;
+    color: var(--gris-suave);
+    margin-top: 0.8rem;
+    font-style: italic;
+}

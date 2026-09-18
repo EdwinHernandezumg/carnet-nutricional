@@ -14,6 +14,9 @@ require_once __DIR__ . '/../src/calculo/Calculo.php';
 require_once __DIR__ . '/../src/alertas/Alerta.php';
 require_once __DIR__ . '/../src/calculo/GraficaCrecimiento.php';
 require_once __DIR__ . '/../src/reportes/Reporte.php';
+require_once __DIR__ . '/../src/carnet/Vacuna.php';
+require_once __DIR__ . '/../src/carnet/Suplementacion.php';
+require_once __DIR__ . '/../src/carnet/Cita.php';
 
 
 
@@ -178,6 +181,12 @@ switch ($accion) {
         );
         $stmtA->execute([':id' => $idNino]);
         $alertaActual = $stmtA->fetch();
+
+        // Datos del carnet: vacunas, suplementos y citas
+        $vacunas        = Vacuna::listarPorNino($idNino);
+        $esquemaVacunas = Vacuna::esquemaDelNino($idNino);
+        $suplementos    = Suplementacion::listarPorNino($idNino);
+        $citas          = Cita::listarPorNino($idNino);
 
         $mensaje = $_GET['ok'] ?? '';
         require __DIR__ . '/../views/mediciones/historial.php';
@@ -433,9 +442,181 @@ switch ($accion) {
         require __DIR__ . '/../views/reportes/imprimir.php';
         break;
 
+    // ---------- Vacunación ----------
+    case 'vacuna_nueva':
+        Auth::exigirRol(['enfermeria']);
+        $idNino = (int)($_GET['id_nino'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+        $tipo = 'vacuna';
+        $catalogo = Vacuna::catalogo();
+        require __DIR__ . '/../views/carnet/formulario.php';
+        break;
+
+    case 'vacuna_guardar':
+        Auth::exigirRol(['enfermeria']);
+        $idNino = (int)($_GET['id_nino'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+
+        $sel = $_POST['vacuna_sel'] ?? '';
+        $partes = explode('|', $sel);
+        $errores = [];
+        if (count($partes) !== 2 || $partes[0] === '') $errores[] = 'Debe seleccionar la vacuna.';
+        if (empty($_POST['fecha_aplicacion'])) $errores[] = 'La fecha de aplicación es obligatoria.';
+
+        if ($errores) {
+            $tipo = 'vacuna';
+            $catalogo = Vacuna::catalogo();
+            require __DIR__ . '/../views/carnet/formulario.php';
+            break;
+        }
+
+        Vacuna::crear([
+            'id_nino'          => $idNino,
+            'nombre_vacuna'    => $partes[0],
+            'dosis'            => $partes[1],
+            'fecha_aplicacion' => $_POST['fecha_aplicacion'],
+            'lote'             => trim($_POST['lote'] ?? ''),
+            'lugar'            => trim($_POST['lugar'] ?? ''),
+        ], Auth::usuario()['id']);
+
+        header('Location: ' . APP_URL . '/index.php?accion=nino_historial&id=' . $idNino
+            . '&ok=' . urlencode('Vacuna registrada correctamente.'));
+        exit;
+
+        // ---------- Suplementación ----------
+    case 'suplemento_nuevo':
+        Auth::exigirRol(['enfermeria']);
+        $idNino = (int)($_GET['id_nino'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+        $tipo = 'suplemento';
+        $catalogo = Suplementacion::catalogo();
+        require __DIR__ . '/../views/carnet/formulario.php';
+        break;
+
+    case 'suplemento_guardar':
+        Auth::exigirRol(['enfermeria']);
+        $idNino = (int)($_GET['id_nino'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+
+        $errores = [];
+        if (empty($_POST['tipo_sup']))      $errores[] = 'Debe seleccionar el suplemento.';
+        if (empty($_POST['fecha_entrega'])) $errores[] = 'La fecha de entrega es obligatoria.';
+
+        if ($errores) {
+            $tipo = 'suplemento';
+            $catalogo = Suplementacion::catalogo();
+            require __DIR__ . '/../views/carnet/formulario.php';
+            break;
+        }
+
+        Suplementacion::crear([
+            'id_nino'       => $idNino,
+            'tipo'          => $_POST['tipo_sup'],
+            'fecha_entrega' => $_POST['fecha_entrega'],
+            'cantidad'      => trim($_POST['cantidad'] ?? ''),
+        ], Auth::usuario()['id']);
+
+        header('Location: ' . APP_URL . '/index.php?accion=nino_historial&id=' . $idNino
+            . '&ok=' . urlencode('Suplemento registrado correctamente.'));
+        exit;
+
+        // ---------- Citas ----------
+    case 'cita_nueva':
+        Auth::exigirRol(['enfermeria']);
+        $idNino = (int)($_GET['id_nino'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+        $tipo = 'cita';
+        $catalogo = [];
+        require __DIR__ . '/../views/carnet/formulario.php';
+        break;
+
+    case 'cita_guardar':
+        Auth::exigirRol(['enfermeria']);
+        $idNino = (int)($_GET['id_nino'] ?? 0);
+        $nino = Nino::obtener($idNino);
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+
+        $errores = [];
+        if (empty($_POST['fecha_programada'])) {
+            $errores[] = 'La fecha de la cita es obligatoria.';
+        } elseif ($_POST['fecha_programada'] < date('Y-m-d')) {
+            $errores[] = 'La fecha de la cita no puede ser anterior a hoy.';
+        }
+
+        if ($errores) {
+            $tipo = 'cita';
+            $catalogo = [];
+            require __DIR__ . '/../views/carnet/formulario.php';
+            break;
+        }
+
+        Cita::crear([
+            'id_nino'          => $idNino,
+            'fecha_programada' => $_POST['fecha_programada'],
+            'motivo'           => $_POST['motivo'] ?? 'Control de crecimiento',
+            'observaciones'    => trim($_POST['observaciones'] ?? ''),
+        ], Auth::usuario()['id']);
+
+        header('Location: ' . APP_URL . '/index.php?accion=nino_historial&id=' . $idNino
+            . '&ok=' . urlencode('Cita programada correctamente.'));
+        exit;
+
+    case 'cita_estado':
+        Auth::exigirRol(['enfermeria']);
+        $idCita = (int)($_POST['id_cita'] ?? 0);
+        $estado = $_POST['estado'] ?? '';
+        if ($idCita > 0 && in_array($estado, ['cumplida', 'inasistencia', 'reprogramada'], true)) {
+            Cita::cambiarEstado($idCita, $estado, Auth::usuario()['id']);
+        }
+        $volver = $_SERVER['HTTP_REFERER'] ?? (APP_URL . '/index.php?accion=citas_proximas');
+        header('Location: ' . $volver);
+        exit;
+
+    case 'citas_proximas':
+        Auth::exigirAutenticacion();
+        $dias = (int)($_GET['dias'] ?? 7);
+        if (!in_array($dias, [3, 7, 15, 30], true)) $dias = 7;
+        $filtros  = ['id_sector' => $_GET['id_sector'] ?? ''];
+        $citas    = Cita::proximas($dias, $filtros);
+        $vencidas = Cita::vencidas();
+        $sectores = Catalogo::sectores();
+        require __DIR__ . '/../views/carnet/proximas_citas.php';
+        break;
+
+    case 'cita_aviso_enviado':
+        Auth::exigirAutenticacion();
+        $idCita = (int)($_GET['id'] ?? 0);
+        if ($idCita > 0) {
+            Cita::marcarAvisoEnviado($idCita, Auth::usuario()['id']);
+        }
+        http_response_code(204); // Sin contenido; se llama desde JavaScript.
+        exit;
 
 
-    // ---------- Inicio / login ----------
+        // ---------- Inicio / login ----------
     case 'inicio':
     default:
         if (Auth::autenticado() && !Sesion::expiroPorInactividad()) {

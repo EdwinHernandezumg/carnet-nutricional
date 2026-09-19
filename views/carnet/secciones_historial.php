@@ -8,7 +8,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 ?>
 
 <!-- ================= VACUNACIÓN ================= -->
-<h2 class="subtitulo-seccion">Vacunación</h2>
+    <h2 class="subtitulo-seccion"><?= Icono::ver('vacuna') ?> Vacunacion</h2>
 
 <?php if ($puedeEditar): ?>
     <div class="barra-acciones">
@@ -66,7 +66,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 </details>
 
 <!-- ================= SUPLEMENTACIÓN ================= -->
-<h2 class="subtitulo-seccion">Suplementación</h2>
+    <h2 class="subtitulo-seccion"><?= Icono::ver('suplemento') ?> Suplementacion</h2>
 
 <?php if ($puedeEditar): ?>
     <div class="barra-acciones">
@@ -97,7 +97,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 <?php endif; ?>
 
 <!-- ================= CITAS ================= -->
-<h2 class="subtitulo-seccion">Citas</h2>
+<h2 class="subtitulo-seccion"><?= Icono::ver('citas') ?> Citas</h2>
 
 <?php if ($puedeEditar): ?>
     <div class="barra-acciones">

@@ -33,7 +33,8 @@ require __DIR__ . '/../layouts/encabezado.php';
 </form>
 
 <?php if (empty($citas)): ?>
-    <p class="vacio">No hay citas programadas en el periodo seleccionado.</p>
+        <button type="submit" class="btn-primario"><?= Icono::ver('buscar') ?> Ver</button>
+
 <?php else: ?>
     <table class="tabla">
         <thead>

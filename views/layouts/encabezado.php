@@ -2,6 +2,12 @@
 $u = Auth::usuario();
 $segundos = Sesion::segundosRestantes();
 ?>
+
+$accionActual = $_GET['accion'] ?? 'inicio';
+function nav_activo(string $accion, array $coincide): string {
+return in_array($accion, $coincide, true) ? ' class="activo"' : '';
+}
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -19,21 +25,34 @@ $segundos = Sesion::segundosRestantes();
             <span class="barra-sub">Monitoreo Nutricional Infantil</span>
         </div>
         <nav class="barra-nav">
-            <a href="<?= APP_URL ?>/index.php?accion=panel_alertas">Seguimiento</a>
-            <a href="<?= APP_URL ?>/index.php?accion=ninos">Niños</a>
-            <a href="<?= APP_URL ?>/index.php?accion=reportes">Reportes</a>
-            <a href="<?= APP_URL ?>/index.php?accion=citas_proximas">Citas</a>
-
+            <a href="<?= APP_URL ?>/index.php?accion=panel_alertas">
+                <?= Icono::ver('seguimiento') ?> Seguimiento
+            </a>
+            <a href="<?= APP_URL ?>/index.php?accion=ninos">
+                <?= Icono::ver('ninos') ?> Ninos
+            </a>
+            <a href="<?= APP_URL ?>/index.php?accion=citas_proximas">
+                <?= Icono::ver('citas') ?> Citas
+            </a>
+            <a href="<?= APP_URL ?>/index.php?accion=reportes">
+                <?= Icono::ver('reportes') ?> Reportes
+            </a>
             <?php if (Auth::tieneRol('enfermeria')): ?>
-                <a href="<?= APP_URL ?>/index.php?accion=nino_nuevo">Registrar niño</a>
+                <a href="<?= APP_URL ?>/index.php?accion=nino_nuevo">
+                    <?= Icono::ver('agregar') ?> Registrar nino
+                </a>
             <?php endif; ?>
             <?php if (Auth::tieneRol('administrador')): ?>
-                <a href="<?= APP_URL ?>/index.php?accion=usuarios">Usuarios</a>
+                <a href="<?= APP_URL ?>/index.php?accion=usuarios">
+                    <?= Icono::ver('usuarios') ?> Usuarios
+                </a>
             <?php endif; ?>
         </nav>
         <div class="barra-usuario">
             <span><?= htmlspecialchars($u['nombre']) ?> · <?= htmlspecialchars($u['rol']) ?></span>
-            <a href="<?= APP_URL ?>/index.php?accion=logout" class="btn-salir">Salir</a>
+            <a href="<?= APP_URL ?>/index.php?accion=logout" class="btn-salir">
+                <?= Icono::ver('salir', 20) ?> Salir
+            </a>
         </div>
     </header>
 

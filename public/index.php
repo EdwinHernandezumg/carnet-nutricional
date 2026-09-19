@@ -17,6 +17,8 @@ require_once __DIR__ . '/../src/reportes/Reporte.php';
 require_once __DIR__ . '/../src/carnet/Vacuna.php';
 require_once __DIR__ . '/../src/carnet/Suplementacion.php';
 require_once __DIR__ . '/../src/carnet/Cita.php';
+require_once __DIR__ . '/../src/core/Icono.php';
+
 
 
 

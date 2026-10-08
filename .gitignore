@@ -20,3 +20,6 @@ desktop.ini
 
 # Respaldos de base de datos
 *.sql.bak
+
+# Instrucciones locales para el asistente (contienen contraseñas de prueba)
+CLAUDE.md

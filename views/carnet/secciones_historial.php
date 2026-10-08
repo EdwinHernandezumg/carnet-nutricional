@@ -120,15 +120,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
                     <td><?= htmlspecialchars($c['fecha_programada']) ?></td>
                     <td><?= htmlspecialchars($c['motivo'] ?? 'Control') ?></td>
                     <td>
-                        <?php
-                            $claseEstado = [
-                                'programada'   => 'etiqueta-aviso',
-                                'cumplida'     => 'etiqueta-activo',
-                                'inasistencia' => 'nivel-riesgo',
-                                'reprogramada' => 'etiqueta-egresado',
-                            ][$c['estado']] ?? 'etiqueta-egresado';
-                        ?>
-                        <span class="etiqueta <?= $claseEstado ?>"><?= htmlspecialchars(ucfirst($c['estado'])) ?></span>
+                        <span class="etiqueta <?= Cita::claseEstado($c['estado']) ?>"><?= htmlspecialchars(ucfirst($c['estado'])) ?></span>
                     </td>
                     <td><?= Formato::dato($c['fecha_asistencia'], $c['estado'] === 'programada' ? 'Pendiente' : Formato::SIN_DATO) ?></td>
                     <td><?= Formato::dato($c['programada_por']) ?></td>

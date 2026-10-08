@@ -7,8 +7,11 @@ $titulo = 'Próximas citas';
 require __DIR__ . '/../layouts/encabezado.php';
 ?>
 
-<h1 class="titulo-pagina">Próximas citas</h1>
-<p class="intro-panel">Citas programadas en los siguientes <?= (int)$dias ?> días.
+<h1 class="titulo-pagina">Citas</h1>
+
+<?php $pestanaActiva = 'lista'; require __DIR__ . '/pestanas_citas.php'; ?>
+
+<p class="intro-panel">Próximas citas programadas en los siguientes <?= (int)$dias ?> días.
    El botón de WhatsApp abre la aplicación con el mensaje ya redactado; el envío
    lo realiza el personal con un toque, sin costo alguno.</p>
 

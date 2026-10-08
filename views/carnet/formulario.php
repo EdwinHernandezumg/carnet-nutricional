@@ -101,7 +101,9 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="campo">
             <label for="fecha_programada">Fecha de la cita *</label>
             <input type="date" id="fecha_programada" name="fecha_programada" required
-                   min="<?= date('Y-m-d') ?>">
+                   min="<?= date('Y-m-d') ?>"
+                   value="<?= htmlspecialchars($_POST['fecha_programada'] ?? '') ?>">
+            <p id="aviso-carga" class="aviso-carga" role="status" hidden></p>
         </div>
         <div class="campo">
             <label for="motivo">Motivo</label>
@@ -127,6 +129,55 @@ require __DIR__ . '/../layouts/encabezado.php';
             el aviso por WhatsApp. Puede agregarlo editando los datos del niño.
         </div>
     <?php endif; ?>
+
+    <script>
+        // Al elegir la fecha, avisa cuántas citas hay ese día y cuántas serían
+        // con esta. Solo orienta a la enfermera: no impide guardar la cita.
+        (function () {
+            var cargaPorDia = <?= json_encode($cargaPorDia ?? [], JSON_FORCE_OBJECT) ?>;
+            var limiteNormal = <?= Cita::CARGA_NORMAL ?>;
+            var limiteAlta = <?= Cita::CARGA_ALTA ?>;
+            var campo = document.getElementById('fecha_programada');
+            var aviso = document.getElementById('aviso-carga');
+
+            function mostrarCarga() {
+                if (!campo.value) {
+                    aviso.hidden = true;
+                    return;
+                }
+                var cantidad = cargaPorDia[campo.value] || 0;
+                var total = cantidad + 1;
+                var texto, nivel;
+
+                if (cantidad === 0) {
+                    texto = 'Ese día no hay otras citas programadas.';
+                } else if (cantidad === 1) {
+                    texto = 'Ese día ya hay 1 cita programada.';
+                } else {
+                    texto = 'Ese día ya hay ' + cantidad + ' citas programadas.';
+                }
+
+                if (total > limiteAlta) {
+                    nivel = 'excedida';
+                    texto += ' Con esta serían ' + total + ', más del máximo observado en el puesto ('
+                           + limiteAlta + '). Si es posible, elija otro día.';
+                } else if (total > limiteNormal) {
+                    nivel = 'alta';
+                    texto += ' Con esta serían ' + total + ': día de alta afluencia.';
+                } else {
+                    nivel = 'normal';
+                }
+
+                aviso.className = 'aviso-carga carga-' + nivel;
+                aviso.textContent = texto;
+                aviso.hidden = false;
+            }
+
+            campo.addEventListener('change', mostrarCarga);
+            campo.addEventListener('input', mostrarCarga);
+            mostrarCarga();
+        })();
+    </script>
 
 <?php endif; ?>
 

@@ -46,8 +46,8 @@ if (!function_exists('nav_activo')) {
             <?= Icono::ver('ninos') ?> Niños
         </a>
 
-        <a<?= nav_activo($accionActual, ['citas_proximas','cita_nueva']) ?>
-           href="<?= APP_URL ?>/index.php?accion=citas_proximas">
+        <a<?= nav_activo($accionActual, ['citas_calendario','citas_proximas','cita_nueva']) ?>
+           href="<?= APP_URL ?>/index.php?accion=citas_calendario">
             <?= Icono::ver('citas') ?> Citas
         </a>
 

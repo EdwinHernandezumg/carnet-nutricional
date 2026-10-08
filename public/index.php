@@ -550,6 +550,7 @@ switch ($accion) {
         }
         $tipo = 'cita';
         $catalogo = [];
+        $cargaPorDia = Cita::conteoPorDia(date('Y-m-d'));
         require __DIR__ . '/../views/carnet/formulario.php';
         break;
 
@@ -572,6 +573,7 @@ switch ($accion) {
         if ($errores) {
             $tipo = 'cita';
             $catalogo = [];
+            $cargaPorDia = Cita::conteoPorDia(date('Y-m-d'));
             require __DIR__ . '/../views/carnet/formulario.php';
             break;
         }
@@ -607,6 +609,37 @@ switch ($accion) {
         $vencidas = Cita::vencidas();
         $sectores = Catalogo::sectores();
         require __DIR__ . '/../views/carnet/proximas_citas.php';
+        break;
+
+    case 'citas_calendario':
+        Auth::exigirAutenticacion();
+
+        // Día elegido (AAAA-MM-DD). Se valida que sea una fecha real.
+        $diaTexto = $_GET['dia'] ?? '';
+        $dia = DateTime::createFromFormat('!Y-m-d', $diaTexto);
+        if (!$dia || $dia->format('Y-m-d') !== $diaTexto) {
+            $dia = null;
+        }
+
+        // Mes a mostrar (AAAA-MM). Si no viene, el del día elegido o el actual.
+        $mesTexto = $_GET['mes'] ?? '';
+        $mes = DateTime::createFromFormat('!Y-m', $mesTexto);
+        if (!$mes || $mes->format('Y-m') !== $mesTexto) {
+            $mes = new DateTime(($dia ? $dia->format('Y-m') : date('Y-m')) . '-01');
+        }
+
+        // Al abrir el mes actual sin elegir día, se muestran las citas de hoy.
+        if (!$dia && $mes->format('Y-m') === date('Y-m')) {
+            $dia = new DateTime('today');
+        }
+
+        // La cuadrícula va del lunes de la primera semana al domingo de la última.
+        $inicio = (clone $mes)->modify('monday this week');
+        $fin    = (clone $mes)->modify('last day of this month')->modify('sunday this week');
+
+        $conteo   = Cita::conteoPorDia($inicio->format('Y-m-d'), $fin->format('Y-m-d'));
+        $citasDia = $dia ? Cita::delDia($dia->format('Y-m-d')) : [];
+        require __DIR__ . '/../views/carnet/calendario_citas.php';
         break;
 
     case 'cita_aviso_enviado':

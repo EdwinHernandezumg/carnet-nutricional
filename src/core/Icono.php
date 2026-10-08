@@ -58,6 +58,8 @@ class Icono
             'buscar' => '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
             'filtrar' => '<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
             'volver' => '<path d="M15 5l-7 7 7 7"/>',
+            'avanzar' => '<path d="M9 5l7 7-7 7"/>',
+            'lista' => '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
             'salir' => '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/>',
             'cancelar' => '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
             'imprimir' => '<path d="M7 9V3h10v6"/><rect x="4" y="9" width="16" height="7" rx="2"/><path d="M7 14h10v7H7z"/>',

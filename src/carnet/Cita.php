@@ -13,6 +13,19 @@
 
 class Cita
 {
+    /**
+     * Límites de carga diaria, tomados del levantamiento en el puesto:
+     * de 1 a 8 atenciones en un día normal y hasta 15 en alta afluencia.
+     * No impiden programar una cita; solo orientan al personal. Se
+     * ajustan aquí si la prueba piloto muestra otros valores.
+     */
+    const CARGA_NORMAL = 8;
+    const CARGA_ALTA   = 15;
+
+    /** Nombres de los meses, para mostrar fechas en español. */
+    const MESES = [1 => 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
+                   'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
     /** Programa una cita. */
     public static function crear(array $d, int $idUsuario): int
     {
@@ -129,6 +142,76 @@ class Cita
     }
 
     /**
+     * Cantidad de citas por día entre dos fechas, para el calendario y para
+     * el aviso al programar. Devuelve un arreglo fecha => cantidad.
+     * No cuenta las reprogramadas, porque esas ya se movieron a otro día.
+     * Si no se indica la fecha final, cuenta todas desde la inicial.
+     */
+    public static function conteoPorDia(string $desde, ?string $hasta = null): array
+    {
+        $db = Database::obtener();
+        $sql = "SELECT fecha_programada, COUNT(*) AS cantidad
+                FROM cita
+                WHERE estado <> 'reprogramada'
+                  AND fecha_programada >= :desde";
+        $params = [':desde' => $desde];
+        if ($hasta !== null) {
+            $sql .= " AND fecha_programada <= :hasta";
+            $params[':hasta'] = $hasta;
+        }
+        $sql .= " GROUP BY fecha_programada";
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+
+        $conteo = [];
+        foreach ($stmt->fetchAll() as $fila) {
+            $conteo[$fila['fecha_programada']] = (int)$fila['cantidad'];
+        }
+        return $conteo;
+    }
+
+    /** Citas de un día, con los datos necesarios para el aviso por WhatsApp. */
+    public static function delDia(string $fecha): array
+    {
+        $db = Database::obtener();
+        $sql = "SELECT c.id_cita, c.fecha_programada, c.motivo, c.estado, c.aviso_enviado,
+                       n.id_nino, n.nombres, n.apellidos, n.telefono,
+                       s.letra AS sector_letra, t.numero AS territorio_numero,
+                       p.nombre AS paraje_nombre
+                FROM cita c
+                JOIN nino n ON n.id_nino = c.id_nino
+                JOIN sector s ON s.id_sector = n.id_sector
+                JOIN territorio t ON t.id_territorio = s.id_territorio
+                LEFT JOIN paraje p ON p.id_paraje = n.id_paraje
+                WHERE c.fecha_programada = :fecha
+                  AND c.estado <> 'reprogramada'
+                ORDER BY n.apellidos, n.nombres";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':fecha' => $fecha]);
+        return $stmt->fetchAll();
+    }
+
+    /** Nivel de carga de un día según la cantidad de citas: normal, alta o excedida. */
+    public static function nivelCarga(int $cantidad): string
+    {
+        if ($cantidad > self::CARGA_ALTA)   return 'excedida';
+        if ($cantidad > self::CARGA_NORMAL) return 'alta';
+        return 'normal';
+    }
+
+    /** Clase CSS de la etiqueta de cada estado de cita. */
+    public static function claseEstado(string $estado): string
+    {
+        return [
+            'programada'   => 'etiqueta-aviso',
+            'cumplida'     => 'etiqueta-activo',
+            'inasistencia' => 'nivel-riesgo',
+            'reprogramada' => 'etiqueta-egresado',
+        ][$estado] ?? 'etiqueta-egresado';
+    }
+
+    /**
      * Construye el enlace de WhatsApp con el mensaje ya redactado.
      * Usa el formato wa.me, gratuito, que abre la aplicación sin costo alguno.
      * Devuelve cadena vacía si el niño no tiene teléfono registrado.
@@ -156,9 +239,13 @@ class Cita
     /** Convierte una fecha a texto legible en español. */
     public static function fechaLegible(string $fecha): string
     {
-        $meses = [1=>'enero','febrero','marzo','abril','mayo','junio','julio',
-                  'agosto','septiembre','octubre','noviembre','diciembre'];
         $d = new DateTime($fecha);
-        return $d->format('j') . ' de ' . $meses[(int)$d->format('n')] . ' de ' . $d->format('Y');
+        return $d->format('j') . ' de ' . self::MESES[(int)$d->format('n')] . ' de ' . $d->format('Y');
+    }
+
+    /** Nombre del mes y año, por ejemplo "Octubre 2026", para el calendario. */
+    public static function mesLegible(DateTime $mes): string
+    {
+        return ucfirst(self::MESES[(int)$mes->format('n')]) . ' ' . $mes->format('Y');
     }
 }

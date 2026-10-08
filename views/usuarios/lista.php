@@ -47,7 +47,7 @@ require __DIR__ . '/../layouts/encabezado.php';
                     <?php if ($u['sector_letra']): ?>
                         T<?= htmlspecialchars($u['territorio_numero']) ?> · <?= htmlspecialchars($u['sector_letra']) ?>
                     <?php else: ?>
-                        —
+                        <?= Formato::sinDato('Sin sector') ?>
                     <?php endif; ?>
                 </td>
                 <td>

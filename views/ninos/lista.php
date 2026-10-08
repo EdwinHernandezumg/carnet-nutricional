@@ -63,7 +63,7 @@ function edadTexto(string $fechaNac): string {
                     <td><?= edadTexto($n['fecha_nacimiento']) ?></td>
                     <td><?= $n['sexo'] === 'M' ? 'M' : 'F' ?></td>
                     <td>T<?= htmlspecialchars($n['territorio_numero']) ?> · <?= htmlspecialchars($n['sector_letra']) ?></td>
-                    <td><?= htmlspecialchars($n['paraje_nombre'] ?? '—') ?></td>
+                    <td><?= Formato::dato($n['paraje_nombre']) ?></td>
                     <td>
                         <span class="etiqueta etiqueta-<?= $n['estado'] === 'activo' ? 'activo' : 'egresado' ?>">
                             <?= htmlspecialchars(ucfirst($n['estado'])) ?>

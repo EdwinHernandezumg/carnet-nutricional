@@ -19,7 +19,7 @@ function edadLegibleH(int $meses): string
 
 function celdaZ(array $porTipo, string $tipo): string
 {
-    if (!isset($porTipo[$tipo])) return '<td>—</td>';
+    if (!isset($porTipo[$tipo])) return '<td>' . Formato::sinDato() . '</td>';
     $z = (float)$porTipo[$tipo]['puntuacion_z'];
     $clase = 'nivel-normal';
     if ($z < -2) $clase = 'nivel-riesgo';
@@ -41,7 +41,7 @@ function celdaZ(array $porTipo, string $tipo): string
     <span><?= $nino['sexo'] === 'M' ? 'Masculino' : 'Femenino' ?></span>
     <span>Nac. <?= htmlspecialchars($nino['fecha_nacimiento']) ?></span>
     <span>Territorio <?= htmlspecialchars($nino['territorio_numero']) ?> · Sector <?= htmlspecialchars($nino['sector_letra']) ?></span>
-    <span>Paraje: <?= htmlspecialchars($nino['paraje_nombre'] ?? '—') ?></span>
+    <span>Paraje: <?= Formato::dato($nino['paraje_nombre']) ?></span>
     <span class="etiqueta etiqueta-<?= $nino['estado'] === 'activo' ? 'activo' : 'egresado' ?>"><?= htmlspecialchars(ucfirst($nino['estado'])) ?></span>
 </div>
 
@@ -97,9 +97,8 @@ function celdaZ(array $porTipo, string $tipo): string
                     }
                     echo celdaZ($porTipo, 'peso_edad');
                     echo celdaZ($porTipo, 'talla_edad');
-                    echo celdaZ($porTipo, 'peso_longitud') !== '<td>—</td>'
-                        ? celdaZ($porTipo, 'peso_longitud')
-                        : celdaZ($porTipo, 'peso_talla');
+                    // Acostado (menor de 2 años) usa peso para longitud; de pie, peso para talla.
+                    echo celdaZ($porTipo, isset($porTipo['peso_longitud']) ? 'peso_longitud' : 'peso_talla');
                     ?>
                     <td><?= htmlspecialchars($m['registrado_por']) ?></td>
                 </tr>

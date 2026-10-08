@@ -451,6 +451,10 @@ body {
 }
 .sub-dato { color: var(--gris-suave); font-size: 0.86rem; }
 
+/* Aviso de dato no registrado (Formato::dato). Gris e inclinado para
+   distinguirlo a simple vista de un valor real. */
+.sin-dato { color: var(--gris-suave); font-style: italic; }
+
 .bloque-esquema {
     background: #fff; border-radius: 12px; padding: 1.1rem 1.4rem;
     margin: 1.2rem 0 1.75rem; box-shadow: 0 2px 10px rgba(20,48,74,0.07);

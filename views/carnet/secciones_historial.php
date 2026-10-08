@@ -31,9 +31,9 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
                     <td><?= htmlspecialchars($v['fecha_aplicacion']) ?></td>
                     <td><?= htmlspecialchars($v['nombre_vacuna']) ?></td>
                     <td><?= htmlspecialchars($v['dosis']) ?></td>
-                    <td><?= htmlspecialchars($v['lote'] ?? '—') ?></td>
-                    <td><?= htmlspecialchars($v['lugar'] ?? '—') ?></td>
-                    <td><?= htmlspecialchars($v['registrado_por'] ?? '—') ?></td>
+                    <td><?= Formato::dato($v['lote']) ?></td>
+                    <td><?= Formato::dato($v['lugar']) ?></td>
+                    <td><?= Formato::dato($v['registrado_por']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -88,8 +88,8 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
                 <tr>
                     <td><?= htmlspecialchars($s['fecha_entrega']) ?></td>
                     <td><?= htmlspecialchars($s['tipo']) ?></td>
-                    <td><?= htmlspecialchars($s['cantidad'] ?? '—') ?></td>
-                    <td><?= htmlspecialchars($s['registrado_por'] ?? '—') ?></td>
+                    <td><?= Formato::dato($s['cantidad']) ?></td>
+                    <td><?= Formato::dato($s['registrado_por']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -128,10 +128,10 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
                                 'reprogramada' => 'etiqueta-egresado',
                             ][$c['estado']] ?? 'etiqueta-egresado';
                         ?>
-                        <span class="etiqueta <?= $claseEstado ?>"><?= htmlspecialchars($c['estado']) ?></span>
+                        <span class="etiqueta <?= $claseEstado ?>"><?= htmlspecialchars(ucfirst($c['estado'])) ?></span>
                     </td>
-                    <td><?= htmlspecialchars($c['fecha_asistencia'] ?? '—') ?></td>
-                    <td><?= htmlspecialchars($c['programada_por'] ?? '—') ?></td>
+                    <td><?= Formato::dato($c['fecha_asistencia'], $c['estado'] === 'programada' ? 'Pendiente' : Formato::SIN_DATO) ?></td>
+                    <td><?= Formato::dato($c['programada_por']) ?></td>
                     <td class="acciones-fila">
                         <?php if ($puedeEditar && $c['estado'] === 'programada'): ?>
                             <form method="post" action="<?= APP_URL ?>/index.php?accion=cita_estado" style="display:inline;">

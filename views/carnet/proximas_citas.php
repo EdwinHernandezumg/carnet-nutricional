@@ -29,12 +29,11 @@ require __DIR__ . '/../layouts/encabezado.php';
         <option value="15" <?= ($dias == 15) ? 'selected' : '' ?>>Próximos 15 días</option>
         <option value="30" <?= ($dias == 30) ? 'selected' : '' ?>>Próximos 30 días</option>
     </select>
-    <button type="submit" class="btn-primario">Ver</button>
+    <button type="submit" class="btn-primario"><?= Icono::ver('buscar') ?> Ver</button>
 </form>
 
 <?php if (empty($citas)): ?>
-        <button type="submit" class="btn-primario"><?= Icono::ver('buscar') ?> Ver</button>
-
+    <p class="vacio">No hay citas programadas en el periodo seleccionado.</p>
 <?php else: ?>
     <table class="tabla">
         <thead>
@@ -56,7 +55,7 @@ require __DIR__ . '/../layouts/encabezado.php';
                     <td>
                         <?php $d = (int)$c['dias_faltantes']; ?>
                         <span class="etiqueta <?= $d <= 1 ? 'nivel-cerca' : 'nivel-normal' ?>">
-                            <?= $d === 0 ? 'hoy' : ($d === 1 ? 'mañana' : $d . ' días') ?>
+                            <?= $d === 0 ? 'Hoy' : ($d === 1 ? 'Mañana' : $d . ' días') ?>
                         </span>
                     </td>
                     <td>
@@ -69,9 +68,9 @@ require __DIR__ . '/../layouts/encabezado.php';
                     <td><?= htmlspecialchars($c['motivo'] ?? 'Control') ?></td>
                     <td>
                         <?php if ($c['aviso_enviado']): ?>
-                            <span class="etiqueta etiqueta-activo">enviado</span>
+                            <span class="etiqueta etiqueta-activo">Enviado</span>
                         <?php else: ?>
-                            <span class="etiqueta etiqueta-egresado">pendiente</span>
+                            <span class="etiqueta etiqueta-egresado">Pendiente</span>
                         <?php endif; ?>
                     </td>
                     <td class="acciones-fila">
@@ -79,14 +78,14 @@ require __DIR__ . '/../layouts/encabezado.php';
                             <a href="<?= htmlspecialchars($enlace) ?>" target="_blank"
                                class="btn-whatsapp"
                                onclick="marcarEnviado(<?= (int)$c['id_cita'] ?>)">
-                                Avisar por WhatsApp
+                                <?= Icono::ver('whatsapp', 18) ?> Avisar por WhatsApp
                             </a>
                         <?php else: ?>
                             <span class="sin-telefono" title="El niño no tiene teléfono registrado de 8 dígitos">
                                 Sin teléfono
                             </span>
                         <?php endif; ?>
-                        <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$c['id_nino'] ?>">Ver niño</a>
+                        <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$c['id_nino'] ?>"><?= Icono::ver('ojo', 18) ?> Ver niño</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

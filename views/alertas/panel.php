@@ -88,7 +88,7 @@ function edadPanel(string $fechaNac): string {
                     <td>T<?= htmlspecialchars($n['territorio_numero']) ?> · <?= htmlspecialchars($n['sector_letra']) ?></td>
                     <td><?= htmlspecialchars($n['fecha_toma']) ?></td>
                     <td class="detalle-alerta"><?= htmlspecialchars($n['descripcion']) ?></td>
-                    <td><a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>">Ver</a></td>
+                    <td><a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>"><?= Icono::ver('ojo', 18) ?> Ver</a></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

@@ -30,42 +30,63 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="fila">
             <div class="campo">
                 <label for="nombres">Nombres *</label>
-                <input type="text" id="nombres" name="nombres" required
-                    value="<?= htmlspecialchars($datos['nombres'] ?? '') ?>">
+                <div class="con-icono">
+                    <?= Icono::ver('persona', 20) ?>
+                    <input type="text" id="nombres" name="nombres" required
+                        placeholder="Nombres del niño"
+                        value="<?= htmlspecialchars($datos['nombres'] ?? '') ?>">
+                </div>
             </div>
             <div class="campo">
                 <label for="apellidos">Apellidos *</label>
-                <input type="text" id="apellidos" name="apellidos" required
-                    value="<?= htmlspecialchars($datos['apellidos'] ?? '') ?>">
+                <div class="con-icono">
+                    <?= Icono::ver('persona', 20) ?>
+                    <input type="text" id="apellidos" name="apellidos" required
+                        placeholder="Apellidos del niño"
+                        value="<?= htmlspecialchars($datos['apellidos'] ?? '') ?>">
+                </div>
             </div>
         </div>
 
         <div class="fila">
             <div class="campo">
                 <label for="fecha_nacimiento">Fecha de nacimiento *</label>
-                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required
-                    value="<?= htmlspecialchars($datos['fecha_nacimiento'] ?? '') ?>">
+                <div class="con-icono">
+                    <?= Icono::ver('calendario', 20) ?>
+                    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required
+                        value="<?= htmlspecialchars($datos['fecha_nacimiento'] ?? '') ?>">
+                </div>
             </div>
             <div class="campo">
                 <label for="sexo">Sexo *</label>
-                <select id="sexo" name="sexo" required>
-                    <option value="">Seleccione</option>
-                    <option value="M" <?= (($datos['sexo'] ?? '') === 'M') ? 'selected' : '' ?>>Masculino</option>
-                    <option value="F" <?= (($datos['sexo'] ?? '') === 'F') ? 'selected' : '' ?>>Femenino</option>
-                </select>
+                <div class="con-icono">
+                    <?= Icono::ver('sexo', 20) ?>
+                    <select id="sexo" name="sexo" required>
+                        <option value="">Seleccione</option>
+                        <option value="M" <?= (($datos['sexo'] ?? '') === 'M') ? 'selected' : '' ?>>Masculino</option>
+                        <option value="F" <?= (($datos['sexo'] ?? '') === 'F') ? 'selected' : '' ?>>Femenino</option>
+                    </select>
+                </div>
             </div>
             <div class="campo">
                 <label for="cui">CUI (si tiene)</label>
-                <input type="text" id="cui" name="cui" maxlength="13"
-                    value="<?= htmlspecialchars($datos['cui'] ?? '') ?>">
+                <div class="con-icono">
+                    <?= Icono::ver('documento', 20) ?>
+                    <input type="text" id="cui" name="cui" maxlength="13"
+                        placeholder="13 dígitos"
+                        value="<?= htmlspecialchars($datos['cui'] ?? '') ?>">
+                </div>
             </div>
         </div>
 
         <div class="campo">
             <label for="etnia">Pueblo o comunidad lingüística</label>
-            <input type="text" id="etnia" name="etnia"
-                value="<?= htmlspecialchars($datos['etnia'] ?? '') ?>"
-                placeholder="Maya k'iche', mestizo, etc.">
+            <div class="con-icono">
+                <?= Icono::ver('idioma', 20) ?>
+                <input type="text" id="etnia" name="etnia"
+                    value="<?= htmlspecialchars($datos['etnia'] ?? '') ?>"
+                    placeholder="Maya k'iche', mestizo, etc.">
+            </div>
         </div>
     </fieldset>
 
@@ -74,34 +95,44 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="fila">
             <div class="campo">
                 <label for="id_sector">Sector *</label>
-                <select id="id_sector" name="id_sector" required>
-                    <option value="">Seleccione</option>
-                    <?php foreach ($sectores as $s): ?>
-                        <option value="<?= $s['id_sector'] ?>"
-                            <?= (($datos['id_sector'] ?? '') == $s['id_sector']) ? 'selected' : '' ?>>
-                            Territorio <?= htmlspecialchars($s['territorio']) ?> · Sector <?= htmlspecialchars($s['letra']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <div class="con-icono">
+                    <?= Icono::ver('mapa', 20) ?>
+                    <select id="id_sector" name="id_sector" required>
+                        <option value="">Seleccione</option>
+                        <?php foreach ($sectores as $s): ?>
+                            <option value="<?= $s['id_sector'] ?>"
+                                <?= (($datos['id_sector'] ?? '') == $s['id_sector']) ? 'selected' : '' ?>>
+                                Territorio <?= htmlspecialchars($s['territorio']) ?> · Sector <?= htmlspecialchars($s['letra']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
             <div class="campo">
                 <label for="id_paraje">Paraje</label>
-                <select id="id_paraje" name="id_paraje">
-                    <option value="">Seleccione</option>
-                    <?php foreach ($parajes as $p): ?>
-                        <option value="<?= $p['id_paraje'] ?>"
-                            data-sector="<?= $p['id_sector'] ?>"
-                            <?= (($datos['id_paraje'] ?? '') == $p['id_paraje']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($p['nombre']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <div class="con-icono">
+                    <?= Icono::ver('ubicacion', 20) ?>
+                    <select id="id_paraje" name="id_paraje">
+                        <option value="">Seleccione</option>
+                        <?php foreach ($parajes as $p): ?>
+                            <option value="<?= $p['id_paraje'] ?>"
+                                data-sector="<?= $p['id_sector'] ?>"
+                                <?= (($datos['id_paraje'] ?? '') == $p['id_paraje']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($p['nombre']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="campo">
             <label for="direccion">Dirección</label>
-            <input type="text" id="direccion" name="direccion"
-                value="<?= htmlspecialchars($datos['direccion'] ?? '') ?>">
+            <div class="con-icono">
+                <?= Icono::ver('casa', 20) ?>
+                <input type="text" id="direccion" name="direccion"
+                    placeholder="Referencia de la vivienda"
+                    value="<?= htmlspecialchars($datos['direccion'] ?? '') ?>">
+            </div>
         </div>
     </fieldset>
 
@@ -110,29 +141,40 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="fila">
             <div class="campo">
                 <label for="nombre_madre">Nombre de la madre o responsable</label>
-                <input type="text" id="nombre_madre" name="nombre_madre"
-                    value="<?= htmlspecialchars($datos['nombre_madre'] ?? '') ?>">
+                <div class="con-icono">
+                    <?= Icono::ver('persona', 20) ?>
+                    <input type="text" id="nombre_madre" name="nombre_madre"
+                        placeholder="Nombre completo"
+                        value="<?= htmlspecialchars($datos['nombre_madre'] ?? '') ?>">
+                </div>
             </div>
             <div class="campo">
                 <label for="nombre_padre">Nombre del padre</label>
-                <input type="text" id="nombre_padre" name="nombre_padre"
-                    value="<?= htmlspecialchars($datos['nombre_padre'] ?? '') ?>">
+                <div class="con-icono">
+                    <?= Icono::ver('persona', 20) ?>
+                    <input type="text" id="nombre_padre" name="nombre_padre"
+                        placeholder="Nombre completo"
+                        value="<?= htmlspecialchars($datos['nombre_padre'] ?? '') ?>">
+                </div>
             </div>
         </div>
         <div class="campo campo-telefono">
             <label for="telefono">Teléfono</label>
-            <input type="tel" id="telefono" name="telefono"
-                maxlength="8" pattern="[0-9]{8}"
-                inputmode="numeric"
-                placeholder="8 dígitos"
-                title="Ingrese 8 dígitos"
-                value="<?= htmlspecialchars($datos['telefono'] ?? '') ?>">
+            <div class="con-icono">
+                <?= Icono::ver('telefono', 20) ?>
+                <input type="tel" id="telefono" name="telefono"
+                    maxlength="8" pattern="[0-9]{8}"
+                    inputmode="numeric"
+                    placeholder="8 dígitos"
+                    title="Ingrese 8 dígitos"
+                    value="<?= htmlspecialchars($datos['telefono'] ?? '') ?>">
+            </div>
         </div>
     </fieldset>
 
     <div class="acciones">
-        <a href="<?= APP_URL ?>/index.php?accion=ninos" class="btn-secundario">Cancelar</a>
-        <button type="submit" class="btn-primario"><?= $esEdicion ? 'Guardar cambios' : 'Registrar niño' ?></button>
+                <a href="<?= APP_URL ?>/index.php?accion=ninos" class="btn-secundario"><?= Icono::ver('cancelar') ?> Cancelar</a>
+        <button type="submit" class="btn-primario"><?= Icono::ver('guardar') ?> <?= $esEdicion ? 'Guardar cambios' : 'Registrar niño' ?></button>
     </div>
 </form>
 

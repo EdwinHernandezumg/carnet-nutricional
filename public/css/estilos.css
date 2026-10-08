@@ -81,8 +81,7 @@ body {
     outline: none; border-color: var(--teal);
     box-shadow: 0 0 0 4px rgba(29,158,117,0.16);
 }
-.tarjeta-login input[type="password"],
-.tarjeta-login .medidor-fuerza { max-width: 260px; }
+.tarjeta-login .medidor-fuerza { max-width: 100%; }
 .tarjeta-login button {
     width: 100%; margin-top: 1.75rem; padding: 0.95rem;
     background: var(--teal); color: #fff; border: none;
@@ -223,6 +222,18 @@ body {
 }
 .formulario textarea { resize: vertical; min-height: 90px; }
 .campo-telefono { max-width: 230px; }
+
+/* Campo con icono dentro del recuadro, a la izquierda del texto.
+   El icono no recibe clics, para que al tocarlo se active el campo. */
+.con-icono { position: relative; }
+.con-icono .icono {
+    position: absolute; left: 0.9rem; top: 50%;
+    transform: translateY(-50%);
+    color: var(--gris-suave); pointer-events: none;
+}
+.campo .con-icono input,
+.campo .con-icono select { padding-left: 2.85rem; }
+.con-icono:focus-within .icono { color: var(--teal); }
 .formulario input#contrasena,
 .formulario .medidor-fuerza { max-width: 280px; }
 
@@ -422,14 +433,17 @@ body {
 }
 
 /* ---------- Vacunacion, suplementacion y citas ---------- */
-.btn-whatsapp {
+/* Se antepone .tabla para ganarle a la regla ".tabla a", que pintaria el texto de teal. */
+.btn-whatsapp,
+.tabla a.btn-whatsapp {
     display: inline-flex; align-items: center; gap: 0.5rem;
     background: #25d366; color: #fff;
     padding: 0.6rem 1.15rem; border-radius: var(--radio);
     text-decoration: none; font-size: 0.98rem; font-weight: 600;
     margin-right: 0.7rem; min-height: 46px;
 }
-.btn-whatsapp:hover { background: #1da851; }
+.btn-whatsapp:hover,
+.tabla a.btn-whatsapp:hover { background: #1da851; text-decoration: none; }
 
 .sin-telefono {
     color: var(--gris-suave); font-size: 0.92rem;

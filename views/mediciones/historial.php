@@ -42,7 +42,7 @@ function celdaZ(array $porTipo, string $tipo): string
     <span>Nac. <?= htmlspecialchars($nino['fecha_nacimiento']) ?></span>
     <span>Territorio <?= htmlspecialchars($nino['territorio_numero']) ?> · Sector <?= htmlspecialchars($nino['sector_letra']) ?></span>
     <span>Paraje: <?= htmlspecialchars($nino['paraje_nombre'] ?? '—') ?></span>
-    <span class="etiqueta etiqueta-<?= $nino['estado'] === 'activo' ? 'activo' : 'egresado' ?>"><?= htmlspecialchars($nino['estado']) ?></span>
+    <span class="etiqueta etiqueta-<?= $nino['estado'] === 'activo' ? 'activo' : 'egresado' ?>"><?= htmlspecialchars(ucfirst($nino['estado'])) ?></span>
 </div>
 
 <?php if (!empty($alertaActual)): ?>

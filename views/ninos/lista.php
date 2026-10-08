@@ -38,7 +38,7 @@ function edadTexto(string $fechaNac): string {
         <option value="activo"   <?= (($filtros['estado'] ?? '') === 'activo') ? 'selected' : '' ?>>Activos</option>
         <option value="egresado" <?= (($filtros['estado'] ?? '') === 'egresado') ? 'selected' : '' ?>>Egresados</option>
     </select>
-    <button type="submit" class="btn-primario">Buscar</button>
+    <button type="submit" class="btn-primario"><?= Icono::ver('buscar') ?> Buscar</button>
 </form>
 
 <?php if (empty($ninos)): ?>
@@ -66,13 +66,13 @@ function edadTexto(string $fechaNac): string {
                     <td><?= htmlspecialchars($n['paraje_nombre'] ?? '—') ?></td>
                     <td>
                         <span class="etiqueta etiqueta-<?= $n['estado'] === 'activo' ? 'activo' : 'egresado' ?>">
-                            <?= htmlspecialchars($n['estado']) ?>
+                            <?= htmlspecialchars(ucfirst($n['estado'])) ?>
                         </span>
                     </td>
                       <td class="acciones-fila">
-                        <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>">Ver</a>
+                        <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>"><?= Icono::ver('ojo', 18) ?> Ver</a>
                         <?php if (Auth::tieneRol('enfermeria')): ?>
-                            <a href="<?= APP_URL ?>/index.php?accion=nino_editar&id=<?= (int)$n['id_nino'] ?>">Editar</a>
+                            <a href="<?= APP_URL ?>/index.php?accion=nino_editar&id=<?= (int)$n['id_nino'] ?>"><?= Icono::ver('editar', 18) ?> Editar</a>
                         <?php endif; ?>
                     </td>
                 </tr>

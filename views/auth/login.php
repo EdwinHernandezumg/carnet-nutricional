@@ -8,7 +8,7 @@ $error = $error ?? null;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ingreso — <?= APP_NOMBRE ?></title>
-    <link rel="stylesheet" href="<?= APP_URL ?>/css/estilos.css">
+    <link rel="stylesheet" href="<?= Recurso::url('css/estilos.css') ?>">
 </head>
 
 <body class="pagina-login">

@@ -13,10 +13,10 @@ $error = $error ?? null;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cambiar contraseña — <?= htmlspecialchars(APP_NOMBRE) ?></title>
-    <link rel="stylesheet" href="<?= APP_URL ?>/css/estilos.css">
+    <link rel="stylesheet" href="<?= Recurso::url('css/estilos.css') ?>">
 </head>
 
-<script src="<?= APP_URL ?>/js/fuerza-contrasena.js"></script>
+<script src="<?= Recurso::url('js/fuerza-contrasena.js') ?>"></script>
 
 <body class="pagina-login">
     <div class="tarjeta-login">

@@ -19,6 +19,7 @@ require_once __DIR__ . '/../src/carnet/Suplementacion.php';
 require_once __DIR__ . '/../src/carnet/Cita.php';
 require_once __DIR__ . '/../src/core/Icono.php';
 require_once __DIR__ . '/../src/core/Formato.php';
+require_once __DIR__ . '/../src/core/Recurso.php';
 
 
 

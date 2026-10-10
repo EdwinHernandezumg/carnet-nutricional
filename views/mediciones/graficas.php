@@ -46,6 +46,6 @@ require __DIR__ . '/../layouts/encabezado.php';
     // Datos enviados desde PHP (ya en formato JSON).
     const datosGraficas = <?= json_encode($graficas) ?>;
 </script>
-<script src="<?= APP_URL ?>/js/graficas-crecimiento.js"></script>
+<script src="<?= Recurso::url('js/graficas-crecimiento.js') ?>"></script>
 
 <?php require __DIR__ . '/../layouts/pie.php'; ?>

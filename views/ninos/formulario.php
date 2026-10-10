@@ -138,6 +138,7 @@ require __DIR__ . '/../layouts/encabezado.php';
 
     <fieldset>
         <legend>Familia</legend>
+        <p class="ayuda-grupo">Ingrese al menos uno: el nombre de la madre o responsable, o el del padre.</p>
         <div class="fila">
             <div class="campo">
                 <label for="nombre_madre">Nombre de la madre o responsable</label>
@@ -196,6 +197,23 @@ require __DIR__ . '/../layouts/encabezado.php';
         }
         selSector.addEventListener('change', filtrar);
         filtrar();
+    })();
+
+    // Exige al menos uno de los dos nombres (madre o padre) antes de enviar.
+    // Es solo una comodidad: la regla también se valida en el servidor.
+    (function() {
+        var madre = document.getElementById('nombre_madre');
+        var padre = document.getElementById('nombre_padre');
+
+        function revisar() {
+            var ambosVacios = madre.value.trim() === '' && padre.value.trim() === '';
+            madre.setCustomValidity(ambosVacios
+                ? 'Ingrese el nombre de la madre o responsable, o el del padre.'
+                : '');
+        }
+        madre.addEventListener('input', revisar);
+        padre.addEventListener('input', revisar);
+        revisar();
     })();
 </script>
 

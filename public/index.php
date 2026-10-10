@@ -703,6 +703,11 @@ function validarNino(array $d): array
     if (!in_array($d['sexo'], ['M', 'F'], true)) $errores[] = 'Debe seleccionar el sexo.';
     if ($d['id_sector'] === '') $errores[] = 'Debe seleccionar el sector.';
 
+    // Al menos un responsable del niño: la madre (o quien lo cuide) o el padre.
+    if ($d['nombre_madre'] === '' && $d['nombre_padre'] === '') {
+        $errores[] = 'Debe ingresar el nombre de la madre o responsable, o el del padre. Al menos uno es obligatorio.';
+    }
+
     if ($d['cui'] !== '' && !preg_match('/^\d{13}$/', $d['cui'])) {
         $errores[] = 'El CUI debe tener 13 dígitos numéricos, o dejarse vacío.';
     }

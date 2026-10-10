@@ -4,6 +4,10 @@ $esEdicion = isset($nino) && $nino;
 $datos = $datos ?? ($nino ?? []);
 $errores = $errores ?? [];
 $titulo = $esEdicion ? 'Editar niño' : 'Registrar niño';
+
+// En un registro nuevo, la fecha de nacimiento más antigua aceptada (menor de 7 años).
+$fechaMinima = (new DateTime(Nino::fechaLimiteNacimiento()))->modify('+1 day')->format('Y-m-d');
+
 require __DIR__ . '/../layouts/encabezado.php';
 ?>
 
@@ -54,6 +58,8 @@ require __DIR__ . '/../layouts/encabezado.php';
                 <div class="con-icono">
                     <?= Icono::ver('calendario', 20) ?>
                     <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required
+                        max="<?= date('Y-m-d') ?>"
+                        <?= $esEdicion ? '' : 'min="' . $fechaMinima . '"' ?>
                         value="<?= htmlspecialchars($datos['fecha_nacimiento'] ?? '') ?>">
                 </div>
             </div>
@@ -214,6 +220,24 @@ require __DIR__ . '/../layouts/encabezado.php';
         madre.addEventListener('input', revisar);
         padre.addEventListener('input', revisar);
         revisar();
+    })();
+
+    // Mensaje claro cuando la fecha queda fuera de rango (también se valida en el servidor).
+    (function() {
+        var fecha = document.getElementById('fecha_nacimiento');
+
+        function revisarFecha() {
+            var mensaje = '';
+            if (fecha.validity.rangeUnderflow) {
+                mensaje = 'El sistema registra niños menores de <?= Nino::EDAD_MAXIMA_ANIOS ?> años.';
+            } else if (fecha.validity.rangeOverflow) {
+                mensaje = 'La fecha de nacimiento no puede ser posterior a hoy.';
+            }
+            fecha.setCustomValidity(mensaje);
+        }
+        fecha.addEventListener('input', revisarFecha);
+        fecha.addEventListener('change', revisarFecha);
+        revisarFecha();
     })();
 </script>
 

@@ -9,6 +9,65 @@
 class Nino
 {
     /**
+     * Edad que cubre el carnet: el sistema registra niños menores de 7 años.
+     * Al cumplirla, el niño pasa a estado egresado y sus datos se conservan.
+     */
+    const EDAD_MAXIMA_ANIOS = 7;
+
+    /**
+     * Fecha de nacimiento a partir de la cual un niño ya cumplió hoy la edad
+     * máxima. Un niño nacido en esa fecha o antes tiene 7 años o más.
+     */
+    public static function fechaLimiteNacimiento(): string
+    {
+        return (new DateTime('today'))
+            ->modify('-' . self::EDAD_MAXIMA_ANIOS . ' years')
+            ->format('Y-m-d');
+    }
+
+    /**
+     * Pasa a estado egresado a los niños activos que ya cumplieron la edad
+     * máxima. Sus datos se conservan; solo dejan de aparecer en el panel de
+     * seguimiento, las citas y los reportes, que muestran niños activos.
+     * Se ejecuta al iniciar sesión, porque los hosting gratuitos no suelen
+     * permitir tareas programadas. Cada egreso queda en la bitácora a nombre
+     * del usuario cuyo inicio de sesión lo ejecutó.
+     * Devuelve la cantidad de niños egresados.
+     */
+    public static function egresarPorEdad(int $idUsuario): int
+    {
+        $db = Database::obtener();
+
+        $stmt = $db->prepare(
+            "SELECT id_nino, nombres, apellidos FROM nino
+             WHERE estado = 'activo' AND fecha_nacimiento <= :limite"
+        );
+        $stmt->execute([':limite' => self::fechaLimiteNacimiento()]);
+        $ninos = $stmt->fetchAll();
+
+        $actualizar = $db->prepare(
+            "UPDATE nino SET estado = 'egresado' WHERE id_nino = :id AND estado = 'activo'"
+        );
+        $egresados = 0;
+        foreach ($ninos as $n) {
+            $actualizar->execute([':id' => $n['id_nino']]);
+            if ($actualizar->rowCount() === 0) {
+                continue; // Otro inicio de sesión simultáneo ya lo egresó.
+            }
+            Bitacora::registrar(
+                $idUsuario,
+                'egresar',
+                'nino',
+                (int) $n['id_nino'],
+                "Egreso automático de {$n['nombres']} {$n['apellidos']} por cumplir "
+                    . self::EDAD_MAXIMA_ANIOS . ' años'
+            );
+            $egresados++;
+        }
+        return $egresados;
+    }
+
+    /**
      * Registra un niño nuevo. Devuelve el id del niño creado.
      */
     public static function crear(array $datos, int $idUsuario): int

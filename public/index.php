@@ -37,6 +37,8 @@ switch ($accion) {
 
         if (Auth::login($usuario, $contrasena)) {
             Bitacora::registrar(Auth::usuario()['id'], 'login', 'usuario', Auth::usuario()['id'], 'Inicio de sesión');
+            // Los niños que ya cumplieron 7 años pasan a egresado (queda en bitácora).
+            Nino::egresarPorEdad(Auth::usuario()['id']);
             if (Auth::debeCambiarPass()) {
                 header('Location: ' . APP_URL . '/index.php?accion=cambiar_pass');
                 exit;
@@ -81,7 +83,7 @@ switch ($accion) {
     case 'nino_guardar':
         Auth::exigirRol(['enfermeria']);
         $datos = obtenerDatosFormulario();
-        $errores = validarNino($datos);
+        $errores = validarNino($datos, true);
 
         if ($errores) {
             $sectores = Catalogo::sectores();
@@ -686,7 +688,12 @@ function obtenerDatosFormulario(): array
     ];
 }
 
-function validarNino(array $d): array
+/**
+ * Valida los datos del niño. $esNuevo indica un registro nuevo: solo ahí se
+ * exige que sea menor de 7 años. Al editar no se aplica, porque un niño
+ * registrado a tiempo puede cumplir 7 y aún hay que poder corregir sus datos.
+ */
+function validarNino(array $d, bool $esNuevo = false): array
 {
     $errores = [];
 
@@ -698,6 +705,11 @@ function validarNino(array $d): array
         $nac = DateTime::createFromFormat('Y-m-d', $d['fecha_nacimiento']);
         if (!$nac || $nac > new DateTime('now')) {
             $errores[] = 'La fecha de nacimiento no es válida.';
+        } elseif ($esNuevo && $d['fecha_nacimiento'] <= Nino::fechaLimiteNacimiento()) {
+            // Fechas sin hora, para que un niño que cumple 7 hoy no aparezca con 6.
+            $anios = (new DateTime($d['fecha_nacimiento']))->diff(new DateTime('today'))->y;
+            $errores[] = 'El sistema registra niños menores de ' . Nino::EDAD_MAXIMA_ANIOS
+                       . ' años. Según la fecha de nacimiento, este niño tiene ' . $anios . ' años.';
         }
     }
     if (!in_array($d['sexo'], ['M', 'F'], true)) $errores[] = 'Debe seleccionar el sexo.';

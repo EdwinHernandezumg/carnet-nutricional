@@ -138,7 +138,6 @@ require __DIR__ . '/../layouts/encabezado.php';
 
     <fieldset>
         <legend>Familia</legend>
-        <p class="ayuda-grupo">Ingrese al menos uno: el nombre de la madre o responsable, o el del padre.</p>
         <div class="fila">
             <div class="campo">
                 <label for="nombre_madre">Nombre de la madre o responsable</label>
@@ -159,6 +158,7 @@ require __DIR__ . '/../layouts/encabezado.php';
                 </div>
             </div>
         </div>
+        <p class="ayuda-grupo">Ingrese al menos uno: el nombre de la madre o responsable, o el del padre.</p>
         <div class="campo campo-telefono">
             <label for="telefono">Teléfono</label>
             <div class="con-icono">

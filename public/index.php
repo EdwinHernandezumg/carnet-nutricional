@@ -671,11 +671,15 @@ switch ($accion) {
 // Funciones auxiliares del controlador
 // =====================================================
 
+/**
+ * Lee los datos del formulario del niño. Los nombres se guardan con la inicial
+ * de cada palabra en mayúscula, aunque se tecleen en minúscula o en mayúscula.
+ */
 function obtenerDatosFormulario(): array
 {
     return [
-        'nombres'          => trim($_POST['nombres'] ?? ''),
-        'apellidos'        => trim($_POST['apellidos'] ?? ''),
+        'nombres'          => Formato::nombrePropio($_POST['nombres'] ?? ''),
+        'apellidos'        => Formato::nombrePropio($_POST['apellidos'] ?? ''),
         'fecha_nacimiento' => $_POST['fecha_nacimiento'] ?? '',
         'sexo'             => $_POST['sexo'] ?? '',
         'cui'              => trim($_POST['cui'] ?? ''),
@@ -683,8 +687,8 @@ function obtenerDatosFormulario(): array
         'id_sector'        => $_POST['id_sector'] ?? '',
         'id_paraje'        => $_POST['id_paraje'] ?? '',
         'direccion'        => trim($_POST['direccion'] ?? ''),
-        'nombre_madre'     => trim($_POST['nombre_madre'] ?? ''),
-        'nombre_padre'     => trim($_POST['nombre_padre'] ?? ''),
+        'nombre_madre'     => Formato::nombrePropio($_POST['nombre_madre'] ?? ''),
+        'nombre_padre'     => Formato::nombrePropio($_POST['nombre_padre'] ?? ''),
         'telefono'         => trim($_POST['telefono'] ?? ''),
     ];
 }

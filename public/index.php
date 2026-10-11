@@ -67,7 +67,32 @@ switch ($accion) {
             'id_sector' => $_GET['id_sector'] ?? '',
             'estado'    => $_GET['estado'] ?? '',
         ];
-        $ninos    = Nino::listar($filtros);
+
+        // Orden de la tabla. Si se tocó un encabezado, viene en la dirección y
+        // se guarda en una cookie por un año, para recordarlo en este navegador
+        // aunque se cierre la sesión. Si no, se usa el guardado en la cookie.
+        if (isset($_GET['orden'])) {
+            $orden     = $_GET['orden'];
+            $direccion = $_GET['dir'] ?? '';
+        } else {
+            [$orden, $direccion] = array_pad(explode(',', $_COOKIE['orden_ninos'] ?? ''), 2, '');
+        }
+        if (!in_array($orden, Nino::ORDENES, true)) {
+            $orden = 'nombre';
+        }
+        if (!in_array($direccion, ['asc', 'desc'], true)) {
+            $direccion = Nino::direccionInicial($orden);
+        }
+        if (isset($_GET['orden'])) {
+            setcookie('orden_ninos', $orden . ',' . $direccion, [
+                'expires'  => time() + 365 * 24 * 60 * 60,
+                'path'     => parse_url(APP_URL, PHP_URL_PATH) ?: '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        }
+
+        $ninos    = Nino::listar($filtros, $orden, $direccion);
         $sectores = Catalogo::sectores();
         $mensaje  = $_GET['ok'] ?? '';
         require __DIR__ . '/../views/ninos/lista.php';
@@ -109,8 +134,23 @@ switch ($accion) {
         if ($permiso === 'advertencia') {
             $msg .= ' Nota: el niño pertenece a un sector distinto al suyo; la acción quedó registrada en la bitácora.';
         }
-        header('Location: ' . APP_URL . '/index.php?accion=ninos&ok=' . urlencode($msg));
+        // Muestra una pantalla con el nombre del niño recién registrado y el
+        // siguiente paso (medición, vacuna, suplemento, cita o historial), para
+        // no tener que buscarlo en la lista.
+        header('Location: ' . APP_URL . '/index.php?accion=nino_registrado&id=' . $idNino
+            . '&ok=' . urlencode($msg));
         exit;
+
+    case 'nino_registrado':
+        Auth::exigirRol(['enfermeria']);
+        $nino = Nino::obtener((int)($_GET['id'] ?? 0));
+        if (!$nino) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+        $mensaje = $_GET['ok'] ?? 'Niño registrado correctamente.';
+        require __DIR__ . '/../views/ninos/registrado.php';
+        break;
 
     case 'nino_editar':
         Auth::exigirRol(['enfermeria']);

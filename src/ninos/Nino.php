@@ -46,7 +46,8 @@ class Nino
         $ninos = $stmt->fetchAll();
 
         $actualizar = $db->prepare(
-            "UPDATE nino SET estado = 'egresado' WHERE id_nino = :id AND estado = 'activo'"
+            "UPDATE nino SET estado = 'egresado', fecha_egreso = CURDATE()
+             WHERE id_nino = :id AND estado = 'activo'"
         );
         $egresados = 0;
         foreach ($ninos as $n) {
@@ -179,10 +180,59 @@ class Nino
     }
 
     /**
-     * Lista niños con filtros opcionales por texto, territorio, sector y estado.
-     * La consulta (lectura) no restringe por sector: todas ven a todos.
+     * Columnas por las que se puede ordenar la lista de niños (lista blanca).
+     * El ORDER BY no admite marcadores de posición de PDO, así que nunca se
+     * arma con lo que llega del navegador: solo se acepta una de estas claves.
      */
-    public static function listar(array $filtros = []): array
+    const ORDENES = ['nombre', 'edad', 'territorio', 'paraje', 'estado', 'registro'];
+
+    /** Dirección con la que empieza cada columna al tocarla por primera vez. */
+    public static function direccionInicial(string $orden): string
+    {
+        // Los registrados recientemente se ven primero; el resto, de menor a mayor.
+        return $orden === 'registro' ? 'desc' : 'asc';
+    }
+
+    /**
+     * Cláusula ORDER BY de la lista. Solo usa textos fijos escritos aquí;
+     * si la clave no está en la lista blanca, ordena por nombre.
+     */
+    private static function ordenSql(string $orden, string $direccion): string
+    {
+        $dir = $direccion === 'desc' ? 'DESC' : 'ASC';
+        $inv = $direccion === 'desc' ? 'ASC' : 'DESC';
+
+        switch ($orden) {
+            case 'edad':
+                // De menor a mayor edad equivale a nacimiento más reciente primero.
+                $sql = "n.fecha_nacimiento {$inv}";
+                break;
+            case 'territorio':
+                $sql = "t.numero {$dir}, s.letra {$dir}";
+                break;
+            case 'paraje':
+                // Los niños sin paraje van siempre al final.
+                $sql = "p.nombre IS NULL, p.nombre {$dir}";
+                break;
+            case 'estado':
+                $sql = "n.estado {$dir}";
+                break;
+            case 'registro':
+                $sql = "n.fecha_registro {$dir}, n.id_nino {$dir}";
+                break;
+            default:
+                $sql = "n.apellidos {$dir}, n.nombres {$dir}";
+        }
+        // Desempate por nombre, para que el orden sea siempre el mismo.
+        return $sql . ', n.apellidos ASC, n.nombres ASC';
+    }
+
+    /**
+     * Lista niños con filtros opcionales por texto, territorio, sector y estado,
+     * en el orden elegido. La consulta (lectura) no restringe por sector:
+     * todas ven a todos.
+     */
+    public static function listar(array $filtros = [], string $orden = 'nombre', string $direccion = 'asc'): array
     {
         $db = Database::obtener();
 
@@ -205,14 +255,15 @@ class Nino
         }
 
         $sql = "SELECT n.id_nino, n.nombres, n.apellidos, n.cui, n.fecha_nacimiento,
-                       n.sexo, n.estado, s.letra AS sector_letra, t.numero AS territorio_numero,
+                       n.sexo, n.estado, n.fecha_registro,
+                       s.letra AS sector_letra, t.numero AS territorio_numero,
                        p.nombre AS paraje_nombre
                 FROM nino n
                 JOIN sector s ON s.id_sector = n.id_sector
                 JOIN territorio t ON t.id_territorio = s.id_territorio
                 LEFT JOIN paraje p ON p.id_paraje = n.id_paraje
                 WHERE " . implode(' AND ', $where) . "
-                ORDER BY n.apellidos, n.nombres
+                ORDER BY " . self::ordenSql($orden, $direccion) . "
                 LIMIT 200";
 
         $stmt = $db->prepare($sql);

@@ -171,6 +171,29 @@ body {
     border-left: 5px solid var(--teal);
 }
 
+/* Pantalla tras registrar un niño (views/ninos/registrado.php).
+   Primero el teléfono: una columna de botones grandes; en pantallas
+   anchas, dos columnas. */
+.registro-listo {
+    background: #fff; border-radius: 14px; text-align: center;
+    padding: 1.6rem 1.2rem; margin-bottom: 1.5rem;
+    border-top: 5px solid var(--teal);
+    box-shadow: 0 2px 12px rgba(20,48,74,0.07);
+}
+.registro-listo-icono { color: var(--teal); margin-bottom: 0.4rem; }
+.registro-listo-mensaje { color: var(--teal-osc); font-weight: 600; }
+.registro-listo-nombre {
+    font-size: 1.6rem; color: var(--marino); line-height: 1.25;
+    margin: 0.3rem 0 0.4rem;
+}
+.registro-listo-datos { color: var(--gris-suave); font-size: 0.95rem; }
+.opciones-titulo { font-size: 1.15rem; color: var(--marino); margin-bottom: 0.8rem; }
+.opciones-siguientes { display: grid; grid-template-columns: 1fr; gap: 0.7rem; }
+.opciones-siguientes a { justify-content: flex-start; min-height: 56px; }
+@media (min-width: 701px) {
+    .opciones-siguientes { grid-template-columns: 1fr 1fr; }
+}
+
 /* ---------- Fichas y avisos ---------- */
 .ficha-nino {
     background: #fff; border-left: 5px solid var(--teal);
@@ -304,6 +327,19 @@ body {
     display: inline-flex; align-items: center; gap: 0.35rem;
 }
 .tabla a:hover { text-decoration: underline; }
+
+/* Encabezados ordenables (lista de niños). Se antepone .tabla th para
+   ganarle a la regla ".tabla a", que pintaria el texto de teal. */
+.tabla th a.orden {
+    color: #fff; font-weight: 600; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap;
+}
+.tabla th a.orden:hover { text-decoration: underline; }
+.tabla th a.orden .icono { opacity: 0.45; }
+.tabla th a.orden.activa .icono { opacity: 1; }
+.ayuda-tabla { color: var(--gris-suave); font-size: 0.92rem; margin-bottom: 0.6rem; }
+/* Tabla con muchas columnas: menos relleno para que quepa sin desplazarse. */
+.tabla-compacta th, .tabla-compacta td { padding: 0.85rem 0.7rem; }
 
 .acciones-fila { white-space: nowrap; }
 .acciones-fila a { margin-right: 0.85rem; }

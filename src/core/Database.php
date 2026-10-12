@@ -29,6 +29,13 @@ class Database
                 // y, después de las 18:00, creerían que ya es el día siguiente
                 // (citas de hoy, citas vencidas, egresos y hora de la bitácora).
                 self::$conexion->exec("SET time_zone = '" . (new DateTime())->format('P') . "'");
+
+                // Modo estricto en todos los ambientes. Los servidores en la nube
+                // suelen usarlo; XAMPP no. Sin esto, un dato demasiado largo se
+                // corta en silencio en la computadora y en la nube da error: así
+                // cualquier problema aparece primero aquí, al desarrollar.
+                self::$conexion->exec("SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,"
+                    . "NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
             } catch (PDOException $exception) {
                 if (APP_ENTORNO === 'desarrollo') {
                     die('Error de conexión a la base de datos: ' . $exception->getMessage());

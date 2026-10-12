@@ -8,7 +8,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 ?>
 
 <!-- ================= VACUNACIÓN ================= -->
-    <h2 class="subtitulo-seccion"><?= Icono::ver('vacuna') ?> Vacunacion</h2>
+    <h2 class="subtitulo-seccion"><?= Icono::ver('vacuna') ?> Vacunación</h2>
 
 <?php if ($puedeEditar): ?>
     <div class="barra-acciones">
@@ -21,19 +21,19 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 <?php if (empty($vacunas)): ?>
     <p class="vacio">No hay vacunas registradas.</p>
 <?php else: ?>
-    <table class="tabla">
+    <table class="tabla tabla-tarjetas">
         <thead>
             <tr><th>Fecha</th><th>Vacuna</th><th>Dosis</th><th>Lote</th><th>Lugar</th><th>Registró</th></tr>
         </thead>
         <tbody>
             <?php foreach ($vacunas as $v): ?>
                 <tr>
-                    <td><?= Formato::fecha($v['fecha_aplicacion']) ?></td>
-                    <td><?= htmlspecialchars($v['nombre_vacuna']) ?></td>
-                    <td><?= htmlspecialchars($v['dosis']) ?></td>
-                    <td><?= Formato::dato($v['lote']) ?></td>
-                    <td><?= Formato::dato($v['lugar']) ?></td>
-                    <td><?= Formato::dato($v['registrado_por']) ?></td>
+                    <td data-label="Fecha"><?= Formato::fecha($v['fecha_aplicacion']) ?></td>
+                    <td class="celda-titulo"><?= htmlspecialchars($v['nombre_vacuna']) ?></td>
+                    <td data-label="Dosis"><?= htmlspecialchars($v['dosis']) ?></td>
+                    <td data-label="Lote"><?= Formato::dato($v['lote']) ?></td>
+                    <td data-label="Lugar"><?= Formato::dato($v['lugar']) ?></td>
+                    <td data-label="Registró"><?= Formato::dato($v['registrado_por']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -66,7 +66,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 </details>
 
 <!-- ================= SUPLEMENTACIÓN ================= -->
-    <h2 class="subtitulo-seccion"><?= Icono::ver('suplemento') ?> Suplementacion</h2>
+    <h2 class="subtitulo-seccion"><?= Icono::ver('suplemento') ?> Suplementación</h2>
 
 <?php if ($puedeEditar): ?>
     <div class="barra-acciones">
@@ -79,17 +79,17 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 <?php if (empty($suplementos)): ?>
     <p class="vacio">No hay entregas de suplementos registradas.</p>
 <?php else: ?>
-    <table class="tabla">
+    <table class="tabla tabla-tarjetas">
         <thead>
             <tr><th>Fecha</th><th>Suplemento</th><th>Cantidad</th><th>Registró</th></tr>
         </thead>
         <tbody>
             <?php foreach ($suplementos as $s): ?>
                 <tr>
-                    <td><?= Formato::fecha($s['fecha_entrega']) ?></td>
-                    <td><?= htmlspecialchars($s['tipo']) ?></td>
-                    <td><?= Formato::dato($s['cantidad']) ?></td>
-                    <td><?= Formato::dato($s['registrado_por']) ?></td>
+                    <td data-label="Fecha"><?= Formato::fecha($s['fecha_entrega']) ?></td>
+                    <td class="celda-titulo"><?= htmlspecialchars($s['tipo']) ?></td>
+                    <td data-label="Cantidad"><?= Formato::dato($s['cantidad']) ?></td>
+                    <td data-label="Registró"><?= Formato::dato($s['registrado_por']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -110,20 +110,20 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 <?php if (empty($citas)): ?>
     <p class="vacio">No hay citas registradas.</p>
 <?php else: ?>
-    <table class="tabla">
+    <table class="tabla tabla-tarjetas">
         <thead>
             <tr><th>Fecha</th><th>Motivo</th><th>Estado</th><th>Asistencia</th><th>Programó</th><th></th></tr>
         </thead>
         <tbody>
             <?php foreach ($citas as $c): ?>
                 <tr>
-                    <td><?= Formato::fecha($c['fecha_programada']) ?></td>
-                    <td><?= htmlspecialchars($c['motivo'] ?? 'Control') ?></td>
-                    <td>
+                    <td class="celda-titulo"><?= Formato::fecha($c['fecha_programada']) ?></td>
+                    <td data-label="Motivo"><?= htmlspecialchars($c['motivo'] ?? 'Control') ?></td>
+                    <td data-label="Estado">
                         <span class="etiqueta <?= Cita::claseEstado($c['estado']) ?>"><?= htmlspecialchars(ucfirst($c['estado'])) ?></span>
                     </td>
-                    <td><?= Formato::fecha($c['fecha_asistencia'], $c['estado'] === 'programada' ? 'Pendiente' : Formato::SIN_DATO) ?></td>
-                    <td><?= Formato::dato($c['programada_por']) ?></td>
+                    <td data-label="Asistencia"><?= Formato::fecha($c['fecha_asistencia'], $c['estado'] === 'programada' ? 'Pendiente' : Formato::SIN_DATO) ?></td>
+                    <td data-label="Programó"><?= Formato::dato($c['programada_por']) ?></td>
                     <td class="acciones-fila">
                         <?php if ($puedeEditar && $c['estado'] === 'programada'): ?>
                             <form method="post" action="<?= APP_URL ?>/index.php?accion=cita_estado" style="display:inline;">

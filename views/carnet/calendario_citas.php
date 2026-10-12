@@ -78,7 +78,7 @@ $puedeEditar  = Auth::tieneRol('enfermeria');
         <p class="vacio">No hay citas para este día.</p>
     <?php else: ?>
         <div class="tabla-scroll">
-        <table class="tabla">
+        <table class="tabla tabla-tarjetas">
             <thead>
                 <tr>
                     <th>Niño</th>
@@ -99,18 +99,18 @@ $puedeEditar  = Auth::tieneRol('enfermeria');
                     $enlace = $admiteAviso ? Cita::enlaceWhatsApp($c) : '';
                     ?>
                     <tr>
-                        <td>
+                        <td class="celda-titulo">
                             <?= htmlspecialchars($c['apellidos'] . ', ' . $c['nombres']) ?>
                             <?php if (!empty($c['paraje_nombre'])): ?>
                                 <br><small class="sub-dato"><?= htmlspecialchars($c['paraje_nombre']) ?></small>
                             <?php endif; ?>
                         </td>
-                        <td>T<?= htmlspecialchars($c['territorio_numero']) ?> · <?= htmlspecialchars($c['sector_letra']) ?></td>
-                        <td><?= Formato::dato($c['motivo']) ?></td>
-                        <td>
+                        <td data-label="Sector">T<?= htmlspecialchars($c['territorio_numero']) ?> · <?= htmlspecialchars($c['sector_letra']) ?></td>
+                        <td data-label="Motivo"><?= Formato::dato($c['motivo']) ?></td>
+                        <td data-label="Estado">
                             <span class="etiqueta <?= Cita::claseEstado($c['estado']) ?>"><?= htmlspecialchars(ucfirst($c['estado'])) ?></span>
                         </td>
-                        <td>
+                        <td data-label="Aviso">
                             <?php if (!$admiteAviso): ?>
                                 <?= Formato::sinDato('No aplica') ?>
                             <?php elseif ($c['aviso_enviado']): ?>

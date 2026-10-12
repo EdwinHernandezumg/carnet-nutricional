@@ -26,7 +26,7 @@ require __DIR__ . '/../layouts/encabezado.php';
     <a href="<?= APP_URL ?>/index.php?accion=usuario_nuevo" class="btn-primario">Nuevo usuario</a>
 </div>
 
-<table class="tabla">
+<table class="tabla tabla-tarjetas">
     <thead>
         <tr>
             <th>Nombre</th>
@@ -40,22 +40,22 @@ require __DIR__ . '/../layouts/encabezado.php';
     <tbody>
         <?php foreach ($usuarios as $u): ?>
             <tr>
-                <td><?= htmlspecialchars($u['nombre_completo']) ?></td>
-                <td><?= htmlspecialchars($u['usuario']) ?></td>
-                <td><?= htmlspecialchars($u['rol']) ?></td>
-                <td>
+                <td class="celda-titulo"><?= htmlspecialchars($u['nombre_completo']) ?></td>
+                <td data-label="Usuario"><?= htmlspecialchars($u['usuario']) ?></td>
+                <td data-label="Rol"><?= htmlspecialchars(ucfirst($u['rol'])) ?></td>
+                <td data-label="Sector">
                     <?php if ($u['sector_letra']): ?>
                         T<?= htmlspecialchars($u['territorio_numero']) ?> · <?= htmlspecialchars($u['sector_letra']) ?>
                     <?php else: ?>
                         <?= Formato::sinDato('Sin sector') ?>
                     <?php endif; ?>
                 </td>
-                <td>
+                <td data-label="Estado">
                     <span class="etiqueta etiqueta-<?= $u['activo'] ? 'activo' : 'egresado' ?>">
-                        <?= $u['activo'] ? 'activo' : 'inactivo' ?>
+                        <?= $u['activo'] ? 'Activo' : 'Inactivo' ?>
                     </span>
                     <?php if ($u['debe_cambiar_pass']): ?>
-                        <span class="etiqueta etiqueta-aviso">pass temporal</span>
+                        <span class="etiqueta etiqueta-aviso">Contraseña temporal</span>
                     <?php endif; ?>
                 </td>
                 <td class="acciones-fila">

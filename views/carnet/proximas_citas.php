@@ -38,7 +38,7 @@ require __DIR__ . '/../layouts/encabezado.php';
 <?php if (empty($citas)): ?>
     <p class="vacio">No hay citas programadas en el periodo seleccionado.</p>
 <?php else: ?>
-    <table class="tabla">
+    <table class="tabla tabla-tarjetas">
         <thead>
             <tr>
                 <th>Fecha</th>
@@ -54,22 +54,22 @@ require __DIR__ . '/../layouts/encabezado.php';
             <?php foreach ($citas as $c): ?>
                 <?php $enlace = Cita::enlaceWhatsApp($c); ?>
                 <tr>
-                    <td><?= Formato::fecha($c['fecha_programada']) ?></td>
-                    <td>
+                    <td data-label="Fecha"><?= Formato::fecha($c['fecha_programada']) ?></td>
+                    <td data-label="Falta">
                         <?php $d = (int)$c['dias_faltantes']; ?>
                         <span class="etiqueta <?= $d <= 1 ? 'nivel-cerca' : 'nivel-normal' ?>">
                             <?= $d === 0 ? 'Hoy' : ($d === 1 ? 'Mañana' : $d . ' días') ?>
                         </span>
                     </td>
-                    <td>
+                    <td class="celda-titulo">
                         <?= htmlspecialchars($c['apellidos'] . ', ' . $c['nombres']) ?>
                         <?php if (!empty($c['paraje_nombre'])): ?>
                             <br><small class="sub-dato"><?= htmlspecialchars($c['paraje_nombre']) ?></small>
                         <?php endif; ?>
                     </td>
-                    <td>T<?= htmlspecialchars($c['territorio_numero']) ?> · <?= htmlspecialchars($c['sector_letra']) ?></td>
-                    <td><?= htmlspecialchars($c['motivo'] ?? 'Control') ?></td>
-                    <td>
+                    <td data-label="Sector">T<?= htmlspecialchars($c['territorio_numero']) ?> · <?= htmlspecialchars($c['sector_letra']) ?></td>
+                    <td data-label="Motivo"><?= htmlspecialchars($c['motivo'] ?? 'Control') ?></td>
+                    <td data-label="Aviso">
                         <?php if ($c['aviso_enviado']): ?>
                             <span class="etiqueta etiqueta-activo">Enviado</span>
                         <?php else: ?>
@@ -101,28 +101,31 @@ require __DIR__ . '/../layouts/encabezado.php';
     <h2 class="subtitulo-seccion">Citas vencidas sin registrar</h2>
     <p class="intro-panel">Estas citas ya pasaron y siguen marcadas como programadas.
        Conviene registrar si el niño asistió o no.</p>
-    <table class="tabla">
+    <table class="tabla tabla-tarjetas">
         <thead>
             <tr><th>Fecha</th><th>Niño</th><th>Sector</th><th>Motivo</th><th></th></tr>
         </thead>
         <tbody>
             <?php foreach ($vencidas as $v): ?>
                 <tr>
-                    <td><?= Formato::fecha($v['fecha_programada']) ?></td>
-                    <td><?= htmlspecialchars($v['apellidos'] . ', ' . $v['nombres']) ?></td>
-                    <td>T<?= htmlspecialchars($v['territorio_numero']) ?> · <?= htmlspecialchars($v['sector_letra']) ?></td>
-                    <td><?= htmlspecialchars($v['motivo'] ?? 'Control') ?></td>
+                    <td data-label="Fecha"><?= Formato::fecha($v['fecha_programada']) ?></td>
+                    <td class="celda-titulo"><?= htmlspecialchars($v['apellidos'] . ', ' . $v['nombres']) ?></td>
+                    <td data-label="Sector">T<?= htmlspecialchars($v['territorio_numero']) ?> · <?= htmlspecialchars($v['sector_letra']) ?></td>
+                    <td data-label="Motivo"><?= htmlspecialchars($v['motivo'] ?? 'Control') ?></td>
                     <td class="acciones-fila">
-                        <form method="post" action="<?= APP_URL ?>/index.php?accion=cita_estado" style="display:inline;">
-                            <input type="hidden" name="id_cita" value="<?= (int)$v['id_cita'] ?>">
-                            <input type="hidden" name="estado" value="cumplida">
-                            <button type="submit" class="enlace-boton">Asistió</button>
-                        </form>
-                        <form method="post" action="<?= APP_URL ?>/index.php?accion=cita_estado" style="display:inline;">
-                            <input type="hidden" name="id_cita" value="<?= (int)$v['id_cita'] ?>">
-                            <input type="hidden" name="estado" value="inasistencia">
-                            <button type="submit" class="enlace-boton">No asistió</button>
-                        </form>
+                        <?php if (Auth::tieneRol('enfermeria')): ?>
+                            <form method="post" action="<?= APP_URL ?>/index.php?accion=cita_estado" style="display:inline;">
+                                <input type="hidden" name="id_cita" value="<?= (int)$v['id_cita'] ?>">
+                                <input type="hidden" name="estado" value="cumplida">
+                                <button type="submit" class="enlace-boton">Asistió</button>
+                            </form>
+                            <form method="post" action="<?= APP_URL ?>/index.php?accion=cita_estado" style="display:inline;">
+                                <input type="hidden" name="id_cita" value="<?= (int)$v['id_cita'] ?>">
+                                <input type="hidden" name="estado" value="inasistencia">
+                                <button type="submit" class="enlace-boton">No asistió</button>
+                            </form>
+                        <?php endif; ?>
+                        <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$v['id_nino'] ?>"><?= Icono::ver('ojo', 18) ?> Ver niño</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

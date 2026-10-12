@@ -63,7 +63,7 @@ function edadPanel(string $fechaNac): string {
 <?php if (empty($ninos)): ?>
     <p class="vacio">No hay niños con alerta activa para los filtros seleccionados.</p>
 <?php else: ?>
-    <table class="tabla">
+    <table class="tabla tabla-tarjetas">
         <thead>
             <tr>
                 <th>Nivel</th>
@@ -78,17 +78,17 @@ function edadPanel(string $fechaNac): string {
         <tbody>
             <?php foreach ($ninos as $n): ?>
                 <tr>
-                    <td>
+                    <td data-label="Nivel">
                         <span class="etiqueta <?= Alerta::claseNivel($n['nivel']) ?>">
                             <?= htmlspecialchars(Alerta::etiquetaNivel($n['nivel'])) ?>
                         </span>
                     </td>
-                    <td><?= htmlspecialchars($n['apellidos'] . ', ' . $n['nombres']) ?></td>
-                    <td><?= edadPanel($n['fecha_nacimiento']) ?></td>
-                    <td>T<?= htmlspecialchars($n['territorio_numero']) ?> · <?= htmlspecialchars($n['sector_letra']) ?></td>
-                    <td><?= Formato::fecha($n['fecha_toma']) ?></td>
-                    <td class="detalle-alerta"><?= htmlspecialchars($n['descripcion']) ?></td>
-                    <td><a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>"><?= Icono::ver('ojo', 18) ?> Ver</a></td>
+                    <td class="celda-titulo"><?= htmlspecialchars($n['apellidos'] . ', ' . $n['nombres']) ?></td>
+                    <td data-label="Edad"><?= edadPanel($n['fecha_nacimiento']) ?></td>
+                    <td data-label="Sector">T<?= htmlspecialchars($n['territorio_numero']) ?> · <?= htmlspecialchars($n['sector_letra']) ?></td>
+                    <td data-label="Último control"><?= Formato::fecha($n['fecha_toma']) ?></td>
+                    <td data-label="Detalle" class="detalle-alerta celda-larga"><?= htmlspecialchars($n['descripcion']) ?></td>
+                    <td class="acciones-fila"><a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>"><?= Icono::ver('ojo', 18) ?> Ver</a></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

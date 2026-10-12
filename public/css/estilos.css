@@ -605,18 +605,88 @@ body {
 }
 
 /* ---------- Responsivo ---------- */
+/* Etiquetas cortas del menú: solo se muestran en el teléfono. */
+.texto-tel { display: none; }
+
+/* Lista desplegable "Ordenar por" de la lista de niños: solo en el teléfono
+   (se activa en la sección de abajo). Va antes de esa sección para que
+   la regla del teléfono, que viene después, tenga prioridad. */
+.orden-tel { display: none; align-items: center; gap: 0.6rem; margin-bottom: 0.8rem; }
+.orden-tel label { font-weight: 600; color: var(--marino); white-space: nowrap; }
+.orden-tel select {
+    flex: 1; min-width: 0; width: 100%; min-height: 46px; padding: 0.5rem 0.7rem; font-size: 1rem;
+    border: 1.5px solid #cdd7e2; border-radius: var(--radio); background: #fff;
+    font-family: inherit; color: var(--gris-texto);
+}
+
 @media (max-width: 700px) {
     html { font-size: 16px; }
-    .barra-superior { gap: 0.75rem; padding: 0.8rem 1rem; }
-    .barra-usuario { width: 100%; margin-left: 0; justify-content: space-between; }
-    .barra-nav { margin-left: 0; width: 100%; }
-    .barra-nav a { flex: 1; justify-content: center; }
+
+    /* ---------- Teléfono: barra superior compacta ----------
+       Solo el nombre del sistema, el usuario y el botón de salir, en una
+       línea. Antes el encabezado ocupaba un tercio de la pantalla. */
+    .barra-superior {
+        flex-wrap: nowrap; gap: 0.75rem; padding: 0.55rem 0.9rem;
+        border-bottom-width: 3px;
+    }
+    .barra-titulo { flex-shrink: 0; padding-left: 0.6rem; border-left-width: 4px; }
+    .barra-titulo strong { font-size: 1.15rem; }
+    .barra-sub { display: none; }
+    .barra-usuario { margin-left: auto; gap: 0.6rem; min-width: 0; font-size: 0.85rem; }
+    .usuario-datos { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .usuario-rol { display: none; }
+    .btn-salir { padding: 0.5rem 0.7rem; min-height: 44px; min-width: 44px; justify-content: center; }
+    .texto-pc { display: none; }
+    .texto-tel { display: inline; }
+
+    /* ---------- Teléfono: menú como barra fija abajo ----------
+       Al alcance del pulgar; un toque para cambiar de pantalla.
+       El cuerpo deja espacio abajo para que la barra no tape el contenido. */
+    body { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+    .barra-nav {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+        margin: 0; gap: 0; flex-wrap: nowrap;
+        background: #fff; border-top: 1px solid var(--linea);
+        box-shadow: 0 -2px 10px rgba(20,48,74,0.08);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .barra-nav a {
+        flex: 1 1 0; min-width: 0; min-height: 62px;
+        flex-direction: column; justify-content: center; gap: 0.15rem;
+        padding: 0.35rem 0.1rem; border-radius: 0;
+        font-size: 0.72rem; font-weight: 600; color: var(--gris-suave);
+        white-space: nowrap; letter-spacing: -0.2px;
+    }
+    .barra-nav a span { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .barra-nav a .icono { width: 24px; height: 24px; }
+    .barra-nav a:hover { background: none; color: var(--teal-osc); }
+    .barra-nav a.activo { background: none; color: var(--teal-osc); box-shadow: inset 0 3px 0 var(--teal); }
+    .barra-nav a[data-orden="1"] { order: 1; }
+    .barra-nav a[data-orden="2"] { order: 2; }
+    .barra-nav a[data-orden="3"] { order: 3; }
+    .barra-nav a[data-orden="4"] { order: 4; }
+    .barra-nav a[data-orden="5"] { order: 5; }
+    /* Registrar va al centro y más grande: es la acción más frecuente. */
+    .barra-nav a[data-destacado] { color: var(--teal); }
+    .barra-nav a[data-destacado] .icono { width: 30px; height: 30px; margin: -3px 0; }
+
     .fila { flex-direction: column; gap: 0; }
     .contenido { margin: 1.2rem auto; padding: 0 1rem; }
     .titulo-pagina { font-size: 1.55rem; }
     .acciones { flex-direction: column-reverse; }
     .acciones .btn-primario, .acciones .btn-secundario { width: 100%; }
     .filtros input, .filtros select, .filtros .btn-primario { width: 100%; }
+    /* Filtros en dos columnas: ocupan dos renglones en lugar de cuatro. */
+    .filtros {
+        display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0.55rem;
+    }
+    .filtros input, .filtros select { min-width: 0; }
+    .filtros .btn-primario { padding-left: 0.8rem; padding-right: 0.8rem; }
+    /* Si el botón quedaría solo en su renglón, usa el ancho completo. El primer
+       hijo del formulario es el campo oculto "accion", por eso el botón queda
+       solo cuando su posición es par. */
+    .filtros .btn-primario:nth-child(even) { grid-column: 1 / -1; }
     .tabla { font-size: 0.95rem; }
     .tabla th, .tabla td { padding: 0.8rem 0.7rem; }
 
@@ -627,4 +697,74 @@ body {
     .cal-texto-citas { display: none; }
     .cal-carga { padding: 0.15rem 0; font-size: 0.85rem; }
     .pestanas a { flex: 1; justify-content: center; padding: 0.7rem 0.5rem; }
+
+    /* ---------- Teléfono: tablas como tarjetas ----------
+       Cada fila de una tabla con la clase tabla-tarjetas se muestra como una
+       tarjeta, con los datos uno debajo del otro: así no hay que mover la
+       pantalla de lado. El título de cada dato sale del atributo data-label
+       de la celda. La celda con la clase celda-titulo va arriba, en grande. */
+    .tabla-tarjetas { background: none; box-shadow: none; border-radius: 0; overflow: visible; }
+    .tabla-tarjetas thead {
+        position: absolute; width: 1px; height: 1px; overflow: hidden;
+        clip: rect(0 0 0 0); white-space: nowrap;
+    }
+    .tabla-tarjetas tbody { display: block; }
+    /* Cada tarjeta acomoda sus datos en dos columnas, con el título pequeño
+       encima de cada valor; así una tarjeta mide menos de media pantalla. */
+    .tabla-tarjetas tr {
+        display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 0.9rem;
+        background: #fff; border-radius: 12px; margin-bottom: 0.85rem;
+        padding: 0.3rem 1rem 0.5rem; box-shadow: 0 2px 10px rgba(20,48,74,0.08);
+        border-left: 4px solid var(--teal);
+    }
+    .tabla-tarjetas tbody tr:hover { background: #fff; }
+    .tabla-tarjetas td,
+    .tabla-compacta.tabla-tarjetas td {
+        display: block; min-width: 0; padding: 0.35rem 0;
+        border-bottom: none; text-align: left; line-height: 1.35;
+    }
+    .tabla-tarjetas td::before {
+        content: attr(data-label); display: block; margin-bottom: 0.1rem;
+        font-weight: 600; font-size: 0.78rem; color: var(--gris-suave);
+    }
+    .tabla-tarjetas td.celda-titulo {
+        grid-column: 1 / -1; order: -1;
+        font-weight: 700; font-size: 1.08rem; color: var(--marino);
+        padding-top: 0.5rem; padding-bottom: 0.3rem;
+    }
+    .tabla-tarjetas td.celda-titulo::before,
+    .tabla-tarjetas td:not([data-label])::before { content: none; }
+    /* Textos largos ocupan el ancho completo de la tarjeta. */
+    .tabla-tarjetas td.celda-larga { grid-column: 1 / -1; }
+    /* Acciones al pie de la tarjeta, como botones grandes para el dedo. */
+    .tabla-tarjetas td.acciones-fila {
+        grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.5rem;
+        white-space: normal; margin-top: 0.35rem; padding-top: 0.65rem;
+        border-top: 1px solid var(--linea);
+    }
+    .tabla-tarjetas td.acciones-fila a:not(.btn-whatsapp),
+    .tabla-tarjetas td.acciones-fila .enlace-boton {
+        min-height: 44px; margin: 0; padding: 0.5rem 0.95rem;
+        background: var(--teal-claro); border: 1.5px solid var(--teal-borde);
+        border-radius: var(--radio); text-decoration: none;
+    }
+    .tabla-tarjetas td.acciones-fila form { margin: 0; }
+    /* Si una fila no tiene acciones (por ejemplo, una cita ya cumplida), no se
+       deja el pie vacío de la tarjeta. */
+    .tabla-tarjetas td.acciones-fila:not(:has(a, button)) { display: none; }
+    .tabla-tarjetas td.acciones-fila .btn-whatsapp { margin: 0; }
+
+    /* Resumen del panel de seguimiento: dos tarjetas por renglón. Con su
+       ancho mínimo de 170 px solo cabía una, y el resumen ocupaba más de
+       una pantalla antes de llegar a la lista de niños. */
+    .tarjetas-resumen { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.6rem; margin-bottom: 1.2rem; }
+    .tarjeta-r { padding: 0.8rem 0.9rem; }
+    .tarjeta-r .tr-num { font-size: 1.9rem; }
+    .tarjeta-r .tr-lbl { font-size: 0.86rem; margin-top: 0.3rem; }
+
+    /* El orden de la lista de niños se elige con una lista desplegable,
+       porque en las tarjetas no hay encabezados que tocar. */
+    .orden-tel { display: flex; }
+    .ayuda-tabla { display: none; }
 }

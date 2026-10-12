@@ -16,15 +16,8 @@ function edadTexto(string $fechaNac): string {
     return $d->m . ($d->m === 1 ? ' mes' : ' meses');
 }
 
-/**
- * Encabezado de una columna ordenable. Si la columna ya es la activa, el
- * enlace invierte el orden; si no, empieza con su dirección inicial.
- * Conserva los filtros de búsqueda en el enlace.
- */
-function encabezadoOrden(string $titulo, string $columna, string $ordenActual, string $dirActual, array $filtros): string {
-    $activa = $columna === $ordenActual;
-    $dir = $activa ? ($dirActual === 'asc' ? 'desc' : 'asc') : Nino::direccionInicial($columna);
-
+/** Dirección de la lista con un orden dado, conservando los filtros de búsqueda. */
+function urlOrden(string $columna, string $dir, array $filtros): string {
     $parametros = array_filter([
         'accion'    => 'ninos',
         'texto'     => $filtros['texto'] ?? '',
@@ -33,7 +26,17 @@ function encabezadoOrden(string $titulo, string $columna, string $ordenActual, s
         'orden'     => $columna,
         'dir'       => $dir,
     ], fn($valor) => $valor !== '');
-    $url = APP_URL . '/index.php?' . http_build_query($parametros);
+    return APP_URL . '/index.php?' . http_build_query($parametros);
+}
+
+/**
+ * Encabezado de una columna ordenable. Si la columna ya es la activa, el
+ * enlace invierte el orden; si no, empieza con su dirección inicial.
+ */
+function encabezadoOrden(string $titulo, string $columna, string $ordenActual, string $dirActual, array $filtros): string {
+    $activa = $columna === $ordenActual;
+    $dir = $activa ? ($dirActual === 'asc' ? 'desc' : 'asc') : Nino::direccionInicial($columna);
+    $url = urlOrden($columna, $dir, $filtros);
 
     $icono = $activa ? Icono::ver($dirActual === 'asc' ? 'orden-asc' : 'orden-desc', 16)
                      : Icono::ver('ordenar', 16);
@@ -48,15 +51,17 @@ function ariaOrden(string $columna, string $ordenActual, string $dirActual): str
     return ' aria-sort="' . ($dirActual === 'asc' ? 'ascending' : 'descending') . '"';
 }
 
-// Descripción del orden actual, para el pie de la tabla.
-$descripcionOrden = [
+// Descripción de cada orden posible: para el pie de la tabla y para la
+// lista "Ordenar" del teléfono.
+$descripciones = [
     'nombre'     => ['asc' => 'por nombre, de la A a la Z',               'desc' => 'por nombre, de la Z a la A'],
     'edad'       => ['asc' => 'por edad, de menor a mayor',               'desc' => 'por edad, de mayor a menor'],
     'territorio' => ['asc' => 'por territorio y sector, de menor a mayor', 'desc' => 'por territorio y sector, de mayor a menor'],
     'paraje'     => ['asc' => 'por paraje, de la A a la Z',               'desc' => 'por paraje, de la Z a la A'],
     'estado'     => ['asc' => 'por estado, activos primero',              'desc' => 'por estado, egresados primero'],
     'registro'   => ['asc' => 'por fecha de registro, más antiguos primero', 'desc' => 'por fecha de registro, más recientes primero'],
-][$orden][$direccion];
+];
+$descripcionOrden = $descripciones[$orden][$direccion];
 ?>
 
 <h1 class="titulo-pagina">Niños registrados</h1>
@@ -90,8 +95,24 @@ $descripcionOrden = [
     <p class="vacio">No se encontraron niños con los filtros seleccionados.</p>
 <?php else: ?>
     <p class="ayuda-tabla">Toque el título de una columna para ordenar la tabla. Si lo toca otra vez, invierte el orden.</p>
+
+    <!-- En el teléfono no hay encabezados que tocar: el orden se elige aquí. -->
+    <div class="orden-tel">
+        <label for="orden-tel">Ordenar</label>
+        <select id="orden-tel" onchange="window.location.href = this.value">
+            <?php foreach ($descripciones as $columna => $direcciones): ?>
+                <?php foreach ($direcciones as $dir => $texto): ?>
+                    <option value="<?= htmlspecialchars(urlOrden($columna, $dir, $filtros)) ?>"
+                        <?= ($columna === $orden && $dir === $direccion) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars(ucfirst(substr($texto, 4))) ?>
+                    </option>
+                <?php endforeach; ?>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
     <div class="tabla-scroll">
-    <table class="tabla tabla-compacta">
+    <table class="tabla tabla-compacta tabla-tarjetas">
         <thead>
             <tr>
                 <th<?= ariaOrden('nombre', $orden, $direccion) ?>><?= encabezadoOrden('Nombre', 'nombre', $orden, $direccion, $filtros) ?></th>
@@ -107,17 +128,17 @@ $descripcionOrden = [
         <tbody>
             <?php foreach ($ninos as $n): ?>
                 <tr>
-                    <td><?= htmlspecialchars($n['apellidos'] . ', ' . $n['nombres']) ?></td>
-                    <td><?= edadTexto($n['fecha_nacimiento']) ?></td>
-                    <td><?= $n['sexo'] === 'M' ? 'M' : 'F' ?></td>
-                    <td>T<?= htmlspecialchars($n['territorio_numero']) ?> · <?= htmlspecialchars($n['sector_letra']) ?></td>
-                    <td><?= Formato::dato($n['paraje_nombre']) ?></td>
-                    <td>
+                    <td class="celda-titulo"><?= htmlspecialchars($n['apellidos'] . ', ' . $n['nombres']) ?></td>
+                    <td data-label="Edad"><?= edadTexto($n['fecha_nacimiento']) ?></td>
+                    <td data-label="Sexo"><?= $n['sexo'] === 'M' ? 'M' : 'F' ?></td>
+                    <td data-label="Territorio / Sector">T<?= htmlspecialchars($n['territorio_numero']) ?> · <?= htmlspecialchars($n['sector_letra']) ?></td>
+                    <td data-label="Paraje"><?= Formato::dato($n['paraje_nombre']) ?></td>
+                    <td data-label="Estado">
                         <span class="etiqueta etiqueta-<?= $n['estado'] === 'activo' ? 'activo' : 'egresado' ?>">
                             <?= htmlspecialchars(ucfirst($n['estado'])) ?>
                         </span>
                     </td>
-                    <td><?= Formato::fecha($n['fecha_registro']) ?></td>
+                    <td data-label="Registrado"><?= Formato::fecha($n['fecha_registro']) ?></td>
                     <td class="acciones-fila">
                         <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>"><?= Icono::ver('ojo', 18) ?> Ver</a>
                         <?php if (Auth::tieneRol('enfermeria')): ?>

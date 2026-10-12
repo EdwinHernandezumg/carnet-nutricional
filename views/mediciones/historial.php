@@ -17,14 +17,19 @@ function edadLegibleH(int $meses): string
     return $partes ? implode(' ', $partes) : 'menos de 1 mes';
 }
 
-function celdaZ(array $porTipo, string $tipo): string
+/**
+ * Celda con la puntuación Z de un indicador, coloreada según el nivel.
+ * $etiqueta es el título que se ve en la tarjeta del teléfono.
+ */
+function celdaZ(array $porTipo, string $tipo, string $etiqueta): string
 {
-    if (!isset($porTipo[$tipo])) return '<td>' . Formato::sinDato() . '</td>';
+    $td = '<td data-label="' . htmlspecialchars($etiqueta) . '">';
+    if (!isset($porTipo[$tipo])) return $td . Formato::sinDato() . '</td>';
     $z = (float)$porTipo[$tipo]['puntuacion_z'];
     $clase = 'nivel-normal';
     if ($z < -2) $clase = 'nivel-riesgo';
     elseif ($z < -1) $clase = 'nivel-cerca';
-    return '<td><span class="etiqueta ' . $clase . '">'
+    return $td . '<span class="etiqueta ' . $clase . '">'
         . number_format($z, 2) . '</span></td>';
 }
 
@@ -69,7 +74,7 @@ function celdaZ(array $porTipo, string $tipo): string
 <?php if (empty($mediciones)): ?>
     <p class="vacio">Este niño aún no tiene mediciones registradas.</p>
 <?php else: ?>
-    <table class="tabla">
+    <table class="tabla tabla-tarjetas">
         <thead>
             <tr>
                 <th>Fecha</th>
@@ -85,22 +90,22 @@ function celdaZ(array $porTipo, string $tipo): string
         <tbody>
             <?php foreach ($mediciones as $m): ?>
                 <tr>
-                    <td><?= Formato::fecha($m['fecha_toma']) ?></td>
-                    <td><?= edadLegibleH((int)$m['edad_meses']) ?></td>
-                    <td><?= htmlspecialchars($m['peso_kg']) ?></td>
-                    <td><?= htmlspecialchars($m['talla_cm']) ?></td>
+                    <td class="celda-titulo"><?= Formato::fecha($m['fecha_toma']) ?></td>
+                    <td data-label="Edad"><?= edadLegibleH((int)$m['edad_meses']) ?></td>
+                    <td data-label="Peso (kg)"><?= htmlspecialchars($m['peso_kg']) ?></td>
+                    <td data-label="Talla (cm)"><?= htmlspecialchars($m['talla_cm']) ?></td>
                     <?php
                     $inds = $indicadoresPorMedicion[$m['id_medicion']] ?? [];
                     $porTipo = [];
                     foreach ($inds as $i) {
                         $porTipo[$i['tipo']] = $i;
                     }
-                    echo celdaZ($porTipo, 'peso_edad');
-                    echo celdaZ($porTipo, 'talla_edad');
+                    echo celdaZ($porTipo, 'peso_edad', 'P/E (Z)');
+                    echo celdaZ($porTipo, 'talla_edad', 'T/E (Z)');
                     // Acostado (menor de 2 años) usa peso para longitud; de pie, peso para talla.
-                    echo celdaZ($porTipo, isset($porTipo['peso_longitud']) ? 'peso_longitud' : 'peso_talla');
+                    echo celdaZ($porTipo, isset($porTipo['peso_longitud']) ? 'peso_longitud' : 'peso_talla', 'P/T (Z)');
                     ?>
-                    <td><?= htmlspecialchars($m['registrado_por']) ?></td>
+                    <td data-label="Registró"><?= htmlspecialchars($m['registrado_por']) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

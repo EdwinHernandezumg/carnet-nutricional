@@ -77,7 +77,9 @@ require __DIR__ . '/../layouts/encabezado.php';
                         <?php endif; ?>
                     </td>
                     <td class="acciones-fila">
-                        <?php if ($enlace !== ''): ?>
+                        <?php if (!Auth::tieneRol('enfermeria')): ?>
+                            <?php /* Consulta es de solo lectura: no envía avisos. */ ?>
+                        <?php elseif ($enlace !== ''): ?>
                             <a href="<?= htmlspecialchars($enlace) ?>" target="_blank"
                                class="btn-whatsapp"
                                onclick="marcarEnviado(<?= (int)$c['id_cita'] ?>)">

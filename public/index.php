@@ -693,7 +693,8 @@ switch ($accion) {
         break;
 
     case 'cita_aviso_enviado':
-        Auth::exigirAutenticacion();
+        // Marcar el aviso es un cambio en la base: solo enfermería (consulta es de solo lectura).
+        Auth::exigirRol(['enfermeria']);
         $idCita = (int)($_GET['id'] ?? 0);
         if ($idCita > 0) {
             Cita::marcarAvisoEnviado($idCita, Auth::usuario()['id']);

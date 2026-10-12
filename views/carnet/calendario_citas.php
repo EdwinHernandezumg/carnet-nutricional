@@ -120,7 +120,7 @@ $puedeEditar  = Auth::tieneRol('enfermeria');
                             <?php endif; ?>
                         </td>
                         <td class="acciones-fila">
-                            <?php if ($admiteAviso): ?>
+                            <?php if ($admiteAviso && $puedeEditar): ?>
                                 <?php if ($enlace !== ''): ?>
                                     <a href="<?= htmlspecialchars($enlace) ?>" target="_blank"
                                        class="btn-whatsapp"

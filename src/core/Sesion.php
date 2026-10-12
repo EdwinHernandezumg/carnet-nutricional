@@ -19,6 +19,18 @@ class Sesion
     public static function iniciar(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            // Protecciones de la cookie de sesión, sin depender del php.ini del
+            // hosting: httponly impide que un script la lea; samesite impide que
+            // otro sitio envíe formularios con la sesión de la enfermera; secure
+            // hace que solo viaje cifrada cuando el sitio usa HTTPS.
+            $usaHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+            ini_set('session.use_strict_mode', '1');
+            session_set_cookie_params([
+                'path'     => parse_url(APP_URL, PHP_URL_PATH) ?: '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+                'secure'   => $usaHttps,
+            ]);
             session_start();
         }
     }

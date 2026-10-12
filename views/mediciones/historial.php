@@ -44,6 +44,7 @@ function celdaZ(array $porTipo, string $tipo, string $etiqueta): string
 <div class="ficha-nino">
     <strong><?= htmlspecialchars($nino['apellidos'] . ', ' . $nino['nombres']) ?></strong>
     <span><?= $nino['sexo'] === 'M' ? 'Masculino' : 'Femenino' ?></span>
+    <span>Edad: <?= Formato::edad($nino['fecha_nacimiento']) ?></span>
     <span>Nac. <?= Formato::fecha($nino['fecha_nacimiento']) ?></span>
     <span>Territorio <?= htmlspecialchars($nino['territorio_numero']) ?> · Sector <?= htmlspecialchars($nino['sector_letra']) ?></span>
     <span>Paraje: <?= Formato::dato($nino['paraje_nombre']) ?></span>

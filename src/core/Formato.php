@@ -49,6 +49,20 @@ class Formato
         return htmlspecialchars(self::fechaTexto($fecha));
     }
 
+    /**
+     * Edad a hoy a partir de la fecha de nacimiento, en años y meses:
+     * "1 año 2 meses", "8 meses" o "menos de 1 mes". Es el mismo formato que
+     * usa el formulario de medición.
+     */
+    public static function edad(string $fechaNacimiento): string
+    {
+        $d = (new DateTime($fechaNacimiento))->diff(new DateTime('today'));
+        $partes = [];
+        if ($d->y > 0) $partes[] = $d->y . ($d->y === 1 ? ' año' : ' años');
+        if ($d->m > 0) $partes[] = $d->m . ($d->m === 1 ? ' mes' : ' meses');
+        return $partes ? implode(' ', $partes) : 'menos de 1 mes';
+    }
+
     /** Palabras que van en minúscula dentro de un nombre, salvo al inicio. */
     const PARTICULAS = ['de', 'del', 'la', 'las', 'los', 'y'];
 

@@ -131,7 +131,7 @@ class Reporte
         fputcsv($salida, ['Carnet Digital de Monitoreo Nutricional Infantil'], ';');
         fputcsv($salida, ['Puesto de Salud Chivarreto, San Francisco El Alto, Totonicapan'], ';');
         fputcsv($salida, ['Resumen del estado nutricional por sector'], ';');
-        fputcsv($salida, ['Generado el', date('d/m/Y H:i')], ';');
+        fputcsv($salida, ['Generado el', date('d-m-Y H:i')], ';');
         fputcsv($salida, [], ';');
 
         // Encabezados de columna

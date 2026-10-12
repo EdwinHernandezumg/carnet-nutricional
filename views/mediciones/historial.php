@@ -39,7 +39,7 @@ function celdaZ(array $porTipo, string $tipo): string
 <div class="ficha-nino">
     <strong><?= htmlspecialchars($nino['apellidos'] . ', ' . $nino['nombres']) ?></strong>
     <span><?= $nino['sexo'] === 'M' ? 'Masculino' : 'Femenino' ?></span>
-    <span>Nac. <?= htmlspecialchars($nino['fecha_nacimiento']) ?></span>
+    <span>Nac. <?= Formato::fecha($nino['fecha_nacimiento']) ?></span>
     <span>Territorio <?= htmlspecialchars($nino['territorio_numero']) ?> · Sector <?= htmlspecialchars($nino['sector_letra']) ?></span>
     <span>Paraje: <?= Formato::dato($nino['paraje_nombre']) ?></span>
     <span class="etiqueta etiqueta-<?= $nino['estado'] === 'activo' ? 'activo' : 'egresado' ?>"><?= htmlspecialchars(ucfirst($nino['estado'])) ?></span>
@@ -85,7 +85,7 @@ function celdaZ(array $porTipo, string $tipo): string
         <tbody>
             <?php foreach ($mediciones as $m): ?>
                 <tr>
-                    <td><?= htmlspecialchars($m['fecha_toma']) ?></td>
+                    <td><?= Formato::fecha($m['fecha_toma']) ?></td>
                     <td><?= edadLegibleH((int)$m['edad_meses']) ?></td>
                     <td><?= htmlspecialchars($m['peso_kg']) ?></td>
                     <td><?= htmlspecialchars($m['talla_cm']) ?></td>

@@ -117,7 +117,7 @@ $descripcionOrden = [
                             <?= htmlspecialchars(ucfirst($n['estado'])) ?>
                         </span>
                     </td>
-                    <td><?= Formato::dato($n['fecha_registro'] ? substr($n['fecha_registro'], 0, 10) : null) ?></td>
+                    <td><?= Formato::fecha($n['fecha_registro']) ?></td>
                     <td class="acciones-fila">
                         <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$n['id_nino'] ?>"><?= Icono::ver('ojo', 18) ?> Ver</a>
                         <?php if (Auth::tieneRol('enfermeria')): ?>

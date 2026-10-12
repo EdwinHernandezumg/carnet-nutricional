@@ -53,7 +53,7 @@
 </div>
 
 <div class="meta">
-    <strong>Generado:</strong> <?= date('d/m/Y H:i') ?> &nbsp;|&nbsp;
+    <strong>Generado:</strong> <?= date('d-m-Y H:i') ?> &nbsp;|&nbsp;
     <strong>Alcance:</strong> <?= htmlspecialchars($tituloFiltro) ?> &nbsp;|&nbsp;
     <strong>Elaborado por:</strong> <?= htmlspecialchars(Auth::usuario()['nombre']) ?>
 </div>

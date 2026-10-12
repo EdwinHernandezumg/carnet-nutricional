@@ -17,6 +17,38 @@ class Formato
     /** Texto por omisión cuando no hay dato registrado. */
     const SIN_DATO = 'Sin dato';
 
+    /** Formato de fecha usado en Guatemala: día-mes-año, por ejemplo 07-10-2026. */
+    const FORMATO_FECHA = 'd-m-Y';
+
+    /**
+     * Fecha como texto simple en día-mes-año. Acepta la fecha como viene de la
+     * base (2026-10-07) o con hora (2026-10-07 14:30:00). Si no es una fecha
+     * válida, devuelve el texto tal cual. Para pantallas, usar fecha().
+     */
+    public static function fechaTexto(string $fecha): string
+    {
+        $soloFecha = substr(trim($fecha), 0, 10);
+        $d = DateTime::createFromFormat('!Y-m-d', $soloFecha);
+        // Se compara de vuelta para no aceptar fechas inexistentes (30 de febrero).
+        if (!$d || $d->format('Y-m-d') !== $soloFecha) {
+            return $fecha;
+        }
+        return $d->format(self::FORMATO_FECHA);
+    }
+
+    /**
+     * Fecha lista para mostrar en pantalla, en día-mes-año y protegida con
+     * htmlspecialchars. Si está vacía, muestra el aviso en gris ("Sin dato"
+     * o el texto indicado).
+     */
+    public static function fecha(?string $fecha, string $textoVacio = self::SIN_DATO): string
+    {
+        if ($fecha === null || trim($fecha) === '') {
+            return self::sinDato($textoVacio);
+        }
+        return htmlspecialchars(self::fechaTexto($fecha));
+    }
+
     /** Palabras que van en minúscula dentro de un nombre, salvo al inicio. */
     const PARTICULAS = ['de', 'del', 'la', 'las', 'los', 'y'];
 

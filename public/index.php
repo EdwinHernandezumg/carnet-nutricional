@@ -474,8 +474,8 @@ switch ($accion) {
         }
         if (!empty($filtros['fecha_desde']) || !empty($filtros['fecha_hasta'])) {
             $tituloFiltro .= ' | Periodo: '
-                . ($filtros['fecha_desde'] ?: 'inicio')
-                . ' a ' . ($filtros['fecha_hasta'] ?: 'hoy');
+                . ($filtros['fecha_desde'] ? Formato::fechaTexto($filtros['fecha_desde']) : 'inicio')
+                . ' a ' . ($filtros['fecha_hasta'] ? Formato::fechaTexto($filtros['fecha_hasta']) : 'hoy');
         }
 
         Bitacora::registrar(

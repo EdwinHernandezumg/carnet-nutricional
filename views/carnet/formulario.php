@@ -18,7 +18,7 @@ require __DIR__ . '/../layouts/encabezado.php';
 <div class="ficha-nino">
     <strong><?= htmlspecialchars($nino['apellidos'] . ', ' . $nino['nombres']) ?></strong>
     <span><?= $nino['sexo'] === 'M' ? 'Masculino' : 'Femenino' ?></span>
-    <span>Nac. <?= htmlspecialchars($nino['fecha_nacimiento']) ?></span>
+    <span>Nac. <?= Formato::fecha($nino['fecha_nacimiento']) ?></span>
     <span>Territorio <?= htmlspecialchars($nino['territorio_numero']) ?> · Sector <?= htmlspecialchars($nino['sector_letra']) ?></span>
 </div>
 

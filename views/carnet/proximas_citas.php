@@ -54,7 +54,7 @@ require __DIR__ . '/../layouts/encabezado.php';
             <?php foreach ($citas as $c): ?>
                 <?php $enlace = Cita::enlaceWhatsApp($c); ?>
                 <tr>
-                    <td><?= htmlspecialchars($c['fecha_programada']) ?></td>
+                    <td><?= Formato::fecha($c['fecha_programada']) ?></td>
                     <td>
                         <?php $d = (int)$c['dias_faltantes']; ?>
                         <span class="etiqueta <?= $d <= 1 ? 'nivel-cerca' : 'nivel-normal' ?>">
@@ -108,7 +108,7 @@ require __DIR__ . '/../layouts/encabezado.php';
         <tbody>
             <?php foreach ($vencidas as $v): ?>
                 <tr>
-                    <td><?= htmlspecialchars($v['fecha_programada']) ?></td>
+                    <td><?= Formato::fecha($v['fecha_programada']) ?></td>
                     <td><?= htmlspecialchars($v['apellidos'] . ', ' . $v['nombres']) ?></td>
                     <td>T<?= htmlspecialchars($v['territorio_numero']) ?> · <?= htmlspecialchars($v['sector_letra']) ?></td>
                     <td><?= htmlspecialchars($v['motivo'] ?? 'Control') ?></td>

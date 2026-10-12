@@ -18,7 +18,7 @@ $url = APP_URL . '/index.php?accion=';
     <h1 class="registro-listo-nombre"><?= htmlspecialchars($nino['nombres'] . ' ' . $nino['apellidos']) ?></h1>
     <p class="registro-listo-datos">
         <?= $nino['sexo'] === 'M' ? 'Masculino' : 'Femenino' ?>
-        · Nac. <?= htmlspecialchars($nino['fecha_nacimiento']) ?>
+        · Nac. <?= Formato::fecha($nino['fecha_nacimiento']) ?>
         · T<?= htmlspecialchars($nino['territorio_numero']) ?> · Sector <?= htmlspecialchars($nino['sector_letra']) ?>
     </p>
 </div>

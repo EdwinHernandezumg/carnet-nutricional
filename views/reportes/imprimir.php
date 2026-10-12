@@ -8,7 +8,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Reporte consolidado — Carnet Digital</title>
+    <title>Reporte consolidado · Carnet Digital</title>
     <style>
         @page { size: landscape; margin: 1.5cm; }
         * { box-sizing: border-box; }

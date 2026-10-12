@@ -48,10 +48,78 @@ body {
 }
 
 /* ---------- Login y pantallas centradas ---------- */
+/* Fondo con una franja diagonal suave, en los colores del sistema. */
+/* Se centra con márgenes automáticos (no con justify-content), para que en
+   pantallas bajas el contenido no quede cortado arriba sin poder desplazarse. */
 .pagina-login {
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center;
     min-height: 100vh; padding: 1.25rem;
-    background: linear-gradient(160deg, #eef7f3 0%, #f3f6fa 60%);
+    background:
+        linear-gradient(162deg, transparent 0 56%, rgba(29,158,117,0.07) 56% 100%),
+        linear-gradient(20deg, #f3f6fa 0 42%, #ffffff 42% 100%);
+    background-attachment: fixed;
+}
+
+/* ---------- Pantalla de ingreso ----------
+   El nombre del sistema hace de logo: va arriba, con un emblema, y flota
+   suavemente hacia arriba y hacia abajo. */
+.ingreso {
+    width: 100%; max-width: 440px; margin-top: auto; padding-top: 1rem;
+    display: flex; flex-direction: column; align-items: center;
+}
+.ingreso-logo {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    animation: flotar 4s ease-in-out infinite;
+}
+@keyframes flotar {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+}
+.ingreso-emblema {
+    width: 76px; height: 76px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--teal); color: #fff; margin-bottom: 0.9rem;
+    box-shadow: 0 10px 24px rgba(29,158,117,0.30);
+}
+.ingreso-nombre {
+    font-size: 2.6rem; font-weight: 800; line-height: 1.05;
+    color: var(--marino); letter-spacing: -1px;
+}
+.ingreso-nombre .marca-2 { color: var(--teal); }
+.ingreso-lema {
+    font-size: 1.05rem; font-weight: 600; color: var(--teal-osc);
+    margin-top: 0.35rem; letter-spacing: 0.2px;
+}
+.ingreso-puesto {
+    text-align: center; color: var(--gris-suave); font-size: 0.95rem;
+    margin: 1.1rem 0 1.6rem; line-height: 1.45;
+}
+.ingreso-puesto span { display: block; }
+.ingreso .tarjeta-login { border-top-width: 4px; }
+/* Pantallas que solo tienen la tarjeta (cambiar contraseña): centrada. */
+.pagina-login > .tarjeta-login { margin-top: auto; margin-bottom: auto; }
+/* Iconos dentro de los campos y botón del ojo para ver la contraseña. */
+.tarjeta-login .con-icono input { padding-left: 2.85rem; }
+.tarjeta-login .con-boton input { padding-right: 3.2rem; }
+.tarjeta-login .boton-ver {
+    position: absolute; right: 0.3rem; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px; min-height: 0; margin: 0; padding: 0;
+    background: none; color: var(--gris-suave); border-radius: var(--radio);
+}
+.tarjeta-login .boton-ver .icono { position: static; transform: none; color: inherit; }
+.tarjeta-login .boton-ver:hover { background: var(--teal-claro); color: var(--teal-osc); }
+.tarjeta-login .boton-ver[aria-pressed="true"] { color: var(--teal); }
+.ingreso-pie {
+    margin-top: 2rem; margin-bottom: auto; text-align: center;
+    color: var(--gris-suave); font-size: 0.82rem; letter-spacing: 0.3px;
+}
+@media (min-width: 701px) {
+    .ingreso-nombre { font-size: 3.4rem; }
+    .ingreso-emblema { width: 88px; height: 88px; }
+}
+/* Quien pidió a su teléfono reducir el movimiento no ve la animación. */
+@media (prefers-reduced-motion: reduce) {
+    .ingreso-logo { animation: none; }
 }
 .tarjeta-login {
     background: #fff; padding: 2.5rem 2.25rem; border-radius: 16px;

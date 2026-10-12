@@ -64,6 +64,7 @@ class Icono
             'orden-asc' => '<path d="M12 19V5"/><path d="M6 11l6-6 6 6"/>',
             'orden-desc' => '<path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>',
             'salir' => '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/>',
+            'entrar' => '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l5-5-5-5"/><path d="M4 12h11"/>',
             'cancelar' => '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
             'imprimir' => '<path d="M7 9V3h10v6"/><rect x="4" y="9" width="16" height="7" rx="2"/><path d="M7 14h10v7H7z"/>',
             'descargar' => '<path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/>',

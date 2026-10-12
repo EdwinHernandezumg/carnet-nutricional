@@ -3,9 +3,9 @@
 /**
  * Gestión de mediciones antropométricas (CU-03).
  *
- * Este módulo SOLO registra y consulta mediciones. El cálculo de
- * puntuaciones Z y la generación de alertas se realizan en CU-04 y CU-05,
- * que se conectarán después sobre estas mediciones.
+ * Este módulo registra y consulta mediciones. El cálculo de puntuaciones Z
+ * y la generación de alertas los hacen CU-04 (Calculo) y CU-05 (Alerta),
+ * que se invocan al guardar cada medición.
  *
  * Decisiones de diseño:
  * - Cualquier enfermería puede medir a cualquier niño, sin advertencia
@@ -23,6 +23,33 @@ class Medicion
     {
         $db = Database::obtener();
 
+        // La medición, su cálculo y su alerta se guardan juntos en una
+        // transacción: si algo falla, no queda una medición a medias (sin
+        // puntuaciones Z o sin alerta). Si ya hay una transacción abierta (por
+        // ejemplo, en un script), se trabaja dentro de ella.
+        $transaccionPropia = !$db->inTransaction();
+        if ($transaccionPropia) {
+            $db->beginTransaction();
+        }
+        try {
+            $idMedicion = self::insertar($db, $datos, $idUsuario);
+            Calculo::procesar($idMedicion);
+            Alerta::generar($idMedicion, (int) $datos['id_nino']);
+            if ($transaccionPropia) {
+                $db->commit();
+            }
+        } catch (Throwable $e) {
+            if ($transaccionPropia) {
+                $db->rollBack();
+            }
+            throw $e;
+        }
+        return $idMedicion;
+    }
+
+    /** Inserta la medición y la registra en la bitácora. */
+    private static function insertar(PDO $db, array $datos, int $idUsuario): int
+    {
         $sql = "INSERT INTO medicion
                 (id_nino, id_usuario, fecha_toma, peso_kg, talla_cm, tipo_talla, edad_meses, observaciones)
                 VALUES
@@ -49,8 +76,6 @@ class Medicion
             $idMedicion,
             "Medición del niño id {$datos['id_nino']}: {$datos['peso_kg']} kg, {$datos['talla_cm']} cm"
         );
-        Calculo::procesar($idMedicion);
-        Alerta::generar($idMedicion, $datos['id_nino']);
         return $idMedicion;
     }
 

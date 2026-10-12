@@ -25,12 +25,17 @@ class Alerta
     ];
 
     /**
-     * Genera (o actualiza) la alerta para una medición recién calculada.
-     * Se invoca desde CU-03/CU-04 tras calcular los indicadores.
+     * Genera la alerta para una medición recién calculada. Se invoca desde
+     * CU-03/CU-04 tras calcular los indicadores. Se puede volver a ejecutar
+     * sobre la misma medición (por ejemplo, al recalcular): reemplaza la
+     * alerta anterior de esa medición.
      */
     public static function generar(int $idMedicion, int $idNino): void
     {
         $db = Database::obtener();
+
+        // Al regenerar, se reemplaza la alerta anterior de esta medición.
+        $db->prepare("DELETE FROM alerta WHERE id_medicion = :id")->execute([':id' => $idMedicion]);
 
         // Nivel global de esta medición (lo calcula el motor CU-04).
         $global = Calculo::nivelAlertaGlobal($idMedicion);
@@ -40,7 +45,7 @@ class Alerta
         // Compara con la medición ANTERIOR del niño para la evolución.
         $evolucion = self::compararConAnterior($idNino, $idMedicion, $nivel);
         if ($evolucion !== '') {
-            $descripcion .= ' — ' . $evolucion;
+            $descripcion .= '. ' . $evolucion;
         }
 
         // Si el nivel es normal, no se crea alerta de riesgo (pero sí queda el cálculo).
@@ -63,28 +68,31 @@ class Alerta
     /**
      * Compara el nivel actual con el de la medición anterior del niño.
      * Devuelve un texto de evolución: "Mejoró...", "Empeoró..." o "".
+     * Usa el nivel calculado de la medición anterior, tenga o no alerta: así
+     * también avisa cuando un niño pasa de normal a una zona de riesgo.
      */
     private static function compararConAnterior(int $idNino, int $idMedicionActual, string $nivelActual): string
     {
         $db = Database::obtener();
 
-        // Busca la alerta de la medición inmediatamente anterior (por fecha).
-        $sql = "SELECT a.nivel
-                FROM alerta a
-                JOIN medicion m ON m.id_medicion = a.id_medicion
-                WHERE a.id_nino = :id_nino
-                  AND a.id_medicion <> :id_actual
-                ORDER BY m.fecha_toma DESC, a.id_alerta DESC
+        // Medición inmediatamente anterior a la actual (por fecha de toma).
+        $sql = "SELECT m.id_medicion
+                FROM medicion m
+                JOIN medicion actual ON actual.id_medicion = :id_actual
+                WHERE m.id_nino = :id_nino
+                  AND (m.fecha_toma < actual.fecha_toma
+                       OR (m.fecha_toma = actual.fecha_toma AND m.id_medicion < actual.id_medicion))
+                ORDER BY m.fecha_toma DESC, m.id_medicion DESC
                 LIMIT 1";
         $stmt = $db->prepare($sql);
         $stmt->execute([':id_nino' => $idNino, ':id_actual' => $idMedicionActual]);
         $ant = $stmt->fetch();
 
         if (!$ant) {
-            return ''; // No hay medición previa con alerta.
+            return ''; // Es el primer control del niño.
         }
 
-        $nivelAnterior = $ant['nivel'];
+        $nivelAnterior = Calculo::nivelAlertaGlobal((int) $ant['id_medicion'])['nivel'];
         $oa = self::$orden[$nivelAnterior] ?? 0;
         $oc = self::$orden[$nivelActual] ?? 0;
 

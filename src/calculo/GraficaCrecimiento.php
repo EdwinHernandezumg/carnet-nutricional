@@ -35,11 +35,14 @@ class GraficaCrecimiento
 
         $sexo = $nino['sexo'];
 
-        // Configura ejes según el indicador.
+        // Configura ejes según el indicador. En las gráficas por edad, el punto
+        // del niño va en su edad exacta a la fecha de la toma (en meses con
+        // decimales, como en el motor de cálculo), no en meses cumplidos.
+        $edadExacta = 'ROUND(DATEDIFF(m.fecha_toma, n.fecha_nacimiento) / ' . Calculo::DIAS_POR_MES . ', 2)';
         $config = [
-            'peso_edad'  => ['eje_x' => 'Edad (meses)', 'eje_y' => 'Peso (kg)',  'col_x' => 'edad_meses', 'col_y' => 'peso_kg'],
-            'talla_edad' => ['eje_x' => 'Edad (meses)', 'eje_y' => 'Talla (cm)', 'col_x' => 'edad_meses', 'col_y' => 'talla_cm'],
-            'peso_talla' => ['eje_x' => 'Talla (cm)',   'eje_y' => 'Peso (kg)',  'col_x' => 'talla_cm',    'col_y' => 'peso_kg'],
+            'peso_edad'  => ['eje_x' => 'Edad (meses)', 'eje_y' => 'Peso (kg)',  'col_x' => $edadExacta,  'col_y' => 'm.peso_kg'],
+            'talla_edad' => ['eje_x' => 'Edad (meses)', 'eje_y' => 'Talla (cm)', 'col_x' => $edadExacta,  'col_y' => 'm.talla_cm'],
+            'peso_talla' => ['eje_x' => 'Talla (cm)',   'eje_y' => 'Peso (kg)',  'col_x' => 'm.talla_cm', 'col_y' => 'm.peso_kg'],
         ];
         if (!isset($config[$indicador])) return [];
         $cfg = $config[$indicador];
@@ -75,10 +78,13 @@ class GraficaCrecimiento
         }
 
         // --- Recorrido del niño ---
-        $sql = "SELECT {$cfg['col_x']} AS x, {$cfg['col_y']} AS y, fecha_toma
-                FROM medicion
-                WHERE id_nino = :id
-                ORDER BY {$cfg['col_x']}";
+        // col_x y col_y son textos fijos de la configuración de arriba, nunca
+        // datos del navegador.
+        $sql = "SELECT {$cfg['col_x']} AS x, {$cfg['col_y']} AS y, m.fecha_toma
+                FROM medicion m
+                JOIN nino n ON n.id_nino = m.id_nino
+                WHERE m.id_nino = :id
+                ORDER BY x";
         $stmt = $db->prepare($sql);
         $stmt->execute([':id' => $idNino]);
         $medNino = [];

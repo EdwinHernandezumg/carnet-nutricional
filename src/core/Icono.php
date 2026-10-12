@@ -61,6 +61,7 @@ class Icono
             'avanzar' => '<path d="M9 5l7 7-7 7"/>',
             'lista' => '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
             'ordenar' => '<path d="M8 9l4-4 4 4"/><path d="M8 15l4 4 4-4"/>',
+            'ampliar' => '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
             'orden-asc' => '<path d="M12 19V5"/><path d="M6 11l6-6 6 6"/>',
             'orden-desc' => '<path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>',
             'salir' => '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/>',

@@ -520,22 +520,62 @@ body {
 .aviso-alerta.nivel-cerca  { background: #fff3cd; color: #7a5900; border-color: #e0a800; }
 .aviso-alerta.nivel-normal { background: var(--teal-claro); color: var(--teal-osc); border-color: var(--teal); }
 
-/* ---------- Graficas de crecimiento ---------- */
+/* ---------- Graficas de crecimiento ----------
+   Una gráfica por fila, a todo el ancho. El alto lo fija .lienzo-grafica
+   (Chart.js con maintainAspectRatio: false). */
 .grid-graficas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    display: grid; grid-template-columns: minmax(0, 1fr);
     gap: 1.4rem; margin-top: 1.2rem;
 }
 .tarjeta-grafica {
-    background: #fff; border-radius: 14px; padding: 1.3rem 1.4rem;
+    background: #fff; border-radius: 14px; padding: 1.1rem 1.2rem 1.2rem;
     box-shadow: 0 2px 12px rgba(20,48,74,0.07);
+    display: flex; flex-direction: column;
 }
-.tarjeta-grafica h3 {
-    color: var(--marino); font-size: 1.15rem; margin-bottom: 1rem;
-    text-align: center; font-weight: 600;
+.tarjeta-grafica-cabecera {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.8rem; margin-bottom: 0.8rem;
 }
+.tarjeta-grafica h3 { color: var(--marino); font-size: 1.15rem; font-weight: 600; }
+.boton-ampliar { padding: 0.5rem 0.9rem; min-height: 44px; font-size: 0.95rem; }
+.boton-ampliar .icono-cerrar,
+.ampliada .boton-ampliar .icono-ampliar { display: none; }
+.ampliada .boton-ampliar .icono-cerrar { display: inline-flex; }
+.lienzo-grafica { position: relative; height: 320px; }
+.aviso-girar { display: none; }
 @media (min-width: 760px) {
-    .grid-graficas { grid-template-columns: repeat(2, 1fr); }
+    .lienzo-grafica { height: 430px; }
+}
+
+/* Selector "Edad del niño / Curva completa" */
+.vista-graficas {
+    display: inline-flex; background: #fff; border: 1.5px solid var(--teal-borde);
+    border-radius: var(--radio); padding: 3px; gap: 3px; margin-bottom: 0.4rem;
+}
+.vista-graficas button {
+    border: none; background: none; cursor: pointer; font-family: inherit;
+    font-size: 0.95rem; font-weight: 600; color: var(--teal-osc);
+    padding: 0.55rem 0.9rem; min-height: 42px; border-radius: 7px;
+}
+.vista-graficas button.activa { background: var(--teal); color: #fff; }
+
+/* Gráfica ampliada: ocupa toda la pantalla, por encima del menú de abajo. */
+.tarjeta-grafica.ampliada {
+    position: fixed; inset: 0; z-index: 100; border-radius: 0;
+    padding: 0.8rem 1rem calc(0.8rem + env(safe-area-inset-bottom));
+}
+.tarjeta-grafica.ampliada .lienzo-grafica { flex: 1; height: auto; min-height: 0; }
+body.con-grafica-ampliada { overflow: hidden; }
+@media (max-width: 700px) {
+    .vista-graficas { display: flex; }
+    .vista-graficas button { flex: 1; }
+}
+/* En el teléfono vertical, se sugiere girarlo para ver la gráfica más ancha. */
+@media (orientation: portrait) and (max-width: 700px) {
+    .tarjeta-grafica.ampliada .aviso-girar {
+        display: block; text-align: center; color: var(--gris-suave);
+        font-size: 0.88rem; margin: -0.3rem 0 0.5rem;
+    }
 }
 
 /* ---------- Reportes ---------- */

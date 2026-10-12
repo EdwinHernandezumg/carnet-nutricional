@@ -29,10 +29,11 @@ if (!function_exists('nav_activo')) {
 <body>
 <header class="barra-superior">
 
-    <div class="barra-titulo">
+    <!-- El nombre del sistema lleva a la página principal, como el logo en otros sistemas -->
+    <a class="barra-titulo" href="<?= APP_URL ?>/index.php?accion=inicio" title="Ir a la página principal">
         <strong>Carnet <span class="marca-2">Digital</span></strong>
         <span class="barra-sub">Monitoreo Nutricional Infantil</span>
-    </div>
+    </a>
 
     <nav class="barra-nav">
 

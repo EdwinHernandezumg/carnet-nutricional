@@ -103,7 +103,10 @@ body {
 .barra-titulo {
     display: flex; flex-direction: column;
     border-left: 5px solid var(--teal); padding-left: 0.85rem;
+    text-decoration: none; border-radius: 2px;
 }
+.barra-titulo:hover { border-left-color: var(--teal-osc); }
+.barra-titulo:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; }
 .barra-titulo strong {
     color: var(--marino); font-size: 1.4rem; letter-spacing: -0.3px;
     line-height: 1.15;

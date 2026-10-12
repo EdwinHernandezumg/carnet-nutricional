@@ -22,6 +22,15 @@ class Cita
     const CARGA_NORMAL = 8;
     const CARGA_ALTA   = 15;
 
+    /** Motivos de cita: los usa el formulario y la validación del servidor. */
+    const MOTIVOS = [
+        'Control de crecimiento',
+        'Vacunación',
+        'Entrega de suplemento',
+        'Seguimiento nutricional',
+        'Otro',
+    ];
+
     /** Nombres de los meses, para mostrar fechas en español. */
     const MESES = [1 => 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
                    'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];

@@ -75,6 +75,9 @@ class Medicion
             'medicion',
             $idMedicion,
             "Medición del niño id {$datos['id_nino']}: {$datos['peso_kg']} kg, {$datos['talla_cm']} cm"
+                . (!empty($datos['valores_confirmados'])
+                    ? ' (valores fuera de los límites de la OMS, confirmados por quien registró)'
+                    : '')
         );
         return $idMedicion;
     }

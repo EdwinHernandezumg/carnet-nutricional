@@ -26,14 +26,17 @@ require __DIR__ . '/../layouts/encabezado.php';
 
     <div class="campo">
         <label for="nombre_completo">Nombre completo *</label>
-        <input type="text" id="nombre_completo" name="nombre_completo" required
+        <input type="text" id="nombre_completo" name="nombre_completo" required maxlength="150" data-filtro="nombre" autocapitalize="words"
             value="<?= htmlspecialchars($datos['nombre_completo'] ?? '') ?>">
     </div>
 
     <div class="fila">
         <div class="campo">
             <label for="usuario">Nombre de usuario *</label>
-            <input type="text" id="usuario" name="usuario" required
+            <input type="text" id="usuario" name="usuario" required minlength="3" maxlength="50"
+                data-filtro="usuario" autocapitalize="none" spellcheck="false"
+                pattern="[A-Za-z0-9._\-]{3,50}"
+                title="De 3 a 50 caracteres: letras sin tilde, números, punto, guion o guion bajo"
                 value="<?= htmlspecialchars($datos['usuario'] ?? '') ?>">
         </div>
         <div class="campo">

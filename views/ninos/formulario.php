@@ -36,7 +36,7 @@ require __DIR__ . '/../layouts/encabezado.php';
                 <label for="nombres">Nombres *</label>
                 <div class="con-icono">
                     <?= Icono::ver('persona', 20) ?>
-                    <input type="text" id="nombres" name="nombres" required
+                    <input type="text" id="nombres" name="nombres" required maxlength="100" data-filtro="nombre" autocapitalize="words"
                         placeholder="Nombres del niño"
                         value="<?= htmlspecialchars($datos['nombres'] ?? '') ?>">
                 </div>
@@ -45,7 +45,7 @@ require __DIR__ . '/../layouts/encabezado.php';
                 <label for="apellidos">Apellidos *</label>
                 <div class="con-icono">
                     <?= Icono::ver('persona', 20) ?>
-                    <input type="text" id="apellidos" name="apellidos" required
+                    <input type="text" id="apellidos" name="apellidos" required maxlength="100" data-filtro="nombre" autocapitalize="words"
                         placeholder="Apellidos del niño"
                         value="<?= htmlspecialchars($datos['apellidos'] ?? '') ?>">
                 </div>
@@ -78,7 +78,7 @@ require __DIR__ . '/../layouts/encabezado.php';
                 <label for="cui">CUI (si tiene)</label>
                 <div class="con-icono">
                     <?= Icono::ver('documento', 20) ?>
-                    <input type="text" id="cui" name="cui" maxlength="13"
+                    <input type="text" id="cui" name="cui" maxlength="13" data-filtro="digitos" inputmode="numeric" pattern="[0-9]{13}" title="13 dígitos, sin espacios ni guiones"
                         placeholder="13 dígitos"
                         value="<?= htmlspecialchars($datos['cui'] ?? '') ?>">
                 </div>
@@ -89,7 +89,7 @@ require __DIR__ . '/../layouts/encabezado.php';
             <label for="etnia">Pueblo o comunidad lingüística</label>
             <div class="con-icono">
                 <?= Icono::ver('idioma', 20) ?>
-                <input type="text" id="etnia" name="etnia"
+                <input type="text" id="etnia" name="etnia" maxlength="50" data-filtro="palabras"
                     value="<?= htmlspecialchars($datos['etnia'] ?? '') ?>"
                     placeholder="Maya k'iche', mestizo, etc.">
             </div>
@@ -135,7 +135,7 @@ require __DIR__ . '/../layouts/encabezado.php';
             <label for="direccion">Dirección</label>
             <div class="con-icono">
                 <?= Icono::ver('casa', 20) ?>
-                <input type="text" id="direccion" name="direccion"
+                <input type="text" id="direccion" name="direccion" maxlength="200"
                     placeholder="Referencia de la vivienda"
                     value="<?= htmlspecialchars($datos['direccion'] ?? '') ?>">
             </div>
@@ -149,7 +149,7 @@ require __DIR__ . '/../layouts/encabezado.php';
                 <label for="nombre_madre">Nombre de la madre o responsable</label>
                 <div class="con-icono">
                     <?= Icono::ver('persona', 20) ?>
-                    <input type="text" id="nombre_madre" name="nombre_madre"
+                    <input type="text" id="nombre_madre" name="nombre_madre" maxlength="150" data-filtro="nombre" autocapitalize="words"
                         placeholder="Nombre completo"
                         value="<?= htmlspecialchars($datos['nombre_madre'] ?? '') ?>">
                 </div>
@@ -158,7 +158,7 @@ require __DIR__ . '/../layouts/encabezado.php';
                 <label for="nombre_padre">Nombre del padre</label>
                 <div class="con-icono">
                     <?= Icono::ver('persona', 20) ?>
-                    <input type="text" id="nombre_padre" name="nombre_padre"
+                    <input type="text" id="nombre_padre" name="nombre_padre" maxlength="150" data-filtro="nombre" autocapitalize="words"
                         placeholder="Nombre completo"
                         value="<?= htmlspecialchars($datos['nombre_padre'] ?? '') ?>">
                 </div>
@@ -169,7 +169,7 @@ require __DIR__ . '/../layouts/encabezado.php';
             <label for="telefono">Teléfono</label>
             <div class="con-icono">
                 <?= Icono::ver('telefono', 20) ?>
-                <input type="tel" id="telefono" name="telefono"
+                <input type="tel" id="telefono" name="telefono" data-filtro="digitos"
                     maxlength="8" pattern="[0-9]{8}"
                     inputmode="numeric"
                     placeholder="8 dígitos"

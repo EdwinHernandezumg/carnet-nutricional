@@ -41,7 +41,7 @@ require __DIR__ . '/../layouts/encabezado.php';
             <option value="">Seleccione</option>
             <?php foreach ($catalogo as $c): ?>
                 <option value="<?= htmlspecialchars($c['nombre'] . '|' . $c['dosis']) ?>">
-                    <?= htmlspecialchars($c['nombre'] . ' — ' . $c['dosis']) ?>
+                    <?= htmlspecialchars($c['nombre'] . ' · ' . $c['dosis']) ?>
                     <?php if ($c['edad_sugerida']): ?>
                         (<?= htmlspecialchars($c['edad_sugerida']) ?>)
                     <?php endif; ?>
@@ -54,7 +54,7 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="campo">
             <label for="fecha_aplicacion">Fecha de aplicación *</label>
             <input type="date" id="fecha_aplicacion" name="fecha_aplicacion" required
-                   max="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>">
+                   min="<?= htmlspecialchars($nino['fecha_nacimiento']) ?>" max="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>">
         </div>
         <div class="campo">
             <label for="lote">Lote</label>
@@ -87,7 +87,7 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="campo">
             <label for="fecha_entrega">Fecha de entrega *</label>
             <input type="date" id="fecha_entrega" name="fecha_entrega" required
-                   max="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>">
+                   min="<?= htmlspecialchars($nino['fecha_nacimiento']) ?>" max="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>">
         </div>
         <div class="campo">
             <label for="cantidad">Cantidad entregada</label>
@@ -102,25 +102,26 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="campo">
             <label for="fecha_programada">Fecha de la cita *</label>
             <input type="date" id="fecha_programada" name="fecha_programada" required
-                   min="<?= date('Y-m-d') ?>"
+                   min="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d', strtotime('+1 year')) ?>"
                    value="<?= htmlspecialchars($_POST['fecha_programada'] ?? '') ?>">
             <p id="aviso-carga" class="aviso-carga" role="status" hidden></p>
         </div>
         <div class="campo">
             <label for="motivo">Motivo</label>
             <select id="motivo" name="motivo">
-                <option value="Control de crecimiento">Control de crecimiento</option>
-                <option value="Vacunación">Vacunación</option>
-                <option value="Entrega de suplemento">Entrega de suplemento</option>
-                <option value="Seguimiento nutricional">Seguimiento nutricional</option>
-                <option value="Otro">Otro</option>
+                <?php foreach (Cita::MOTIVOS as $motivo): ?>
+                    <option value="<?= htmlspecialchars($motivo) ?>"
+                        <?= (($_POST['motivo'] ?? '') === $motivo) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($motivo) ?>
+                    </option>
+                <?php endforeach; ?>
             </select>
         </div>
     </div>
 
     <div class="campo">
         <label for="observaciones">Observaciones</label>
-        <textarea id="observaciones" name="observaciones" rows="2"
+        <textarea id="observaciones" name="observaciones" rows="2" maxlength="300"
                   placeholder="Indicaciones para la madre o responsable (opcional)"></textarea>
     </div>
 

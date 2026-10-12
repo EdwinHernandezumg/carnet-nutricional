@@ -306,6 +306,15 @@ body {
 .campo small { font-weight: normal; color: var(--gris-suave); font-size: 0.85rem; }
 /* Nota bajo un grupo de campos; el margen negativo la acerca a los campos de arriba. */
 .ayuda-grupo { color: var(--gris-suave); font-size: 0.92rem; margin: -0.65rem 0 1.5rem; }
+
+/* Casilla para confirmar una medición fuera de los límites de la OMS. */
+.confirmar-valores {
+    display: flex; gap: 0.7rem; align-items: flex-start;
+    background: #fff3cd; color: #7a5900; border-left: 5px solid #e0b100;
+    padding: 0.9rem 1rem; border-radius: var(--radio); margin: 0.5rem 0 1.2rem;
+    font-weight: 600; cursor: pointer;
+}
+.confirmar-valores input { width: 22px; height: 22px; flex-shrink: 0; margin-top: 0.1rem; }
 .campo input, .campo select, .formulario textarea, .filtros input, .filtros select {
     width: 100%; padding: 0.75rem 0.85rem; border: 1.5px solid #cdd7e2;
     border-radius: var(--radio); font-size: 1.02rem; font-family: inherit;

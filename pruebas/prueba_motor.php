@@ -90,5 +90,14 @@ comprobar('Edad de 60.5 meses (último mes, como WHO Anthro)', Calculo::calcular
 comprobar('Longitud de 44.0 cm (la tabla empieza en 45)', Calculo::calcularZ('peso_longitud', 'F', 44.0, 2.5), null);
 comprobar('Talla de 121.0 cm (la tabla termina en 120)', Calculo::calcularZ('peso_talla', 'M', 121.0, 22.0), null);
 
+echo "\n7. Valores biológicamente imposibles (límites de WHO Anthro): avisan de un error de digitación\n";
+[, $M14L] = fila('talla_edad', 'F', 14.0);
+[, $M14P] = fila('peso_edad', 'F', 14.0);
+$dias14 = (int) round(14 * Calculo::DIAS_POR_MES);
+comprobar('Niña de 14 meses en la mediana: ningún indicador fuera de límites',
+    (float) count(Calculo::valoresImposibles('F', $dias14, 'longitud', $M14P, $M14L)), 0.0);
+comprobar('Niña de 14 meses con 47 cm (en lugar de 74): indicadores fuera de límites',
+    count(Calculo::valoresImposibles('F', $dias14, 'longitud', 6.1, 47.0)) > 0 ? 1.0 : 0.0, 1.0);
+
 echo "\n" . ($total - $fallas) . " de $total pruebas pasaron." . PHP_EOL;
 exit($fallas > 0 ? 1 : 0);

@@ -59,6 +59,18 @@ class Calculo
     const INDICADORES_PESO = ['peso_edad', 'peso_longitud', 'peso_talla'];
 
     /**
+     * Límites de la OMS para valores biológicamente imposibles, los mismos que
+     * marca WHO Anthro. Una medición fuera de ellos casi siempre es un error de
+     * digitación (por ejemplo, 47 cm en lugar de 74).
+     */
+    const LIMITES_IMPOSIBLES = [
+        'peso_edad'     => [-6, 5],
+        'talla_edad'    => [-6, 6],
+        'peso_longitud' => [-5, 5],
+        'peso_talla'    => [-5, 5],
+    ];
+
+    /**
      * Calcula y guarda los indicadores de una medición. Se puede volver a
      * ejecutar sobre la misma medición: reemplaza los indicadores anteriores.
      */
@@ -121,6 +133,44 @@ class Calculo
         }
 
         return ['ok' => true, 'indicadores' => $resultados];
+    }
+
+    /**
+     * Revisa una medición ANTES de guardarla. Devuelve los indicadores que
+     * quedan fuera de los límites de la OMS (LIMITES_IMPOSIBLES), con su
+     * puntuación Z; o una lista vacía si todo está dentro de lo posible.
+     */
+    public static function valoresImposibles(string $sexo, int $edadDias, string $tipoTalla,
+                                             float $peso, float $talla): array
+    {
+        $edadMeses = $edadDias / self::DIAS_POR_MES;
+        $menorDe2  = $edadDias < self::DIAS_24_MESES;
+        $tallaRef  = self::tallaSegunEdad($talla, $tipoTalla, $menorDe2);
+        $indPT     = $menorDe2 ? 'peso_longitud' : 'peso_talla';
+
+        $puntuaciones = [
+            'peso_edad'  => self::calcularZ('peso_edad', $sexo, $edadMeses, $peso),
+            'talla_edad' => self::calcularZ('talla_edad', $sexo, $edadMeses, $tallaRef),
+            $indPT       => self::calcularZ($indPT, $sexo, $tallaRef, $peso),
+        ];
+        $nombres = [
+            'peso_edad'     => 'peso para la edad',
+            'talla_edad'    => 'talla para la edad',
+            'peso_longitud' => 'peso para la longitud',
+            'peso_talla'    => 'peso para la talla',
+        ];
+
+        $fuera = [];
+        foreach ($puntuaciones as $indicador => $z) {
+            if ($z === null) {
+                continue;
+            }
+            [$minimo, $maximo] = self::LIMITES_IMPOSIBLES[$indicador];
+            if ($z < $minimo || $z > $maximo) {
+                $fuera[] = $nombres[$indicador] . ' (Z = ' . number_format($z, 2) . ')';
+            }
+        }
+        return $fuera;
     }
 
     /**

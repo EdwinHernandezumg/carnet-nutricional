@@ -27,6 +27,7 @@ require_once __DIR__ . '/../src/carnet/Cita.php';
 require_once __DIR__ . '/../src/core/Icono.php';
 require_once __DIR__ . '/../src/core/Formato.php';
 require_once __DIR__ . '/../src/core/Recurso.php';
+require_once __DIR__ . '/../src/core/Validacion.php';
 
 
 
@@ -274,7 +275,10 @@ switch ($accion) {
         }
 
         $fechaToma = $_POST['fecha_toma'] ?? date('Y-m-d');
-        $edadMeses = Nino::edadEnMeses($nino['fecha_nacimiento'], $fechaToma);
+        // La edad solo se calcula con una fecha válida; si no lo es, se usa la de
+        // hoy para mostrar el formulario y la validación avisa del error.
+        $fechaValida = Validacion::fecha($fechaToma, 'La fecha') === null;
+        $edadMeses = Nino::edadEnMeses($nino['fecha_nacimiento'], $fechaValida ? $fechaToma : null);
 
         $datos = [
             'id_nino'      => $idNino,
@@ -287,6 +291,24 @@ switch ($accion) {
         ];
 
         $errores = validarMedicion($datos, $nino['fecha_nacimiento']);
+
+        // Valores que la OMS considera imposibles para la edad: casi siempre son
+        // un error de digitación. Se pide confirmarlos antes de guardar.
+        $pedirConfirmacion = false;
+        if (!$errores) {
+            $edadDias = (new DateTime($nino['fecha_nacimiento']))->diff(new DateTime($fechaToma))->days;
+            $fuera = Calculo::valoresImposibles($nino['sexo'], $edadDias, $datos['tipo_talla'],
+                (float) $datos['peso_kg'], (float) $datos['talla_cm']);
+            if ($fuera && empty($_POST['confirmar_valores'])) {
+                $pedirConfirmacion = true;
+                $errores[] = 'Revise el peso y la talla: ' . implode(' y ', $fuera)
+                    . (count($fuera) > 1 ? ' quedan' : ' queda')
+                    . ' fuera de lo que la OMS considera posible para un niño de esta edad.'
+                    . ' Casi siempre es un error de digitación. Si los datos son correctos,'
+                    . ' marque la casilla de confirmación y guarde de nuevo.';
+            }
+            $datos['valores_confirmados'] = (bool) $fuera;
+        }
 
         if ($errores) {
             $tipoSugerido = Medicion::tipoTallaSugerido($edadMeses);
@@ -348,17 +370,31 @@ switch ($accion) {
     case 'usuario_guardar':
         Auth::exigirRol(['administrador']);
         $datos = [
-            'nombre_completo' => trim($_POST['nombre_completo'] ?? ''),
+            'nombre_completo' => Formato::nombrePropio($_POST['nombre_completo'] ?? ''),
             'usuario'         => trim($_POST['usuario'] ?? ''),
             'id_rol'          => $_POST['id_rol'] ?? '',
             'id_sector'       => $_POST['id_sector'] ?? '',
         ];
-        $errores = [];
-        if ($datos['nombre_completo'] === '') $errores[] = 'El nombre es obligatorio.';
-        if ($datos['usuario'] === '')         $errores[] = 'El nombre de usuario es obligatorio.';
-        if ($datos['id_rol'] === '')          $errores[] = 'Debe seleccionar un rol.';
-        if ($datos['usuario'] !== '' && Usuario::usuarioExiste($datos['usuario']))
+        // Rol y sector deben existir; enfermería necesita un sector, porque los
+        // permisos de escritura dependen de él (Nino::permisoEscritura).
+        $roles = array_column(Catalogo::roles(), 'nombre', 'id_rol');
+        $errores = array_values(array_filter([
+            Validacion::nombrePersona($datos['nombre_completo'], 'Nombre completo', 150, true),
+            Validacion::enLista($datos['id_rol'], array_keys($roles), 'Debe seleccionar un rol de la lista.'),
+        ]));
+        if (!preg_match('/^[A-Za-z0-9._-]{3,50}$/', $datos['usuario'])) {
+            $errores[] = 'El nombre de usuario debe tener de 3 a 50 caracteres: letras sin tilde, números,'
+                       . ' punto, guion o guion bajo. Sin espacios.';
+        } elseif (Usuario::usuarioExiste($datos['usuario'])) {
             $errores[] = 'Ese nombre de usuario ya existe.';
+        }
+        if ($datos['id_sector'] !== '') {
+            $errores[] = Validacion::enLista($datos['id_sector'], array_column(Catalogo::sectores(), 'id_sector'),
+                'Debe seleccionar un sector de la lista.');
+        } elseif (($roles[$datos['id_rol']] ?? '') === 'enfermeria') {
+            $errores[] = 'Un usuario de enfermería debe tener un sector asignado.';
+        }
+        $errores = array_values(array_filter($errores));
 
         if ($errores) {
             $roles    = Catalogo::roles();
@@ -518,11 +554,17 @@ switch ($accion) {
             break;
         }
 
+        // La vacuna debe venir del catálogo, y la fecha estar entre el nacimiento y hoy.
         $sel = $_POST['vacuna_sel'] ?? '';
         $partes = explode('|', $sel);
-        $errores = [];
-        if (count($partes) !== 2 || $partes[0] === '') $errores[] = 'Debe seleccionar la vacuna.';
-        if (empty($_POST['fecha_aplicacion'])) $errores[] = 'La fecha de aplicación es obligatoria.';
+        $opcionesVacuna = array_map(fn($c) => $c['nombre'] . '|' . $c['dosis'], Vacuna::catalogo());
+        $errores = array_values(array_filter([
+            Validacion::enLista($sel, $opcionesVacuna, 'Debe seleccionar la vacuna de la lista.'),
+            Validacion::fecha($_POST['fecha_aplicacion'] ?? '', 'Fecha de aplicación',
+                $nino['fecha_nacimiento'], date('Y-m-d'), 'anterior al nacimiento', 'posterior a hoy'),
+            Validacion::texto(trim($_POST['lote'] ?? ''), 'Lote', 50),
+            Validacion::texto(trim($_POST['lugar'] ?? ''), 'Lugar de aplicación', 100),
+        ]));
 
         if ($errores) {
             $tipo = 'vacuna';
@@ -567,9 +609,14 @@ switch ($accion) {
             break;
         }
 
-        $errores = [];
-        if (empty($_POST['tipo_sup']))      $errores[] = 'Debe seleccionar el suplemento.';
-        if (empty($_POST['fecha_entrega'])) $errores[] = 'La fecha de entrega es obligatoria.';
+        // El suplemento debe venir del catálogo, y la fecha estar entre el nacimiento y hoy.
+        $errores = array_values(array_filter([
+            Validacion::enLista($_POST['tipo_sup'] ?? '', array_column(Suplementacion::catalogo(), 'nombre'),
+                'Debe seleccionar el suplemento de la lista.'),
+            Validacion::fecha($_POST['fecha_entrega'] ?? '', 'Fecha de entrega',
+                $nino['fecha_nacimiento'], date('Y-m-d'), 'anterior al nacimiento', 'posterior a hoy'),
+            Validacion::texto(trim($_POST['cantidad'] ?? ''), 'Cantidad entregada', 50),
+        ]));
 
         if ($errores) {
             $tipo = 'suplemento';
@@ -613,12 +660,14 @@ switch ($accion) {
             break;
         }
 
-        $errores = [];
-        if (empty($_POST['fecha_programada'])) {
-            $errores[] = 'La fecha de la cita es obligatoria.';
-        } elseif ($_POST['fecha_programada'] < date('Y-m-d')) {
-            $errores[] = 'La fecha de la cita no puede ser anterior a hoy.';
-        }
+        // Fecha desde hoy y hasta un año adelante (el control más espaciado de la
+        // normativa es cada 6 meses); el motivo debe ser uno de la lista.
+        $errores = array_values(array_filter([
+            Validacion::fecha($_POST['fecha_programada'] ?? '', 'Fecha de la cita',
+                date('Y-m-d'), date('Y-m-d', strtotime('+1 year')), 'anterior a hoy', 'de más de un año adelante'),
+            Validacion::enLista($_POST['motivo'] ?? '', Cita::MOTIVOS, 'Debe seleccionar el motivo de la lista.'),
+            Validacion::texto(trim($_POST['observaciones'] ?? ''), 'Observaciones', 300),
+        ]));
 
         if ($errores) {
             $tipo = 'cita';
@@ -631,7 +680,7 @@ switch ($accion) {
         Cita::crear([
             'id_nino'          => $idNino,
             'fecha_programada' => $_POST['fecha_programada'],
-            'motivo'           => $_POST['motivo'] ?? 'Control de crecimiento',
+            'motivo'           => $_POST['motivo'],
             'observaciones'    => trim($_POST['observaciones'] ?? ''),
         ], Auth::usuario()['id']);
 
@@ -730,14 +779,16 @@ function obtenerDatosFormulario(): array
         'apellidos'        => Formato::nombrePropio($_POST['apellidos'] ?? ''),
         'fecha_nacimiento' => $_POST['fecha_nacimiento'] ?? '',
         'sexo'             => $_POST['sexo'] ?? '',
-        'cui'              => trim($_POST['cui'] ?? ''),
-        'etnia'            => trim($_POST['etnia'] ?? ''),
+        // El CUI y el teléfono se aceptan con espacios o guiones (5555-1234),
+        // como se acostumbra escribirlos: se quitan antes de validar.
+        'cui'              => str_replace([' ', '-'], '', $_POST['cui'] ?? ''),
+        'etnia'            => trim(preg_replace('/\s+/u', ' ', $_POST['etnia'] ?? '')),
         'id_sector'        => $_POST['id_sector'] ?? '',
         'id_paraje'        => $_POST['id_paraje'] ?? '',
-        'direccion'        => trim($_POST['direccion'] ?? ''),
+        'direccion'        => trim(preg_replace('/\s+/u', ' ', $_POST['direccion'] ?? '')),
         'nombre_madre'     => Formato::nombrePropio($_POST['nombre_madre'] ?? ''),
         'nombre_padre'     => Formato::nombrePropio($_POST['nombre_padre'] ?? ''),
-        'telefono'         => trim($_POST['telefono'] ?? ''),
+        'telefono'         => str_replace([' ', '-'], '', $_POST['telefono'] ?? ''),
     ];
 }
 
@@ -748,76 +799,71 @@ function obtenerDatosFormulario(): array
  */
 function validarNino(array $d, bool $esNuevo = false): array
 {
-    $errores = [];
+    // Los largos máximos son los de cada columna de la tabla nino.
+    $errores = [
+        Validacion::nombrePersona($d['nombres'], 'Nombres', 100, true),
+        Validacion::nombrePersona($d['apellidos'], 'Apellidos', 100, true),
+        Validacion::nombrePersona($d['nombre_madre'], 'Nombre de la madre o responsable', 150, false),
+        Validacion::nombrePersona($d['nombre_padre'], 'Nombre del padre', 150, false),
+        Validacion::palabras($d['etnia'], 'Pueblo o comunidad lingüística', 50),
+        Validacion::texto($d['direccion'], 'Dirección', 200),
+        Validacion::cui($d['cui']),
+        Validacion::digitos($d['telefono'], 'Teléfono', 8),
+        Validacion::enLista($d['sexo'], ['M', 'F'], 'Debe seleccionar el sexo.'),
+    ];
 
-    if ($d['nombres'] === '')   $errores[] = 'Los nombres son obligatorios.';
-    if ($d['apellidos'] === '') $errores[] = 'Los apellidos son obligatorios.';
-    if ($d['fecha_nacimiento'] === '') {
-        $errores[] = 'La fecha de nacimiento es obligatoria.';
-    } else {
-        $nac = DateTime::createFromFormat('Y-m-d', $d['fecha_nacimiento']);
-        if (!$nac || $nac > new DateTime('now')) {
-            $errores[] = 'La fecha de nacimiento no es válida.';
-        } elseif ($esNuevo && $d['fecha_nacimiento'] <= Nino::fechaLimiteNacimiento()) {
-            // Fechas sin hora, para que un niño que cumple 7 hoy no aparezca con 6.
-            $anios = (new DateTime($d['fecha_nacimiento']))->diff(new DateTime('today'))->y;
-            $errores[] = 'El sistema registra niños menores de ' . Nino::EDAD_MAXIMA_ANIOS
-                       . ' años. Según la fecha de nacimiento, este niño tiene ' . $anios . ' años.';
+    $errorFecha = Validacion::fecha($d['fecha_nacimiento'], 'Fecha de nacimiento',
+        null, date('Y-m-d'), '', 'posterior a hoy');
+    if ($errorFecha !== null) {
+        $errores[] = $errorFecha;
+    } elseif ($esNuevo && $d['fecha_nacimiento'] <= Nino::fechaLimiteNacimiento()) {
+        // Fechas sin hora, para que un niño que cumple 7 hoy no aparezca con 6.
+        $anios = (new DateTime($d['fecha_nacimiento']))->diff(new DateTime('today'))->y;
+        $errores[] = 'El sistema registra niños menores de ' . Nino::EDAD_MAXIMA_ANIOS
+                   . ' años. Según la fecha de nacimiento, este niño tiene ' . $anios . ' años.';
+    }
+
+    // El sector y el paraje deben existir, y el paraje debe ser de ese sector.
+    $sectores = array_column(Catalogo::sectores(), 'id_sector');
+    if ($d['id_sector'] === '' || !in_array((string) $d['id_sector'], array_map('strval', $sectores), true)) {
+        $errores[] = 'Debe seleccionar el sector.';
+    } elseif ($d['id_paraje'] !== '') {
+        $sectorDelParaje = array_column(Catalogo::parajes(), 'id_sector', 'id_paraje')[$d['id_paraje']] ?? null;
+        if ((string) $sectorDelParaje !== (string) $d['id_sector']) {
+            $errores[] = 'El paraje elegido no pertenece al sector seleccionado.';
         }
     }
-    if (!in_array($d['sexo'], ['M', 'F'], true)) $errores[] = 'Debe seleccionar el sexo.';
-    if ($d['id_sector'] === '') $errores[] = 'Debe seleccionar el sector.';
 
     // Al menos un responsable del niño: la madre (o quien lo cuide) o el padre.
     if ($d['nombre_madre'] === '' && $d['nombre_padre'] === '') {
         $errores[] = 'Debe ingresar el nombre de la madre o responsable, o el del padre. Al menos uno es obligatorio.';
     }
 
-    if ($d['cui'] !== '' && !preg_match('/^\d{13}$/', $d['cui'])) {
-        $errores[] = 'El CUI debe tener 13 dígitos numéricos, o dejarse vacío.';
-    }
-    if ($d['telefono'] !== '' && !preg_match('/^\d{8}$/', $d['telefono'])) {
-        $errores[] = 'El teléfono debe tener 8 dígitos numéricos, o dejarse vacío.';
-    }
-    return $errores;
+    return array_values(array_filter($errores));
 }
 
 
 function validarMedicion(array $d, string $fechaNacimiento): array
 {
-    $errores = [];
+    $errores = [
+        Validacion::fecha($d['fecha_toma'], 'Fecha de la toma', $fechaNacimiento, date('Y-m-d'),
+            'anterior al nacimiento', 'posterior a hoy'),
+        Validacion::enLista($d['tipo_talla'], ['longitud', 'talla'], 'Debe seleccionar el tipo de medición.'),
+        Validacion::texto($d['observaciones'], 'Observaciones', 300),
+    ];
 
-    // Fecha de toma
-    if ($d['fecha_toma'] === '') {
-        $errores[] = 'La fecha de la toma es obligatoria.';
-    } else {
-        $toma = DateTime::createFromFormat('Y-m-d', $d['fecha_toma']);
-        $nac  = DateTime::createFromFormat('Y-m-d', $fechaNacimiento);
-        if (!$toma || $toma > new DateTime('now')) {
-            $errores[] = 'La fecha de la toma no puede ser futura.';
-        } elseif ($nac && $toma < $nac) {
-            $errores[] = 'La fecha de la toma no puede ser anterior al nacimiento.';
-        }
-    }
-
-    // Peso: rango plausible para menores de 7 años
-    if ($d['peso_kg'] === '' || !is_numeric($d['peso_kg'])) {
-        $errores[] = 'El peso es obligatorio y debe ser numérico.';
-    } elseif ($d['peso_kg'] <= 0 || $d['peso_kg'] >= 60) {
+    // Peso y talla: números positivos en rangos posibles para menores de 7 años.
+    // (La revisión fina según la edad la hace Calculo::valoresImposibles.)
+    if (!is_numeric($d['peso_kg'])) {
+        $errores[] = 'El peso es obligatorio y debe ser un número, por ejemplo 11.40.';
+    } elseif ($d['peso_kg'] < 0.5 || $d['peso_kg'] > 60) {
         $errores[] = 'El peso debe estar entre 0.5 y 60 kg.';
     }
-
-    // Talla: rango plausible
-    if ($d['talla_cm'] === '' || !is_numeric($d['talla_cm'])) {
-        $errores[] = 'La talla es obligatoria y debe ser numérica.';
-    } elseif ($d['talla_cm'] <= 30 || $d['talla_cm'] >= 150) {
+    if (!is_numeric($d['talla_cm'])) {
+        $errores[] = 'La talla es obligatoria y debe ser un número, por ejemplo 88.5.';
+    } elseif ($d['talla_cm'] < 30 || $d['talla_cm'] > 150) {
         $errores[] = 'La talla debe estar entre 30 y 150 cm.';
     }
 
-    // Tipo de talla
-    if (!in_array($d['tipo_talla'], ['longitud', 'talla'], true)) {
-        $errores[] = 'Debe seleccionar el tipo de medición.';
-    }
-
-    return $errores;
+    return array_values(array_filter($errores));
 }

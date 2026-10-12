@@ -80,24 +80,33 @@ function edadLegible(int $meses): string
             </label>
             <select id="tipo_talla" name="tipo_talla" required>
                 <option value="longitud" <?= (($datos['tipo_talla'] ?? $tipoSugerido) === 'longitud') ? 'selected' : '' ?>>
-                    Longitud — acostado (infantómetro)
+                    Longitud: acostado (infantómetro)
                 </option>
                 <option value="talla" <?= (($datos['tipo_talla'] ?? $tipoSugerido) === 'talla') ? 'selected' : '' ?>>
-                    Talla — de pie (tallímetro)
+                    Talla: de pie (tallímetro)
                 </option>
             </select>
         </div>
 
         <div class="campo">
             <label for="observaciones">Observaciones</label>
-            <textarea id="observaciones" name="observaciones" rows="2"
+            <textarea id="observaciones" name="observaciones" rows="2" maxlength="300"
                 placeholder="Notas de la consulta (opcional)"><?= htmlspecialchars($datos['observaciones'] ?? '') ?></textarea>
         </div>
+
+        <?php if (!empty($pedirConfirmacion)): ?>
+            <!-- Solo aparece si los valores quedaron fuera de los límites de la OMS. -->
+            <label class="confirmar-valores">
+                <input type="checkbox" name="confirmar_valores" value="1" required>
+                Revisé el peso y la talla en la balanza y el infantómetro o tallímetro,
+                y confirmo que son correctos.
+            </label>
+        <?php endif; ?>
 
         <div class="acciones">
             <a href="<?= APP_URL ?>/index.php?accion=nino_historial&id=<?= (int)$nino['id_nino'] ?>" class="btn-secundario">Cancelar</a>
             <button type="submit" class="btn-primario">
-                <?= Icono::ver('guardar') ?> Guardar medicion
+                <?= Icono::ver('guardar') ?> Guardar medición
             </button>
         </div>
     </form>

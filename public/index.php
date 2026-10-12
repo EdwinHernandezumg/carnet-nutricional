@@ -1,6 +1,13 @@
 <?php
 
 require_once __DIR__ . '/../config/config.php';
+
+// Fuera del ambiente de desarrollo no se muestran errores técnicos en pantalla:
+// pueden revelar rutas del servidor y consultas. Quedan en el registro de errores.
+if (APP_ENTORNO !== 'desarrollo') {
+    ini_set('display_errors', '0');
+    ini_set('log_errors', '1');
+}
 require_once __DIR__ . '/../src/core/Database.php';
 require_once __DIR__ . '/../src/core/Sesion.php';
 require_once __DIR__ . '/../src/core/Bitacora.php';

@@ -22,6 +22,13 @@ class Database
 
             try {
                 self::$conexion = new PDO($dsn, DB_USER, DB_PASS, $opciones);
+
+                // MySQL usa la misma hora que PHP (la de Guatemala, definida en
+                // config.php). En la nube el servidor suele estar en hora
+                // universal: sin esto, CURDATE() y NOW() irían 6 horas adelante
+                // y, después de las 18:00, creerían que ya es el día siguiente
+                // (citas de hoy, citas vencidas, egresos y hora de la bitácora).
+                self::$conexion->exec("SET time_zone = '" . (new DateTime())->format('P') . "'");
             } catch (PDOException $exception) {
                 if (APP_ENTORNO === 'desarrollo') {
                     die('Error de conexión a la base de datos: ' . $exception->getMessage());

@@ -63,6 +63,18 @@ class Auth
         return $_SESSION['usuario'] ?? null;
     }
 
+    /**
+     * Dirección de la página principal según el rol. Enfermería y consulta
+     * abren en el panel de seguimiento: lo primero que se ve al entrar son los
+     * niños en riesgo, que es la razón de ser del sistema. El administrador no
+     * captura datos clínicos y abre en la gestión de usuarios.
+     */
+    public static function paginaInicio(): string
+    {
+        $accion = self::tieneRol('administrador') ? 'usuarios' : 'panel_alertas';
+        return APP_URL . '/index.php?accion=' . $accion;
+    }
+
     /** Indica si el usuario actual tiene un rol dado. */
     public static function tieneRol(string $rol): bool
     {

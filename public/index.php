@@ -53,7 +53,7 @@ switch ($accion) {
                 header('Location: ' . APP_URL . '/index.php?accion=cambiar_pass');
                 exit;
             }
-            header('Location: ' . APP_URL . '/index.php?accion=ninos');
+            header('Location: ' . Auth::paginaInicio());
             exit;
         }
         $error = 'Usuario o contraseña incorrectos.';
@@ -348,7 +348,7 @@ switch ($accion) {
 
         Usuario::cambiarContrasenaPropia(Auth::usuario()['id'], $nueva);
         Auth::marcarPassCambiada();
-        header('Location: ' . APP_URL . '/index.php?accion=ninos');
+        header('Location: ' . Auth::paginaInicio());
         exit;
 
         // ---------- Gestión de usuarios (solo administrador) ----------
@@ -745,7 +745,7 @@ switch ($accion) {
     case 'inicio':
     default:
         if (Auth::autenticado() && !Sesion::expiroPorInactividad()) {
-            header('Location: ' . APP_URL . '/index.php?accion=ninos');
+            header('Location: ' . Auth::paginaInicio());
             exit;
         }
         $error = isset($_GET['expiro']) ? 'La sesión se cerró por inactividad. Ingrese nuevamente.' : null;

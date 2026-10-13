@@ -54,16 +54,6 @@ if (!function_exists('nav_activo')) {
             <?= Icono::ver('ninos') ?> <span>Niños</span>
         </a>
 
-        <a<?= nav_activo($accionActual, ['citas_calendario','citas_proximas','cita_nueva']) ?>
-           href="<?= APP_URL ?>/index.php?accion=citas_calendario" data-orden="4">
-            <?= Icono::ver('citas') ?> <span>Citas</span>
-        </a>
-
-        <a<?= nav_activo($accionActual, ['reportes']) ?>
-           href="<?= APP_URL ?>/index.php?accion=reportes" data-orden="5">
-            <?= Icono::ver('reportes') ?> <span>Reportes</span>
-        </a>
-
         <?php if (Auth::tieneRol('enfermeria')): ?>
             <a<?= nav_activo($accionActual, ['nino_nuevo']) ?>
                href="<?= APP_URL ?>/index.php?accion=nino_nuevo" data-orden="3" data-destacado="1">
@@ -78,6 +68,17 @@ if (!function_exists('nav_activo')) {
                 <?= Icono::ver('usuarios') ?> <span>Usuarios</span>
             </a>
         <?php endif; ?>
+
+        <a<?= nav_activo($accionActual, ['citas_calendario','citas_proximas','cita_nueva']) ?>
+           href="<?= APP_URL ?>/index.php?accion=citas_calendario" data-orden="4">
+            <?= Icono::ver('citas') ?> <span>Citas</span>
+        </a>
+
+        <!-- Reportes al final: se consulta cada mes, no en el trabajo diario. -->
+        <a<?= nav_activo($accionActual, ['reportes']) ?>
+           href="<?= APP_URL ?>/index.php?accion=reportes" data-orden="5">
+            <?= Icono::ver('reportes') ?> <span>Reportes</span>
+        </a>
 
     </nav>
 

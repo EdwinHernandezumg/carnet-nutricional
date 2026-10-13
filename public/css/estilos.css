@@ -226,6 +226,7 @@ body {
     color: var(--gris-suave); font-size: 1rem; margin-bottom: 1.4rem;
     max-width: 75ch;
 }
+.intro-panel a { color: var(--teal-osc); font-weight: 600; }
 
 /* ---------- Mensajes ---------- */
 .mensaje-error, .mensaje-ok {
@@ -381,10 +382,6 @@ body {
 }
 .filtros input, .filtros select { width: auto; min-width: 190px; }
 .filtros .btn-primario { min-width: 140px; }
-.lbl-filtro {
-    font-size: 0.95rem; color: var(--gris-texto);
-    display: flex; flex-direction: column; gap: 0.3rem; font-weight: 600;
-}
 
 /* ---------- Tablas ---------- */
 .tabla {
@@ -578,17 +575,92 @@ body.con-grafica-ampliada { overflow: hidden; }
     }
 }
 
-/* ---------- Reportes ---------- */
-.tabla-scroll { overflow-x: auto; border-radius: 12px; }
-.tabla-reporte th, .tabla-reporte td { text-align: center; white-space: nowrap; }
-.tabla-reporte td:first-child, .tabla-reporte td:nth-child(2) { text-align: left; }
-.tabla-reporte .c-grave  { background: #fdecea; color: #a4231a; font-weight: 700; }
-.tabla-reporte .c-riesgo { background: #ffe8d6; color: #a8551a; font-weight: 700; }
-.tabla-reporte .c-cerca  { background: #fff3cd; color: #7a5900; font-weight: 700; }
-.tabla-reporte .c-normal { background: #e6f4ea; color: #1b7030; }
-.tabla-reporte tfoot .fila-total td {
-    background: var(--marino); color: #fff; font-size: 1.02rem;
+/* ---------- Panel de indicadores ----------
+   Primero el teléfono: tarjetas en dos columnas, gráficas una debajo de
+   otra y filtros plegados. En la computadora: cuatro columnas y gráficas
+   de dos en dos. */
+.barra-exportar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 1rem;
 }
+.barra-exportar > span { font-weight: 600; color: var(--marino); margin-right: 0.2rem; }
+.barra-exportar .btn-secundario { padding: 0.55rem 1rem; min-height: 46px; font-size: 0.98rem; }
+@media (max-width: 700px) {
+    /* En el teléfono: "Exportar" arriba y los tres botones en un renglón. */
+    .barra-exportar > span { flex-basis: 100%; }
+    .barra-exportar .btn-secundario { flex: 1; padding: 0.5rem 0.4rem; gap: 0.35rem; }
+}
+
+.panel-filtros {
+    background: #fff; border-radius: 12px; margin-bottom: 1.2rem;
+    box-shadow: 0 2px 10px rgba(20,48,74,0.07);
+}
+.panel-filtros summary {
+    display: flex; align-items: center; gap: 0.6rem; cursor: pointer;
+    padding: 0.85rem 1rem; color: var(--marino); font-size: 0.95rem; min-height: 48px;
+    list-style: none;
+}
+.panel-filtros summary::-webkit-details-marker { display: none; }
+.panel-filtros summary .icono { color: var(--teal); }
+.formulario-filtros {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.6rem 0.8rem; padding: 0 1rem 1rem;
+}
+.formulario-filtros label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.88rem; font-weight: 600; color: var(--marino); }
+.formulario-filtros select, .formulario-filtros input {
+    min-height: 46px; padding: 0.5rem 0.6rem; border: 1.5px solid #cdd7e2; border-radius: var(--radio);
+    font-family: inherit; font-size: 0.98rem; background: #fff; color: var(--gris-texto); min-width: 0; width: 100%;
+}
+.filtros-botones { grid-column: 1 / -1; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.filtros-botones .btn-primario, .filtros-botones .btn-secundario { flex: 1; min-height: 48px; padding: 0.6rem 1rem; }
+
+.tarjetas-panel {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.6rem; margin-bottom: 1.2rem;
+}
+.kpi {
+    display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+    background: #fff; border: 1.5px solid var(--linea); border-radius: 12px;
+    padding: 0.75rem 0.9rem; font-family: inherit; cursor: pointer; min-height: 76px;
+    box-shadow: 0 2px 8px rgba(20,48,74,0.05);
+}
+.kpi:hover { border-color: var(--teal); }
+.kpi-numero { font-size: 1.7rem; font-weight: 700; color: var(--marino); line-height: 1.1; }
+.kpi-nombre { font-size: 0.85rem; color: var(--gris-suave); margin-top: 0.25rem; font-weight: 600; }
+.kpi-alerta .kpi-numero { color: #a4231a; }
+.kpi-cerca { border: 2px solid #e0a800; background: #fffbea; }
+.kpi-cerca .kpi-numero { color: #7a5900; }
+/* Las cuatro de estado nutricional, con los colores del panel de seguimiento. */
+.kpi-nivel { border-color: transparent; }
+.kpi-nivel .kpi-numero, .kpi-nivel .kpi-nombre { color: inherit; }
+.kpi-fijo { cursor: default; }
+.kpi-fijo:hover { border-color: var(--linea); }
+
+.grid-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.grafica-ayuda { color: var(--gris-suave); font-size: 0.85rem; margin: 0.15rem 0 0.7rem; }
+.lienzo-panel { position: relative; height: 280px; }
+.lienzo-alto { height: 320px; }
+.detalle-panel { margin-top: 0.5rem; scroll-margin-top: 1rem; }
+.detalle-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+.detalle-cabecera .subtitulo-seccion { flex: 1; }
+.etiqueta-nivel {
+    background: color-mix(in srgb, var(--color-nivel) 16%, white);
+    color: color-mix(in srgb, var(--color-nivel) 75%, black);
+}
+.etiqueta + .etiqueta { margin-left: 0.3rem; }
+
+@media (min-width: 701px) {
+    .tarjetas-panel { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .formulario-filtros { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .filtros-botones { grid-column: auto / span 4; justify-content: flex-end; }
+    .filtros-botones .btn-primario, .filtros-botones .btn-secundario { flex: 0 0 auto; }
+}
+@media (min-width: 900px) {
+    .grid-panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .tarjeta-ancha { grid-column: 1 / -1; }
+}
+
+/* Tabla ancha que se desliza de lado dentro de su recuadro. */
+.tabla-scroll { overflow-x: auto; border-radius: 12px; }
 
 /* ---------- Vacunacion, suplementacion y citas ---------- */
 /* Se antepone .tabla para ganarle a la regla ".tabla a", que pintaria el texto de teal. */

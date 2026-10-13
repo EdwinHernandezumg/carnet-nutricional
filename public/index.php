@@ -21,6 +21,7 @@ require_once __DIR__ . '/../src/calculo/Calculo.php';
 require_once __DIR__ . '/../src/alertas/Alerta.php';
 require_once __DIR__ . '/../src/calculo/GraficaCrecimiento.php';
 require_once __DIR__ . '/../src/reportes/Reporte.php';
+require_once __DIR__ . '/../src/reportes/LibroExcel.php';
 require_once __DIR__ . '/../src/carnet/Vacuna.php';
 require_once __DIR__ . '/../src/carnet/Suplementacion.php';
 require_once __DIR__ . '/../src/carnet/Cita.php';
@@ -436,13 +437,34 @@ switch ($accion) {
         // Panel de seguimiento de alertas
     case 'panel_alertas':
         Auth::exigirAutenticacion();
+        $sectores = Catalogo::sectores();
+        // Solo valores de las listas; cualquier otro se ignora.
+        $niveles = ['desnutricion_aguda', 'desnutricion_cronica', 'riesgo', 'sobrepeso', 'cerca_umbral'];
         $filtros = [
-            'id_sector' => $_GET['id_sector'] ?? '',
-            'nivel'     => $_GET['nivel'] ?? '',
+            'id_sector' => in_array($_GET['id_sector'] ?? '', array_map('strval', array_column($sectores, 'id_sector')), true)
+                           ? $_GET['id_sector'] : '',
+            'nivel'     => in_array($_GET['nivel'] ?? '', $niveles, true) ? $_GET['nivel'] : '',
         ];
         $ninos    = Alerta::panelSeguimiento($filtros);
-        $resumen  = Alerta::resumenNiveles();
-        $sectores = Catalogo::sectores();
+        $resumen  = Alerta::resumenNiveles($filtros['id_sector']);
+
+        // Texto de los filtros para la bitácora y para el encabezado impreso.
+        $textoFiltros = 'Todos los sectores';
+        foreach ($sectores as $s) {
+            if ((string)$s['id_sector'] === $filtros['id_sector']) {
+                $textoFiltros = 'Territorio ' . $s['territorio'] . ', sector ' . $s['letra'];
+            }
+        }
+        $textoFiltros .= $filtros['nivel'] !== '' ? '; nivel: ' . Alerta::etiquetaNivel($filtros['nivel']) : '; todos los niveles';
+
+        // "Imprimir lista": hoja para imprimir o guardar como PDF, por ejemplo
+        // para llevarla en las visitas domiciliarias.
+        if (isset($_GET['imprimir'])) {
+            Bitacora::registrar(Auth::usuario()['id'], 'exportar', 'alerta', null,
+                'Impresión de la lista de seguimiento (' . count($ninos) . ' niños). ' . $textoFiltros);
+            require __DIR__ . '/../views/alertas/imprimir.php';
+            break;
+        }
         require __DIR__ . '/../views/alertas/panel.php';
         break;
 
@@ -465,70 +487,37 @@ switch ($accion) {
 
     // ---------- Reportes consolidados ----------
     case 'reportes':
-        Auth::exigirRol(['administrador', 'consulta', 'enfermeria']);
-        $filtros = [
-            'id_territorio' => $_GET['id_territorio'] ?? '',
-            'fecha_desde'   => $_GET['fecha_desde'] ?? '',
-            'fecha_hasta'   => $_GET['fecha_hasta'] ?? '',
-        ];
-        $filas       = Reporte::resumenPorSector($filtros);
-        $totales     = Reporte::totales($filas);
-        $territorios = Reporte::territorios();
-        require __DIR__ . '/../views/reportes/consolidado.php';
-        break;
-
     case 'reporte_csv':
-        Auth::exigirRol(['administrador', 'consulta', 'enfermeria']);
-        $filtros = [
-            'id_territorio' => $_GET['id_territorio'] ?? '',
-            'fecha_desde'   => $_GET['fecha_desde'] ?? '',
-            'fecha_hasta'   => $_GET['fecha_hasta'] ?? '',
-        ];
-        $filas   = Reporte::resumenPorSector($filtros);
-        $totales = Reporte::totales($filas);
-        Bitacora::registrar(
-            Auth::usuario()['id'],
-            'exportar',
-            'reporte',
-            null,
-            'Descarga de reporte consolidado en CSV'
-        );
-        Reporte::descargarCSV($filas, $totales, 'reporte_nutricional_' . date('Y-m-d'));
-        break;
-
+    case 'reporte_excel':
     case 'reporte_imprimir':
+        // Panel de indicadores y sus tres exportaciones. Todas usan los mismos
+        // filtros y los mismos datos, así las cifras coinciden en todo formato.
         Auth::exigirRol(['administrador', 'consulta', 'enfermeria']);
-        $filtros = [
-            'id_territorio' => $_GET['id_territorio'] ?? '',
-            'fecha_desde'   => $_GET['fecha_desde'] ?? '',
-            'fecha_hasta'   => $_GET['fecha_hasta'] ?? '',
-        ];
-        $filas   = Reporte::resumenPorSector($filtros);
-        $totales = Reporte::totales($filas);
+        $filtros   = Reporte::filtros($_GET);
+        $ninos     = Reporte::ninos($filtros);
+        $resumen   = Reporte::resumen($ninos, $filtros);
+        $tendencia = Reporte::tendencia($ninos, $filtros);
 
-        // Texto descriptivo del alcance para el encabezado del documento.
-        $tituloFiltro = 'Todos los territorios';
-        if (!empty($filtros['id_territorio'])) {
-            foreach (Reporte::territorios() as $t) {
-                if ($t['id_territorio'] == $filtros['id_territorio']) {
-                    $tituloFiltro = 'Territorio ' . $t['numero'] . ' — ' . $t['nombre'];
-                }
-            }
-        }
-        if (!empty($filtros['fecha_desde']) || !empty($filtros['fecha_hasta'])) {
-            $tituloFiltro .= ' | Periodo: '
-                . ($filtros['fecha_desde'] ? Formato::fechaTexto($filtros['fecha_desde']) : 'inicio')
-                . ' a ' . ($filtros['fecha_hasta'] ? Formato::fechaTexto($filtros['fecha_hasta']) : 'hoy');
+        if ($accion === 'reportes') {
+            $territorios = Reporte::territorios();
+            $sectores    = Catalogo::sectores();
+            $parajes     = Catalogo::parajes();
+            require __DIR__ . '/../views/reportes/panel.php';
+            break;
         }
 
-        Bitacora::registrar(
-            Auth::usuario()['id'],
-            'exportar',
-            'reporte',
-            null,
-            'Vista de impresión de reporte consolidado'
-        );
-        require __DIR__ . '/../views/reportes/imprimir.php';
+        $formatos = ['reporte_csv' => 'CSV', 'reporte_excel' => 'Excel', 'reporte_imprimir' => 'PDF (impresión)'];
+        Bitacora::registrar(Auth::usuario()['id'], 'exportar', 'reporte', null,
+            'Exportación del panel de indicadores en ' . $formatos[$accion] . '. '
+            . Reporte::descripcionFiltros($filtros));
+
+        if ($accion === 'reporte_csv') {
+            Reporte::descargarCsv($ninos, $filtros);
+        } elseif ($accion === 'reporte_excel') {
+            Reporte::descargarExcel($ninos, $resumen, $tendencia, $filtros);
+        } else {
+            require __DIR__ . '/../views/reportes/imprimir.php';
+        }
         break;
 
     // ---------- Vacunación ----------

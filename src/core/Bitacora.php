@@ -37,7 +37,9 @@ class Bitacora
             ':accion'      => $accion,
             ':tabla'       => $tabla,
             ':id_registro' => $idRegistro,
-            ':detalle'     => $detalle,
+            // La columna admite 300 caracteres; con el modo estricto de MySQL un
+            // texto más largo daría error y la acción no quedaría registrada.
+            ':detalle'     => mb_substr($detalle, 0, 300),
             ':ip'          => $_SERVER['REMOTE_ADDR'] ?? null,
         ]);
     }

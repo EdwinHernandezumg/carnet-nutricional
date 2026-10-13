@@ -106,44 +106,51 @@ class Alerta
     }
 
     /**
-     * Panel de seguimiento: todos los niños con alerta activa, ordenados
-     * por gravedad. Devuelve una fila por niño (su alerta más reciente).
+     * Base común del panel de seguimiento: el ÚLTIMO CONTROL de cada niño
+     * activo y su alerta, si ese control la tiene. Así, si un niño se recupera
+     * y su último control sale normal, deja de aparecer en el seguimiento. Es
+     * la misma base del panel de indicadores en "Estado actual", por eso las
+     * cifras de los dos paneles coinciden.
+     */
+    private const BASE_SEGUIMIENTO = "
+        FROM nino n
+        JOIN medicion m ON m.id_medicion = (
+            SELECT m2.id_medicion FROM medicion m2
+            WHERE m2.id_nino = n.id_nino
+            ORDER BY m2.fecha_toma DESC, m2.id_medicion DESC
+            LIMIT 1
+        )
+        JOIN alerta a ON a.id_medicion = m.id_medicion AND a.estado = 'activa'
+        JOIN sector s ON s.id_sector = n.id_sector
+        JOIN territorio t ON t.id_territorio = s.id_territorio
+        LEFT JOIN paraje p ON p.id_paraje = n.id_paraje
+        WHERE n.estado = 'activo'";
+
+    /**
+     * Panel de seguimiento: niños cuyo último control tiene una alerta,
+     * ordenados por gravedad. Una fila por niño.
      */
     public static function panelSeguimiento(array $filtros = []): array
     {
         $db = Database::obtener();
 
-        $where = ["a.estado = 'activa'", "n.estado = 'activo'"];
+        $condiciones = '';
         $params = [];
-
         if (!empty($filtros['id_sector'])) {
-            $where[] = "n.id_sector = :id_sector";
+            $condiciones .= " AND n.id_sector = :id_sector";
             $params[':id_sector'] = $filtros['id_sector'];
         }
         if (!empty($filtros['nivel'])) {
-            $where[] = "a.nivel = :nivel";
+            $condiciones .= " AND a.nivel = :nivel";
             $params[':nivel'] = $filtros['nivel'];
         }
 
-        // Toma la alerta más reciente por niño.
         $sql = "SELECT n.id_nino, n.nombres, n.apellidos, n.fecha_nacimiento, n.sexo,
-                       s.letra AS sector_letra, t.numero AS territorio_numero,
+                       n.nombre_madre, n.telefono, s.letra AS sector_letra, t.numero AS territorio_numero,
                        p.nombre AS paraje_nombre,
                        a.nivel, a.descripcion, a.fecha_generacion,
-                       m.fecha_toma
-                FROM alerta a
-                JOIN medicion m ON m.id_medicion = a.id_medicion
-                JOIN nino n ON n.id_nino = a.id_nino
-                JOIN sector s ON s.id_sector = n.id_sector
-                JOIN territorio t ON t.id_territorio = s.id_territorio
-                LEFT JOIN paraje p ON p.id_paraje = n.id_paraje
-                WHERE " . implode(' AND ', $where) . "
-                  AND a.id_alerta = (
-                      SELECT a2.id_alerta FROM alerta a2
-                      JOIN medicion m2 ON m2.id_medicion = a2.id_medicion
-                      WHERE a2.id_nino = a.id_nino AND a2.estado = 'activa'
-                      ORDER BY m2.fecha_toma DESC, a2.id_alerta DESC LIMIT 1
-                  )
+                       m.fecha_toma"
+             . self::BASE_SEGUIMIENTO . $condiciones . "
                 ORDER BY FIELD(a.nivel,
                     'desnutricion_aguda','desnutricion_cronica','riesgo',
                     'sobrepeso','cerca_umbral'),
@@ -155,25 +162,24 @@ class Alerta
     }
 
     /**
-     * Conteos por nivel para las tarjetas de resumen del panel.
+     * Conteos por nivel para las tarjetas del panel, con el mismo filtro de
+     * sector que la lista (el filtro de nivel no aplica: las tarjetas muestran
+     * todos los niveles).
      */
-    public static function resumenNiveles(): array
+    public static function resumenNiveles(string $idSector = ''): array
     {
         $db = Database::obtener();
-        $sql = "SELECT a.nivel, COUNT(DISTINCT a.id_nino) AS total
-                FROM alerta a
-                JOIN nino n ON n.id_nino = a.id_nino
-                WHERE a.estado = 'activa' AND n.estado = 'activo'
-                  AND a.id_alerta = (
-                      SELECT a2.id_alerta FROM alerta a2
-                      JOIN medicion m2 ON m2.id_medicion = a2.id_medicion
-                      WHERE a2.id_nino = a.id_nino AND a2.estado = 'activa'
-                      ORDER BY m2.fecha_toma DESC, a2.id_alerta DESC LIMIT 1
-                  )
-                GROUP BY a.nivel";
-        $filas = $db->query($sql)->fetchAll();
+        $condicion = '';
+        $params = [];
+        if ($idSector !== '') {
+            $condicion = " AND n.id_sector = :id_sector";
+            $params[':id_sector'] = $idSector;
+        }
+        $stmt = $db->prepare("SELECT a.nivel, COUNT(*) AS total" . self::BASE_SEGUIMIENTO . $condicion
+            . " GROUP BY a.nivel");
+        $stmt->execute($params);
         $res = [];
-        foreach ($filas as $f) { $res[$f['nivel']] = (int)$f['total']; }
+        foreach ($stmt->fetchAll() as $f) { $res[$f['nivel']] = (int)$f['total']; }
         return $res;
     }
 

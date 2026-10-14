@@ -22,6 +22,7 @@ require_once __DIR__ . '/../src/alertas/Alerta.php';
 require_once __DIR__ . '/../src/calculo/GraficaCrecimiento.php';
 require_once __DIR__ . '/../src/reportes/Reporte.php';
 require_once __DIR__ . '/../src/reportes/LibroExcel.php';
+require_once __DIR__ . '/../src/reportes/FormatoSigsa3.php';
 require_once __DIR__ . '/../src/carnet/Vacuna.php';
 require_once __DIR__ . '/../src/carnet/Suplementacion.php';
 require_once __DIR__ . '/../src/carnet/Cita.php';
@@ -31,9 +32,16 @@ require_once __DIR__ . '/../src/core/Formato.php';
 require_once __DIR__ . '/../src/core/Recurso.php';
 require_once __DIR__ . '/../src/core/Validacion.php';
 
-
-
-
+// Ningún formulario del sistema envía listas (campo[]). Si un parámetro llega
+// como lista, alguien alteró la dirección o el formulario: se descarta aquí,
+// antes de que llegue a una validación que espera texto y la haga fallar.
+foreach (['_GET', '_POST'] as $origen) {
+    foreach ($GLOBALS[$origen] as $clave => $valor) {
+        if (is_array($valor)) {
+            unset($GLOBALS[$origen][$clave]);
+        }
+    }
+}
 
 Sesion::iniciar();
 
@@ -504,6 +512,22 @@ switch ($accion) {
             'peso_talla' => GraficaCrecimiento::datos($idNino, 'peso_talla'),
         ];
         require __DIR__ . '/../views/mediciones/graficas.php';
+        break;
+
+    // ---------- Formato SIGSA 3 (registro diario de consulta) ----------
+    case 'sigsa3':
+        // La hoja oficial con las atenciones a niños ya llenas, para no
+        // escribirlas a mano otra vez. Se imprime o se guarda como PDF.
+        Auth::exigirRol(['administrador', 'consulta', 'enfermeria']);
+        $filtros = FormatoSigsa3::filtros($_GET);
+        $puesto  = FormatoSigsa3::puestoDelUsuario(Auth::usuario()['id']);
+        $filas   = FormatoSigsa3::filas($filtros, $puesto);
+        Bitacora::registrar(Auth::usuario()['id'], 'exportar', 'reporte', null,
+            'Formato SIGSA 3 ' . ($filtros['mes_completo']
+                ? 'de ' . $filtros['mes'] . ' de ' . $filtros['anio']
+                : 'del ' . Formato::fechaTexto($filtros['fecha']))
+            . ' (' . count($filas) . ' atenciones a niños)');
+        require __DIR__ . '/../views/reportes/sigsa3.php';
         break;
 
     // ---------- Reportes consolidados ----------

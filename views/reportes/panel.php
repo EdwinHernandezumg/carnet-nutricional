@@ -64,6 +64,14 @@ $datosPanel = [
     </a>
 </div>
 
+<!-- Formatos oficiales del MSPAS llenos con los datos del sistema -->
+<div class="barra-exportar">
+    <span>Formatos SIGSA:</span>
+    <a href="<?= $url ?>sigsa3" target="_blank" class="btn-secundario">
+        <?= Icono::ver('documento', 20) ?> SIGSA 3 del día
+    </a>
+</div>
+
 <!-- Filtros: en el teléfono van plegados para no ocupar la pantalla -->
 <details class="panel-filtros" id="panel-filtros">
     <summary>

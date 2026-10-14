@@ -25,6 +25,7 @@ require_once __DIR__ . '/../src/reportes/LibroExcel.php';
 require_once __DIR__ . '/../src/carnet/Vacuna.php';
 require_once __DIR__ . '/../src/carnet/Suplementacion.php';
 require_once __DIR__ . '/../src/carnet/Cita.php';
+require_once __DIR__ . '/../src/carnet/CarnetFamilia.php';
 require_once __DIR__ . '/../src/core/Icono.php';
 require_once __DIR__ . '/../src/core/Formato.php';
 require_once __DIR__ . '/../src/core/Recurso.php';
@@ -228,11 +229,16 @@ switch ($accion) {
             $stmt->execute([':id' => $m['id_medicion']]);
             $indicadoresPorMedicion[$m['id_medicion']] = $stmt->fetchAll();
         }
+        // Alerta del ÚLTIMO CONTROL, igual que en el panel de seguimiento: si
+        // el niño se recuperó y su último control salió normal, no hay aviso.
         $stmtA = $db->prepare(
             "SELECT a.nivel, a.descripcion FROM alerta a
-             JOIN medicion m ON m.id_medicion = a.id_medicion
-             WHERE a.id_nino = :id AND a.estado = 'activa'
-             ORDER BY m.fecha_toma DESC, a.id_alerta DESC LIMIT 1"
+             WHERE a.estado = 'activa'
+               AND a.id_medicion = (
+                   SELECT m.id_medicion FROM medicion m
+                   WHERE m.id_nino = :id
+                   ORDER BY m.fecha_toma DESC, m.id_medicion DESC LIMIT 1
+               )"
         );
         $stmtA->execute([':id' => $idNino]);
         $alertaActual = $stmtA->fetch();
@@ -466,6 +472,21 @@ switch ($accion) {
             break;
         }
         require __DIR__ . '/../views/alertas/panel.php';
+        break;
+
+    case 'carnet_familia':
+        // Copia del carnet para la madre, el padre o el responsable: se
+        // imprime o se guarda como PDF desde el navegador.
+        Auth::exigirAutenticacion();
+        $carnet = CarnetFamilia::datos((int)($_GET['id'] ?? 0));
+        if (!$carnet) {
+            echo 'Niño no encontrado.';
+            break;
+        }
+        $nino = $carnet['nino'];
+        Bitacora::registrar(Auth::usuario()['id'], 'exportar', 'nino', (int)$nino['id_nino'],
+            'Carnet para la familia de ' . $nino['nombres'] . ' ' . $nino['apellidos']);
+        require __DIR__ . '/../views/carnet/familia.php';
         break;
 
     case 'nino_graficas':

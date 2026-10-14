@@ -68,6 +68,10 @@ function celdaZ(array $porTipo, string $tipo, string $etiqueta): string
     <a href="<?= APP_URL ?>/index.php?accion=nino_graficas&id=<?= (int)$nino['id_nino'] ?>" class="btn-primario">
         Ver gráficas de crecimiento
     </a>
+    <!-- Copia del carnet para la madre, el padre o el responsable -->
+    <a href="<?= APP_URL ?>/index.php?accion=carnet_familia&id=<?= (int)$nino['id_nino'] ?>" target="_blank" class="btn-secundario">
+        <?= Icono::ver('documento', 20) ?> Carnet para la familia
+    </a>
 </div>
 
 <h2 class="subtitulo-seccion">Mediciones registradas</h2>

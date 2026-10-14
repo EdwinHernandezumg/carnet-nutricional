@@ -63,6 +63,32 @@ class Formato
         return $partes ? implode(' ', $partes) : 'menos de 1 mes';
     }
 
+    /**
+     * Edad a partir de meses cumplidos: "8 meses", "2 años", "1 año 3 meses".
+     * Sirve para la edad que tenía el niño en un control pasado.
+     */
+    public static function edadEnMeses(int $meses): string
+    {
+        $anios = intdiv($meses, 12);
+        $resto = $meses % 12;
+        $partes = [];
+        if ($anios > 0) $partes[] = $anios . ($anios === 1 ? ' año' : ' años');
+        if ($resto > 0) $partes[] = $resto . ($resto === 1 ? ' mes' : ' meses');
+        return $partes ? implode(' ', $partes) : 'menos de 1 mes';
+    }
+
+    /**
+     * Peso en libras y onzas, como lo entienden muchas familias: "18 lb 12 oz".
+     * Usa la misma regla que la tabla de conversión del cuaderno SIGSA 5a
+     * (1 kg = 2.2 lb, onzas redondeadas), para que el sistema y el cuaderno
+     * den siempre el mismo número. Por ejemplo, 2.00 kg da 4 lb 6 oz.
+     */
+    public static function libras(float $kg): string
+    {
+        $onzasTotales = (int) round($kg * 2.2 * 16);
+        return intdiv($onzasTotales, 16) . ' lb ' . ($onzasTotales % 16) . ' oz';
+    }
+
     /** Palabras que van en minúscula dentro de un nombre, salvo al inicio. */
     const PARTICULAS = ['de', 'del', 'la', 'las', 'los', 'y'];
 

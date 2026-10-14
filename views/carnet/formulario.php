@@ -35,17 +35,31 @@ require __DIR__ . '/../layouts/encabezado.php';
 
 <?php if ($tipo === 'vacuna'): ?>
 
+    <?php
+    // Esquema vigente y esquema anterior, en grupos separados de la lista.
+    $grupos = [
+        'Esquema nacional vigente (2026)' => array_filter($catalogo, fn($c) => $c['vigente']),
+        'Esquema anterior (carnet de 2018): solo dosis ya aplicadas' => array_filter($catalogo, fn($c) => !$c['vigente']),
+    ];
+    $vacunaElegida = $_POST['vacuna_sel'] ?? '';
+    $lugarElegido  = (string)($_POST['lugar_vacunacion'] ?? Vacuna::LUGAR_PREDETERMINADO);
+    ?>
     <div class="campo">
         <label for="vacuna_sel">Vacuna y dosis *</label>
         <select id="vacuna_sel" name="vacuna_sel" required>
             <option value="">Seleccione</option>
-            <?php foreach ($catalogo as $c): ?>
-                <option value="<?= htmlspecialchars($c['nombre'] . '|' . $c['dosis']) ?>">
-                    <?= htmlspecialchars($c['nombre'] . ' · ' . $c['dosis']) ?>
-                    <?php if ($c['edad_sugerida']): ?>
-                        (<?= htmlspecialchars($c['edad_sugerida']) ?>)
-                    <?php endif; ?>
-                </option>
+            <?php foreach ($grupos as $nombreGrupo => $opciones): ?>
+                <optgroup label="<?= htmlspecialchars($nombreGrupo) ?>">
+                    <?php foreach ($opciones as $c): ?>
+                        <?php $valor = $c['nombre'] . '|' . $c['dosis']; ?>
+                        <option value="<?= htmlspecialchars($valor) ?>" <?= $vacunaElegida === $valor ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($c['nombre'] . ' · ' . $c['dosis']) ?>
+                            <?php if ($c['edad_sugerida']): ?>
+                                (<?= htmlspecialchars($c['edad_sugerida']) ?>)
+                            <?php endif; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </optgroup>
             <?php endforeach; ?>
         </select>
     </div>
@@ -54,16 +68,23 @@ require __DIR__ . '/../layouts/encabezado.php';
         <div class="campo">
             <label for="fecha_aplicacion">Fecha de aplicación *</label>
             <input type="date" id="fecha_aplicacion" name="fecha_aplicacion" required
-                   min="<?= htmlspecialchars($nino['fecha_nacimiento']) ?>" max="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>">
+                   min="<?= htmlspecialchars($nino['fecha_nacimiento']) ?>" max="<?= date('Y-m-d') ?>"
+                   value="<?= htmlspecialchars($_POST['fecha_aplicacion'] ?? date('Y-m-d')) ?>">
         </div>
         <div class="campo">
             <label for="lote">Lote</label>
-            <input type="text" id="lote" name="lote" maxlength="50">
+            <input type="text" id="lote" name="lote" maxlength="50"
+                   value="<?= htmlspecialchars($_POST['lote'] ?? '') ?>">
         </div>
         <div class="campo">
-            <label for="lugar">Lugar de aplicación</label>
-            <input type="text" id="lugar" name="lugar" maxlength="100"
-                   placeholder="Puesto de salud, jornada, domicilio">
+            <label for="lugar_vacunacion">Lugar de vacunación *</label>
+            <select id="lugar_vacunacion" name="lugar_vacunacion" required>
+                <?php foreach (Vacuna::LUGARES as $codigo => $nombre): ?>
+                    <option value="<?= $codigo ?>" <?= $lugarElegido === (string)$codigo ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($nombre) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
         </div>
     </div>
 

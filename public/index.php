@@ -239,7 +239,7 @@ switch ($accion) {
 
         // Datos del carnet: vacunas, suplementos y citas
         $vacunas        = Vacuna::listarPorNino($idNino);
-        $esquemaVacunas = Vacuna::esquemaDelNino($idNino);
+        $esquemaVacunas = Vacuna::esquemaDelNino($idNino, $nino['fecha_nacimiento']);
         $suplementos    = Suplementacion::listarPorNino($idNino);
         $citas          = Cita::listarPorNino($idNino);
 
@@ -552,7 +552,8 @@ switch ($accion) {
             Validacion::fecha($_POST['fecha_aplicacion'] ?? '', 'Fecha de aplicación',
                 $nino['fecha_nacimiento'], date('Y-m-d'), 'anterior al nacimiento', 'posterior a hoy'),
             Validacion::texto(trim($_POST['lote'] ?? ''), 'Lote', 50),
-            Validacion::texto(trim($_POST['lugar'] ?? ''), 'Lugar de aplicación', 100),
+            Validacion::enLista($_POST['lugar_vacunacion'] ?? '', array_keys(Vacuna::LUGARES),
+                'Debe seleccionar el lugar de vacunación.'),
         ]));
 
         if ($errores) {
@@ -568,7 +569,7 @@ switch ($accion) {
             'dosis'            => $partes[1],
             'fecha_aplicacion' => $_POST['fecha_aplicacion'],
             'lote'             => trim($_POST['lote'] ?? ''),
-            'lugar'            => trim($_POST['lugar'] ?? ''),
+            'lugar_vacunacion' => (int)$_POST['lugar_vacunacion'],
         ], Auth::usuario()['id']);
 
         header('Location: ' . APP_URL . '/index.php?accion=nino_historial&id=' . $idNino
@@ -771,7 +772,10 @@ function obtenerDatosFormulario(): array
         // El CUI y el teléfono se aceptan con espacios o guiones (5555-1234),
         // como se acostumbra escribirlos: se quitan antes de validar.
         'cui'              => str_replace([' ', '-'], '', $_POST['cui'] ?? ''),
-        'etnia'            => trim(preg_replace('/\s+/u', ' ', $_POST['etnia'] ?? '')),
+        'pueblo'           => $_POST['pueblo'] ?? '',
+        // La comunidad lingüística solo se guarda si el pueblo es maya.
+        'comunidad_linguistica' => ($_POST['pueblo'] ?? '') === (string) Catalogo::PUEBLO_MAYA
+                                   ? ($_POST['comunidad_linguistica'] ?? '') : '',
         'id_sector'        => $_POST['id_sector'] ?? '',
         'id_paraje'        => $_POST['id_paraje'] ?? '',
         'direccion'        => trim(preg_replace('/\s+/u', ' ', $_POST['direccion'] ?? '')),
@@ -794,7 +798,11 @@ function validarNino(array $d, bool $esNuevo = false): array
         Validacion::nombrePersona($d['apellidos'], 'Apellidos', 100, true),
         Validacion::nombrePersona($d['nombre_madre'], 'Nombre de la madre o responsable', 150, false),
         Validacion::nombrePersona($d['nombre_padre'], 'Nombre del padre', 150, false),
-        Validacion::palabras($d['etnia'], 'Pueblo o comunidad lingüística', 50),
+        // Pueblo y comunidad lingüística son opcionales, pero si vienen deben ser de la lista.
+        Validacion::enLista($d['pueblo'], array_merge([''], array_keys(Catalogo::PUEBLOS)),
+            'Pueblo: elija una opción de la lista.'),
+        Validacion::enLista($d['comunidad_linguistica'], array_merge([''], array_keys(Catalogo::COMUNIDADES_LINGUISTICAS)),
+            'Comunidad lingüística: elija una opción de la lista.'),
         Validacion::texto($d['direccion'], 'Dirección', 200),
         Validacion::cui($d['cui']),
         Validacion::digitos($d['telefono'], 'Teléfono', 8),

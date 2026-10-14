@@ -85,13 +85,36 @@ require __DIR__ . '/../layouts/encabezado.php';
             </div>
         </div>
 
-        <div class="campo">
-            <label for="etnia">Pueblo o comunidad lingüística</label>
-            <div class="con-icono">
-                <?= Icono::ver('idioma', 20) ?>
-                <input type="text" id="etnia" name="etnia" maxlength="50" data-filtro="palabras"
-                    value="<?= htmlspecialchars($datos['etnia'] ?? '') ?>"
-                    placeholder="Maya k'iche', mestizo, etc.">
+        <!-- Pueblo y comunidad lingüística, con los códigos del SIGSA 3 y 5a.
+             La comunidad lingüística solo aplica al pueblo maya. -->
+        <div class="fila">
+            <div class="campo">
+                <label for="pueblo">Pueblo</label>
+                <div class="con-icono">
+                    <?= Icono::ver('idioma', 20) ?>
+                    <select id="pueblo" name="pueblo">
+                        <option value="">Seleccione</option>
+                        <?php foreach (Catalogo::PUEBLOS as $codigo => $nombre): ?>
+                            <option value="<?= $codigo ?>" <?= (string)($datos['pueblo'] ?? '') === (string)$codigo ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($nombre) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="campo" id="campo-comunidad">
+                <label for="comunidad_linguistica">Comunidad lingüística</label>
+                <div class="con-icono">
+                    <?= Icono::ver('idioma', 20) ?>
+                    <select id="comunidad_linguistica" name="comunidad_linguistica">
+                        <option value="">Seleccione</option>
+                        <?php foreach (Catalogo::COMUNIDADES_LINGUISTICAS as $codigo => $nombre): ?>
+                            <option value="<?= $codigo ?>" <?= (string)($datos['comunidad_linguistica'] ?? '') === (string)$codigo ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($nombre) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
         </div>
     </fieldset>
@@ -203,6 +226,21 @@ require __DIR__ . '/../layouts/encabezado.php';
         }
         selSector.addEventListener('change', filtrar);
         filtrar();
+    })();
+
+    // La comunidad lingüística solo se muestra si el pueblo es maya.
+    (function() {
+        var pueblo = document.getElementById('pueblo');
+        var campo = document.getElementById('campo-comunidad');
+        var comunidad = document.getElementById('comunidad_linguistica');
+
+        function mostrar() {
+            var esMaya = pueblo.value === '<?= Catalogo::PUEBLO_MAYA ?>';
+            campo.hidden = !esMaya;
+            if (!esMaya) { comunidad.value = ''; }
+        }
+        pueblo.addEventListener('change', mostrar);
+        mostrar();
     })();
 
     // Exige al menos uno de los dos nombres (madre o padre) antes de enviar.

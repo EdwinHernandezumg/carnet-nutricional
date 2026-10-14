@@ -32,7 +32,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
                     <td class="celda-titulo"><?= htmlspecialchars($v['nombre_vacuna']) ?></td>
                     <td data-label="Dosis"><?= htmlspecialchars($v['dosis']) ?></td>
                     <td data-label="Lote"><?= Formato::dato($v['lote']) ?></td>
-                    <td data-label="Lugar"><?= Formato::dato($v['lugar']) ?></td>
+                    <td data-label="Lugar"><?= Formato::dato(Vacuna::etiquetaLugar($v['lugar_vacunacion'])) ?></td>
                     <td data-label="Registró"><?= Formato::dato($v['registrado_por']) ?></td>
                 </tr>
             <?php endforeach; ?>
@@ -40,13 +40,23 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
     </table>
 <?php endif; ?>
 
-<!-- Esquema completo: qué tiene y qué falta -->
+<!-- Esquema completo: qué tiene, qué le falta y qué le toca después -->
+<?php $pendientes = count(array_filter($esquemaVacunas, fn($e) => $e['estado'] === 'pendiente')); ?>
 <details class="bloque-esquema">
-    <summary>Ver esquema de vacunación completo</summary>
+    <summary>Ver esquema de vacunación completo
+        <?php if ($pendientes > 0): ?>
+            <span class="esq-aviso"><?= $pendientes ?> pendiente<?= $pendientes === 1 ? '' : 's' ?></span>
+        <?php endif; ?>
+    </summary>
+    <div class="leyenda-esquema">
+        <span><span class="esq-marca esq-marca-ok">●</span> Aplicada</span>
+        <span><span class="esq-marca esq-marca-pendiente">●</span> Pendiente: por su edad ya le tocaba</span>
+        <span><span class="esq-marca">○</span> Todavía no le toca</span>
+    </div>
     <div class="grid-esquema">
         <?php foreach ($esquemaVacunas as $e): ?>
-            <div class="item-esquema <?= $e['aplicada'] ? 'esq-ok' : 'esq-pendiente' ?>">
-                <span class="esq-marca"><?= $e['aplicada'] ? '●' : '○' ?></span>
+            <div class="item-esquema esq-<?= $e['estado'] ?>">
+                <span class="esq-marca"><?= $e['estado'] === 'proxima' ? '○' : '●' ?></span>
                 <div>
                     <strong><?= htmlspecialchars($e['nombre']) ?></strong>
                     <small><?= htmlspecialchars($e['dosis']) ?>
@@ -54,15 +64,21 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
                             · <?= htmlspecialchars($e['edad_sugerida']) ?>
                         <?php endif; ?>
                     </small>
-                    <?php if ($e['aplicada']): ?>
+                    <?php if ($e['estado'] === 'aplicada'): ?>
                         <small class="esq-fecha"><?= Formato::fecha($e['fecha']) ?></small>
+                        <?php if ($e['equivalente']): ?>
+                            <small>Con <?= htmlspecialchars($e['equivalente']) ?> (esquema anterior)</small>
+                        <?php endif; ?>
+                    <?php elseif ($e['estado'] === 'pendiente'): ?>
+                        <small class="esq-falta">Pendiente</small>
                     <?php endif; ?>
                 </div>
             </div>
         <?php endforeach; ?>
     </div>
-    <p class="nota-esquema">El esquema mostrado es referencial y puede ajustarse
-       en el catálogo del sistema conforme a la normativa vigente del Ministerio.</p>
+    <p class="nota-esquema">Esquema nacional de vacunación vigente, según el cuaderno
+       SIGSA 5a 2026 del Ministerio de Salud. Las dosis del esquema anterior (carnet
+       de 2018) aparecen en la lista de arriba y cuentan para la dosis equivalente.</p>
 </details>
 
 <!-- ================= SUPLEMENTACIÓN ================= -->

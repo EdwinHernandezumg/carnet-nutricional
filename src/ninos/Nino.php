@@ -77,10 +77,10 @@ class Nino
 
         $sql = "INSERT INTO nino
                 (id_sector, id_paraje, cui, nombres, apellidos, fecha_nacimiento,
-                 sexo, etnia, nombre_madre, nombre_padre, telefono, direccion, estado)
+                 sexo, pueblo, comunidad_linguistica, nombre_madre, nombre_padre, telefono, direccion, estado)
                 VALUES
                 (:id_sector, :id_paraje, :cui, :nombres, :apellidos, :fecha_nacimiento,
-                 :sexo, :etnia, :nombre_madre, :nombre_padre, :telefono, :direccion, 'activo')";
+                 :sexo, :pueblo, :comunidad_linguistica, :nombre_madre, :nombre_padre, :telefono, :direccion, 'activo')";
 
         $stmt = $db->prepare($sql);
         $stmt->execute([
@@ -91,7 +91,8 @@ class Nino
             ':apellidos'        => $datos['apellidos'],
             ':fecha_nacimiento' => $datos['fecha_nacimiento'],
             ':sexo'             => $datos['sexo'],
-            ':etnia'            => $datos['etnia'] ?: null,
+            ':pueblo'           => $datos['pueblo'] ?: null,
+            ':comunidad_linguistica' => $datos['comunidad_linguistica'] ?: null,
             ':nombre_madre'     => $datos['nombre_madre'] ?: null,
             ':nombre_padre'     => $datos['nombre_padre'] ?: null,
             ':telefono'         => $datos['telefono'] ?: null,
@@ -126,7 +127,8 @@ class Nino
                     apellidos = :apellidos,
                     fecha_nacimiento = :fecha_nacimiento,
                     sexo = :sexo,
-                    etnia = :etnia,
+                    pueblo = :pueblo,
+                    comunidad_linguistica = :comunidad_linguistica,
                     nombre_madre = :nombre_madre,
                     nombre_padre = :nombre_padre,
                     telefono = :telefono,
@@ -142,7 +144,8 @@ class Nino
             ':apellidos'        => $datos['apellidos'],
             ':fecha_nacimiento' => $datos['fecha_nacimiento'],
             ':sexo'             => $datos['sexo'],
-            ':etnia'            => $datos['etnia'] ?: null,
+            ':pueblo'           => $datos['pueblo'] ?: null,
+            ':comunidad_linguistica' => $datos['comunidad_linguistica'] ?: null,
             ':nombre_madre'     => $datos['nombre_madre'] ?: null,
             ':nombre_padre'     => $datos['nombre_padre'] ?: null,
             ':telefono'         => $datos['telefono'] ?: null,

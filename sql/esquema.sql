@@ -1,290 +1,264 @@
--- =====================================================
--- Sistema de monitoreo nutricional infantil
--- Puesto de salud de Chivarreto, Totonicapán
--- Esquema completo + datos iniciales
--- =====================================================
+-- ============================================================================
+-- Carnet Digital de Monitoreo Nutricional Infantil
+-- Estructura de la base de datos (17 tablas)
+--
+-- Se importa en una base vacía, antes de datos_iniciales.sql y oms_lms.sql.
+--
+-- Generado el 14-10-2026 15:17 desde la base local con:
+--   php scripts/exportar_esquema.php
+-- No editar a mano: cambiar la base local y volver a generarlo.
+-- ============================================================================
 
-CREATE DATABASE IF NOT EXISTS carnet_nutricional
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 
-USE carnet_nutricional;
+CREATE TABLE `catalogo_suplemento` (
+  `id_catalogo_suplemento` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(80) NOT NULL,
+  `presentacion` varchar(60) DEFAULT NULL,
+  `orden` int(11) NOT NULL DEFAULT 0,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id_catalogo_suplemento`),
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- -----------------------------------------------------
--- Estructura territorial
--- -----------------------------------------------------
+CREATE TABLE `catalogo_vacuna` (
+  `id_catalogo_vacuna` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(80) NOT NULL,
+  `dosis` varchar(30) NOT NULL,
+  `edad_sugerida` varchar(60) DEFAULT NULL,
+  `edad_meses` smallint(5) unsigned DEFAULT NULL,
+  `vigente` tinyint(1) NOT NULL DEFAULT 1,
+  `equivale_a` int(11) DEFAULT NULL,
+  `orden` int(11) NOT NULL DEFAULT 0,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id_catalogo_vacuna`),
+  UNIQUE KEY `uq_vacuna` (`nombre`,`dosis`),
+  KEY `fk_vacuna_equivale` (`equivale_a`),
+  CONSTRAINT `fk_vacuna_equivale` FOREIGN KEY (`equivale_a`) REFERENCES `catalogo_vacuna` (`id_catalogo_vacuna`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE puesto_salud (
-  id_puesto  INT AUTO_INCREMENT PRIMARY KEY,
-  nombre     VARCHAR(100) NOT NULL,
-  codigo     VARCHAR(20)  NOT NULL UNIQUE,
-  distrito   VARCHAR(100),
-  area_salud VARCHAR(100),
-  activo     BOOLEAN      NOT NULL DEFAULT TRUE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `oms_lms` (
+  `id_lms` int(11) NOT NULL AUTO_INCREMENT,
+  `indicador` enum('peso_edad','talla_edad','peso_longitud','peso_talla') NOT NULL,
+  `sexo` enum('M','F') NOT NULL,
+  `x` decimal(5,1) NOT NULL,
+  `l` decimal(10,6) NOT NULL,
+  `m` decimal(10,6) NOT NULL,
+  `s` decimal(10,6) NOT NULL,
+  PRIMARY KEY (`id_lms`),
+  UNIQUE KEY `uq_lms` (`indicador`,`sexo`,`x`),
+  KEY `idx_lms_busqueda` (`indicador`,`sexo`,`x`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE territorio (
-  id_territorio INT AUTO_INCREMENT PRIMARY KEY,
-  id_puesto     INT          NOT NULL,
-  numero        VARCHAR(10)  NOT NULL,
-  nombre        VARCHAR(100) NOT NULL,
-  CONSTRAINT fk_territorio_puesto
-    FOREIGN KEY (id_puesto) REFERENCES puesto_salud(id_puesto)
-    ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `puesto_salud` (
+  `id_puesto` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `codigo` varchar(20) NOT NULL,
+  `distrito` varchar(100) DEFAULT NULL,
+  `area_salud` varchar(100) DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id_puesto`),
+  UNIQUE KEY `codigo` (`codigo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE sector (
-  id_sector     INT AUTO_INCREMENT PRIMARY KEY,
-  id_territorio INT        NOT NULL,
-  letra         VARCHAR(5) NOT NULL,
-  descripcion   VARCHAR(100),
-  CONSTRAINT fk_sector_territorio
-    FOREIGN KEY (id_territorio) REFERENCES territorio(id_territorio)
-    ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `rol` (
+  `id_rol` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(50) NOT NULL,
+  `descripcion` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`id_rol`),
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE paraje (
-  id_paraje INT AUTO_INCREMENT PRIMARY KEY,
-  id_sector INT          NOT NULL,
-  nombre    VARCHAR(100) NOT NULL,
-  activo    BOOLEAN      NOT NULL DEFAULT TRUE,
-  CONSTRAINT fk_paraje_sector
-    FOREIGN KEY (id_sector) REFERENCES sector(id_sector) ON DELETE RESTRICT,
-  INDEX idx_paraje_sector (id_sector)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `territorio` (
+  `id_territorio` int(11) NOT NULL AUTO_INCREMENT,
+  `id_puesto` int(11) NOT NULL,
+  `numero` varchar(10) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  PRIMARY KEY (`id_territorio`),
+  KEY `fk_territorio_puesto` (`id_puesto`),
+  CONSTRAINT `fk_territorio_puesto` FOREIGN KEY (`id_puesto`) REFERENCES `puesto_salud` (`id_puesto`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- -----------------------------------------------------
--- Usuarios y roles
--- -----------------------------------------------------
+CREATE TABLE `sector` (
+  `id_sector` int(11) NOT NULL AUTO_INCREMENT,
+  `id_territorio` int(11) NOT NULL,
+  `letra` varchar(5) NOT NULL,
+  `descripcion` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id_sector`),
+  KEY `fk_sector_territorio` (`id_territorio`),
+  CONSTRAINT `fk_sector_territorio` FOREIGN KEY (`id_territorio`) REFERENCES `territorio` (`id_territorio`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE rol (
-  id_rol      INT AUTO_INCREMENT PRIMARY KEY,
-  nombre      VARCHAR(50) NOT NULL UNIQUE,
-  descripcion VARCHAR(200)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `usuario` (
+  `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
+  `id_rol` int(11) NOT NULL,
+  `id_puesto` int(11) NOT NULL,
+  `id_sector` int(11) DEFAULT NULL,
+  `nombre_completo` varchar(150) NOT NULL,
+  `usuario` varchar(50) NOT NULL,
+  `contrasena_hash` varchar(255) NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  `debe_cambiar_pass` tinyint(1) NOT NULL DEFAULT 0,
+  `fecha_alta` datetime NOT NULL DEFAULT current_timestamp(),
+  `fecha_baja` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_usuario`),
+  UNIQUE KEY `usuario` (`usuario`),
+  KEY `fk_usuario_rol` (`id_rol`),
+  KEY `fk_usuario_puesto` (`id_puesto`),
+  KEY `fk_usuario_sector` (`id_sector`),
+  CONSTRAINT `fk_usuario_puesto` FOREIGN KEY (`id_puesto`) REFERENCES `puesto_salud` (`id_puesto`),
+  CONSTRAINT `fk_usuario_rol` FOREIGN KEY (`id_rol`) REFERENCES `rol` (`id_rol`),
+  CONSTRAINT `fk_usuario_sector` FOREIGN KEY (`id_sector`) REFERENCES `sector` (`id_sector`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE usuario (
-  id_usuario      INT AUTO_INCREMENT PRIMARY KEY,
-  id_rol          INT          NOT NULL,
-  id_puesto       INT          NOT NULL,
-  id_sector       INT          NULL,
-  nombre_completo VARCHAR(150) NOT NULL,
-  usuario         VARCHAR(50)  NOT NULL UNIQUE,
-  contrasena_hash VARCHAR(255) NOT NULL,
-  activo          BOOLEAN      NOT NULL DEFAULT TRUE,
-  fecha_alta      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  fecha_baja      DATETIME     NULL,
-  CONSTRAINT fk_usuario_rol
-    FOREIGN KEY (id_rol) REFERENCES rol(id_rol) ON DELETE RESTRICT,
-  CONSTRAINT fk_usuario_puesto
-    FOREIGN KEY (id_puesto) REFERENCES puesto_salud(id_puesto) ON DELETE RESTRICT,
-  CONSTRAINT fk_usuario_sector
-    FOREIGN KEY (id_sector) REFERENCES sector(id_sector) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `bitacora` (
+  `id_bitacora` int(11) NOT NULL AUTO_INCREMENT,
+  `id_usuario` int(11) NOT NULL,
+  `accion` varchar(50) NOT NULL,
+  `tabla_afectada` varchar(50) NOT NULL,
+  `id_registro_afectado` int(11) DEFAULT NULL,
+  `detalle` varchar(300) DEFAULT NULL,
+  `fecha_hora` datetime NOT NULL DEFAULT current_timestamp(),
+  `ip_origen` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id_bitacora`),
+  KEY `idx_bitacora_fecha` (`fecha_hora`),
+  KEY `idx_bitacora_usuario` (`id_usuario`,`fecha_hora`),
+  CONSTRAINT `fk_bitacora_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- -----------------------------------------------------
--- Niños
--- -----------------------------------------------------
+CREATE TABLE `paraje` (
+  `id_paraje` int(11) NOT NULL AUTO_INCREMENT,
+  `id_sector` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id_paraje`),
+  KEY `idx_paraje_sector` (`id_sector`),
+  CONSTRAINT `fk_paraje_sector` FOREIGN KEY (`id_sector`) REFERENCES `sector` (`id_sector`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE nino (
-  id_nino          INT AUTO_INCREMENT PRIMARY KEY,
-  id_sector        INT          NOT NULL,
-  id_paraje        INT          NULL,
-  cui              VARCHAR(13)  NULL,
-  nombres          VARCHAR(100) NOT NULL,
-  apellidos        VARCHAR(100) NOT NULL,
-  fecha_nacimiento DATE         NOT NULL,
-  sexo             ENUM('M','F') NOT NULL,
-  etnia            VARCHAR(50),
-  nombre_madre     VARCHAR(150),
-  nombre_padre     VARCHAR(150),
-  telefono         VARCHAR(20),
-  direccion        VARCHAR(200),
-  estado           ENUM('activo','egresado','traslado') NOT NULL DEFAULT 'activo',
-  fecha_egreso     DATE         NULL,
-  fecha_registro   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_nino_sector
-    FOREIGN KEY (id_sector) REFERENCES sector(id_sector) ON DELETE RESTRICT,
-  CONSTRAINT fk_nino_paraje
-    FOREIGN KEY (id_paraje) REFERENCES paraje(id_paraje) ON DELETE RESTRICT,
-  INDEX idx_nino_cui    (cui),
-  INDEX idx_nino_estado (estado),
-  INDEX idx_nino_nombre (apellidos, nombres)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `nino` (
+  `id_nino` int(11) NOT NULL AUTO_INCREMENT,
+  `id_sector` int(11) NOT NULL,
+  `id_paraje` int(11) DEFAULT NULL,
+  `cui` varchar(13) DEFAULT NULL,
+  `nombres` varchar(100) NOT NULL,
+  `apellidos` varchar(100) NOT NULL,
+  `fecha_nacimiento` date NOT NULL,
+  `sexo` enum('M','F') NOT NULL,
+  `pueblo` tinyint(3) unsigned DEFAULT NULL,
+  `comunidad_linguistica` tinyint(3) unsigned DEFAULT NULL,
+  `nombre_madre` varchar(150) DEFAULT NULL,
+  `nombre_padre` varchar(150) DEFAULT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
+  `direccion` varchar(200) DEFAULT NULL,
+  `estado` enum('activo','egresado','traslado') NOT NULL DEFAULT 'activo',
+  `fecha_egreso` date DEFAULT NULL,
+  `fecha_registro` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_nino`),
+  KEY `fk_nino_sector` (`id_sector`),
+  KEY `fk_nino_paraje` (`id_paraje`),
+  KEY `idx_nino_cui` (`cui`),
+  KEY `idx_nino_estado` (`estado`),
+  KEY `idx_nino_nombre` (`apellidos`,`nombres`),
+  CONSTRAINT `fk_nino_paraje` FOREIGN KEY (`id_paraje`) REFERENCES `paraje` (`id_paraje`),
+  CONSTRAINT `fk_nino_sector` FOREIGN KEY (`id_sector`) REFERENCES `sector` (`id_sector`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- -----------------------------------------------------
--- Mediciones e indicadores
--- -----------------------------------------------------
+CREATE TABLE `suplementacion` (
+  `id_suplementacion` int(11) NOT NULL AUTO_INCREMENT,
+  `id_nino` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `tipo` varchar(50) NOT NULL,
+  `fecha_entrega` date NOT NULL,
+  `cantidad` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id_suplementacion`),
+  KEY `fk_suplementacion_usuario` (`id_usuario`),
+  KEY `idx_suplementacion_nino` (`id_nino`),
+  CONSTRAINT `fk_suplementacion_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`),
+  CONSTRAINT `fk_suplementacion_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE medicion (
-  id_medicion    INT AUTO_INCREMENT PRIMARY KEY,
-  id_nino        INT          NOT NULL,
-  id_usuario     INT          NOT NULL,
-  fecha_toma     DATE         NOT NULL,
-  peso_kg        DECIMAL(5,2) NOT NULL,
-  talla_cm       DECIMAL(5,2) NOT NULL,
-  tipo_talla     ENUM('longitud','talla') NOT NULL,
-  edad_meses     INT          NOT NULL,
-  observaciones  VARCHAR(300),
-  fecha_registro DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_medicion_nino
-    FOREIGN KEY (id_nino) REFERENCES nino(id_nino) ON DELETE RESTRICT,
-  CONSTRAINT fk_medicion_usuario
-    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE RESTRICT,
-  CONSTRAINT chk_medicion_peso  CHECK (peso_kg  > 0 AND peso_kg  < 60),
-  CONSTRAINT chk_medicion_talla CHECK (talla_cm > 0 AND talla_cm < 200),
-  INDEX idx_medicion_nino_fecha (id_nino, fecha_toma)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `vacuna_aplicada` (
+  `id_vacuna_aplicada` int(11) NOT NULL AUTO_INCREMENT,
+  `id_nino` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `nombre_vacuna` varchar(80) NOT NULL,
+  `dosis` varchar(30) NOT NULL,
+  `fecha_aplicacion` date NOT NULL,
+  `lote` varchar(50) DEFAULT NULL,
+  `lugar_vacunacion` tinyint(3) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id_vacuna_aplicada`),
+  KEY `fk_vacuna_usuario` (`id_usuario`),
+  KEY `idx_vacuna_nino` (`id_nino`),
+  CONSTRAINT `fk_vacuna_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`),
+  CONSTRAINT `fk_vacuna_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE indicador (
-  id_indicador  INT AUTO_INCREMENT PRIMARY KEY,
-  id_medicion   INT          NOT NULL,
-  tipo          ENUM('peso_edad','talla_edad','peso_talla') NOT NULL,
-  puntuacion_z  DECIMAL(5,2) NOT NULL,
-  clasificacion VARCHAR(50)  NOT NULL,
-  fecha_calculo DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_indicador_medicion
-    FOREIGN KEY (id_medicion) REFERENCES medicion(id_medicion) ON DELETE CASCADE,
-  UNIQUE KEY uq_indicador_medicion_tipo (id_medicion, tipo)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `cita` (
+  `id_cita` int(11) NOT NULL AUTO_INCREMENT,
+  `id_nino` int(11) NOT NULL,
+  `id_usuario` int(11) DEFAULT NULL,
+  `fecha_programada` date NOT NULL,
+  `estado` enum('programada','cumplida','inasistencia','reprogramada') NOT NULL DEFAULT 'programada',
+  `aviso_enviado` tinyint(1) NOT NULL DEFAULT 0,
+  `fecha_asistencia` date DEFAULT NULL,
+  `motivo` varchar(100) DEFAULT NULL,
+  `observaciones` varchar(300) DEFAULT NULL,
+  PRIMARY KEY (`id_cita`),
+  KEY `fk_cita_nino` (`id_nino`),
+  KEY `idx_cita_fecha` (`fecha_programada`,`estado`),
+  KEY `fk_cita_usuario` (`id_usuario`),
+  CONSTRAINT `fk_cita_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`),
+  CONSTRAINT `fk_cita_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- -----------------------------------------------------
--- Alertas
--- -----------------------------------------------------
+CREATE TABLE `medicion` (
+  `id_medicion` int(11) NOT NULL AUTO_INCREMENT,
+  `id_nino` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `fecha_toma` date NOT NULL,
+  `peso_kg` decimal(5,2) NOT NULL,
+  `talla_cm` decimal(5,2) NOT NULL,
+  `tipo_talla` enum('longitud','talla') NOT NULL,
+  `edad_meses` int(11) NOT NULL,
+  `observaciones` varchar(300) DEFAULT NULL,
+  `fecha_registro` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_medicion`),
+  KEY `fk_medicion_usuario` (`id_usuario`),
+  KEY `idx_medicion_nino_fecha` (`id_nino`,`fecha_toma`),
+  CONSTRAINT `fk_medicion_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`),
+  CONSTRAINT `fk_medicion_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`),
+  CONSTRAINT `chk_medicion_peso` CHECK (`peso_kg` > 0 and `peso_kg` < 60),
+  CONSTRAINT `chk_medicion_talla` CHECK (`talla_cm` > 0 and `talla_cm` < 200)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE alerta (
-  id_alerta        INT AUTO_INCREMENT PRIMARY KEY,
-  id_nino          INT          NOT NULL,
-  id_medicion      INT          NOT NULL,
-  nivel            ENUM('normal','cerca_umbral','riesgo','desnutricion_aguda','desnutricion_cronica','sobrepeso') NOT NULL,
-  descripcion      VARCHAR(200) NOT NULL,
-  estado           ENUM('activa','resuelta','seguimiento') NOT NULL DEFAULT 'activa',
-  fecha_generacion DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  fecha_resolucion DATETIME     NULL,
-  CONSTRAINT fk_alerta_nino
-    FOREIGN KEY (id_nino) REFERENCES nino(id_nino) ON DELETE RESTRICT,
-  CONSTRAINT fk_alerta_medicion
-    FOREIGN KEY (id_medicion) REFERENCES medicion(id_medicion) ON DELETE CASCADE,
-  INDEX idx_alerta_nino_estado (id_nino, estado)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE `alerta` (
+  `id_alerta` int(11) NOT NULL AUTO_INCREMENT,
+  `id_nino` int(11) NOT NULL,
+  `id_medicion` int(11) NOT NULL,
+  `nivel` enum('normal','cerca_umbral','riesgo','desnutricion_aguda','desnutricion_cronica','sobrepeso') NOT NULL,
+  `descripcion` varchar(500) NOT NULL,
+  `estado` enum('activa','resuelta','seguimiento') NOT NULL DEFAULT 'activa',
+  `fecha_generacion` datetime NOT NULL DEFAULT current_timestamp(),
+  `fecha_resolucion` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_alerta`),
+  KEY `fk_alerta_medicion` (`id_medicion`),
+  KEY `idx_alerta_nino_estado` (`id_nino`,`estado`),
+  CONSTRAINT `fk_alerta_medicion` FOREIGN KEY (`id_medicion`) REFERENCES `medicion` (`id_medicion`) ON DELETE CASCADE,
+  CONSTRAINT `fk_alerta_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- -----------------------------------------------------
--- Vacunación, suplementación y citas
--- -----------------------------------------------------
+CREATE TABLE `indicador` (
+  `id_indicador` int(11) NOT NULL AUTO_INCREMENT,
+  `id_medicion` int(11) NOT NULL,
+  `tipo` enum('peso_edad','talla_edad','peso_longitud','peso_talla') NOT NULL,
+  `puntuacion_z` decimal(5,2) NOT NULL,
+  `clasificacion` varchar(50) NOT NULL,
+  `fecha_calculo` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_indicador`),
+  UNIQUE KEY `uq_indicador_medicion_tipo` (`id_medicion`,`tipo`),
+  CONSTRAINT `fk_indicador_medicion` FOREIGN KEY (`id_medicion`) REFERENCES `medicion` (`id_medicion`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE vacuna_aplicada (
-  id_vacuna_aplicada INT AUTO_INCREMENT PRIMARY KEY,
-  id_nino            INT         NOT NULL,
-  id_usuario         INT         NOT NULL,
-  nombre_vacuna      VARCHAR(80) NOT NULL,
-  dosis              VARCHAR(30) NOT NULL,
-  fecha_aplicacion   DATE        NOT NULL,
-  lote               VARCHAR(50),
-  lugar              VARCHAR(100),
-  CONSTRAINT fk_vacuna_nino
-    FOREIGN KEY (id_nino) REFERENCES nino(id_nino) ON DELETE RESTRICT,
-  CONSTRAINT fk_vacuna_usuario
-    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE RESTRICT,
-  INDEX idx_vacuna_nino (id_nino)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE suplementacion (
-  id_suplementacion INT AUTO_INCREMENT PRIMARY KEY,
-  id_nino           INT         NOT NULL,
-  id_usuario        INT         NOT NULL,
-  tipo              VARCHAR(50) NOT NULL,
-  fecha_entrega     DATE        NOT NULL,
-  cantidad          VARCHAR(50),
-  CONSTRAINT fk_suplementacion_nino
-    FOREIGN KEY (id_nino) REFERENCES nino(id_nino) ON DELETE RESTRICT,
-  CONSTRAINT fk_suplementacion_usuario
-    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE RESTRICT,
-  INDEX idx_suplementacion_nino (id_nino)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE cita (
-  id_cita          INT AUTO_INCREMENT PRIMARY KEY,
-  id_nino          INT         NOT NULL,
-  fecha_programada DATE        NOT NULL,
-  estado           ENUM('programada','cumplida','inasistencia','reprogramada') NOT NULL DEFAULT 'programada',
-  fecha_asistencia DATE        NULL,
-  motivo           VARCHAR(100),
-  CONSTRAINT fk_cita_nino
-    FOREIGN KEY (id_nino) REFERENCES nino(id_nino) ON DELETE RESTRICT,
-  INDEX idx_cita_fecha (fecha_programada, estado)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- -----------------------------------------------------
--- Bitácora de auditoría
--- -----------------------------------------------------
-
-CREATE TABLE bitacora (
-  id_bitacora          INT AUTO_INCREMENT PRIMARY KEY,
-  id_usuario           INT         NOT NULL,
-  accion               VARCHAR(50) NOT NULL,
-  tabla_afectada       VARCHAR(50) NOT NULL,
-  id_registro_afectado INT         NULL,
-  detalle              VARCHAR(300),
-  fecha_hora           DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  ip_origen            VARCHAR(45),
-  CONSTRAINT fk_bitacora_usuario
-    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE RESTRICT,
-  INDEX idx_bitacora_fecha   (fecha_hora),
-  INDEX idx_bitacora_usuario (id_usuario, fecha_hora)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- =====================================================
--- DATOS INICIALES
--- =====================================================
-
-INSERT INTO rol (nombre, descripcion) VALUES
-('administrador', 'Gestión de usuarios y consulta de reportes. No captura datos clínicos.'),
-('enfermeria',    'Registra y modifica información clínica de su sector asignado.'),
-('consulta',      'Acceso de solo lectura a la información clínica.');
-
-INSERT INTO puesto_salud (nombre, codigo, distrito, area_salud) VALUES
-('Puesto de Salud Chivarreto', 'PS-CHIV', 'San Francisco El Alto', 'Totonicapán');
-
-INSERT INTO territorio (id_puesto, numero, nombre) VALUES
-(1, '8', 'Puesto de Salud del Centro'),
-(1, '9', 'Centro Comunitario Cuesta del Aire');
-
-INSERT INTO sector (id_territorio, letra, descripcion) VALUES
-(1, 'A', 'Sector A - Territorio 8'),
-(1, 'B', 'Sector B - Territorio 8'),
-(1, 'C', 'Sector C - Territorio 8'),
-(1, 'D', 'Sector D - Territorio 8'),
-(2, 'A', 'Sector A - Territorio 9'),
-(2, 'B', 'Sector B - Territorio 9'),
-(2, 'C', 'Sector C - Territorio 9');
-
-INSERT INTO paraje (id_sector, nombre) VALUES
-(1, 'Chimaldonado'),
-(1, 'Xecorral'),
-(1, 'Chi Alvarado'),
-(1, 'Chi Rojop'),
-(1, 'Chi Alvarez'),
-(1, 'Xetux'),
-(1, 'Cho Juyup'),
-(2, 'Chi Potrer'),
-(2, 'Pasacaquim'),
-(3, 'Chi Perez'),
-(3, 'Chi Oxlaj'),
-(3, 'Chi Gonzalez'),
-(4, 'Chi Lopez'),
-(4, 'Chi Hernández'),
-(4, 'Cho Caja'),
-(4, 'Chui Caja'),
-(4, 'Xe Caja'),
-(5, 'Chiventur'),
-(5, 'Pachaj'),
-(5, 'Chi Ordoñez'),
-(5, 'Chi Calles'),
-(5, 'Cho Tz''inchaj'),
-(5, 'Chi Chaj'),
-(6, 'Cuesta del Aire'),
-(6, 'Xetrubala'),
-(6, 'Chi Herrera'),
-(7, 'Tzanjuyup'),
-(7, 'Chi Chavez'),
-(7, 'Chi Ajtij');
+SET FOREIGN_KEY_CHECKS = 1;

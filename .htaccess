@@ -1,0 +1,11 @@
+# Solo la carpeta public/ debe verse desde el navegador. Este archivo bloquea
+# todo lo demás (config, src, sql, scripts, views, docs), por si el proyecto
+# completo quedara dentro de la carpeta pública del servidor. La carpeta
+# public/ tiene su propio .htaccess que la vuelve a permitir.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>

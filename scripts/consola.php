@@ -40,19 +40,52 @@ function preguntar(string $texto, string $porOmision = ''): string
 }
 
 /**
+ * Ejecuta el comando "stty" de Linux, que oculta o vuelve a mostrar lo que se
+ * escribe en la consola. Los hosting deshabilitan algunas funciones que
+ * ejecutan comandos (Hostinger deshabilita shell_exec), por eso prueba varias.
+ * Devuelve false si ninguna está disponible.
+ */
+function ejecutarStty(string $opcion): bool
+{
+    $comando = 'stty ' . $opcion;
+    if (function_exists('shell_exec')) {
+        shell_exec($comando);
+        return true;
+    }
+    if (function_exists('exec')) {
+        exec($comando);
+        return true;
+    }
+    if (function_exists('system')) {
+        system($comando);
+        return true;
+    }
+    if (function_exists('passthru')) {
+        passthru($comando);
+        return true;
+    }
+    return false;
+}
+
+/**
  * Lee una contraseña. En Linux (el servidor) no se muestra mientras se
- * escribe; en la consola de Windows no hay forma sencilla de ocultarla.
+ * escribe, si el hosting lo permite; en la consola de Windows no hay forma
+ * sencilla de ocultarla.
  */
 function preguntarContrasena(string $texto): string
 {
-    echo $texto . ': ';
-    $ocultar = DIRECTORY_SEPARATOR === '/' && function_exists('stream_isatty') && stream_isatty(STDIN);
-    if ($ocultar) {
-        shell_exec('stty -echo');
+    static $avisado = false;
+    $esTerminal = DIRECTORY_SEPARATOR === '/' && function_exists('stream_isatty') && stream_isatty(STDIN);
+    $ocultar = $esTerminal && ejecutarStty('-echo');
+    if ($esTerminal && !$ocultar && !$avisado) {
+        echo "Aviso: este servidor no permite ocultar la contraseña; se verá mientras la escribe.\n"
+           . "Al terminar, escriba clear para borrar la pantalla.\n";
+        $avisado = true;
     }
+    echo $texto . ': ';
     $respuesta = rtrim((string)fgets(STDIN), "\r\n");
     if ($ocultar) {
-        shell_exec('stty echo');
+        ejecutarStty('echo');
         echo "\n";
     }
     return $respuesta;

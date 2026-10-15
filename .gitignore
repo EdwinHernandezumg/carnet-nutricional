@@ -10,6 +10,7 @@ node_modules/
 
 # Archivos temporales y de sistema
 *.log
+error_log
 *.tmp
 Thumbs.db
 desktop.ini

@@ -3,10 +3,13 @@
 require_once __DIR__ . '/../config/config.php';
 
 // Fuera del ambiente de desarrollo no se muestran errores técnicos en pantalla:
-// pueden revelar rutas del servidor y consultas. Quedan en el registro de errores.
+// pueden revelar rutas del servidor y consultas. Quedan en el registro de errores,
+// fuera de public/: Hostinger lo guardaba en un archivo error_log junto a este
+// index.php, y cualquiera habría podido abrirlo desde el navegador.
 if (APP_ENTORNO !== 'desarrollo') {
     ini_set('display_errors', '0');
     ini_set('log_errors', '1');
+    ini_set('error_log', __DIR__ . '/../errores_php.log');
 }
 require_once __DIR__ . '/../src/core/Database.php';
 require_once __DIR__ . '/../src/core/Sesion.php';

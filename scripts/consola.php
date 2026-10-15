@@ -67,21 +67,34 @@ function ejecutarStty(string $opcion): bool
     return false;
 }
 
+/** Indica si se está escribiendo en una consola de Linux (el servidor). */
+function esTerminalLinux(): bool
+{
+    return DIRECTORY_SEPARATOR === '/' && function_exists('stream_isatty') && stream_isatty(STDIN);
+}
+
+/**
+ * Indica si conviene generar una contraseña temporal en lugar de pedirla:
+ * cuando se pide con --temporal, o cuando el servidor no permite ocultar lo
+ * que se escribe (Hostinger deshabilita las funciones que ejecutan comandos).
+ * Así la contraseña definitiva nunca queda a la vista en la pantalla.
+ */
+function usarContrasenaTemporal(): bool
+{
+    if (tieneOpcion('temporal')) {
+        return true;
+    }
+    // "stty echo" deja la consola como ya está: solo prueba si se puede ejecutar.
+    return DIRECTORY_SEPARATOR === '/' && !(esTerminalLinux() && ejecutarStty('echo'));
+}
+
 /**
  * Lee una contraseña. En Linux (el servidor) no se muestra mientras se
- * escribe, si el hosting lo permite; en la consola de Windows no hay forma
- * sencilla de ocultarla.
+ * escribe; en la consola de Windows no hay forma sencilla de ocultarla.
  */
 function preguntarContrasena(string $texto): string
 {
-    static $avisado = false;
-    $esTerminal = DIRECTORY_SEPARATOR === '/' && function_exists('stream_isatty') && stream_isatty(STDIN);
-    $ocultar = $esTerminal && ejecutarStty('-echo');
-    if ($esTerminal && !$ocultar && !$avisado) {
-        echo "Aviso: este servidor no permite ocultar la contraseña; se verá mientras la escribe.\n"
-           . "Al terminar, escriba clear para borrar la pantalla.\n";
-        $avisado = true;
-    }
+    $ocultar = esTerminalLinux() && ejecutarStty('-echo');
     echo $texto . ': ';
     $respuesta = rtrim((string)fgets(STDIN), "\r\n");
     if ($ocultar) {
@@ -137,7 +150,9 @@ function ejecutarArchivoSql(PDO $db, string $archivo): int
 /**
  * Pide usuario, nombre y contraseña del administrador, con las mismas reglas
  * que el formulario de Gestión de usuarios. Repite cada pregunta hasta que la
- * respuesta sea válida.
+ * respuesta sea válida. Si usarContrasenaTemporal(), no pide la contraseña:
+ * genera una temporal (en $datos['temporal']) que el sistema obliga a cambiar
+ * en el primer ingreso.
  */
 function pedirDatosAdministrador(bool $pedirUsuario = true, bool $pedirNombre = true): array
 {
@@ -161,6 +176,12 @@ function pedirDatosAdministrador(bool $pedirUsuario = true, bool $pedirNombre = 
         echo "  $error\n";
     }
 
+    if (usarContrasenaTemporal()) {
+        $datos['temporal'] = Contrasena::generarTemporal();
+        $datos['hash'] = password_hash($datos['temporal'], PASSWORD_DEFAULT);
+        return $datos;
+    }
+
     while (true) {
         $contrasena = preguntarContrasena('Contraseña (mínimo ' . Contrasena::LARGO_MINIMO . ' caracteres, con letra y número)');
         $errores = Contrasena::validar($contrasena);
@@ -174,8 +195,20 @@ function pedirDatosAdministrador(bool $pedirUsuario = true, bool $pedirNombre = 
         }
         break;
     }
+    $datos['temporal'] = null;
     $datos['hash'] = password_hash($contrasena, PASSWORD_DEFAULT);
     return $datos;
+}
+
+/** Muestra la contraseña temporal del administrador, si se generó una. */
+function mostrarContrasenaTemporal(array $datos): void
+{
+    if ($datos['temporal'] === null) {
+        return;
+    }
+    echo "\nContraseña temporal: {$datos['temporal']}\n"
+       . "Anótela. Al ingresar por primera vez, el sistema pedirá cambiarla por una propia.\n"
+       . "Cuando la haya anotado, escriba clear para borrar la pantalla.\n";
 }
 
 /** Deja constancia en la bitácora de lo que hizo un script de consola. */

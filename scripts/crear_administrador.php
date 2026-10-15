@@ -12,6 +12,10 @@
  *     administrador.
  * Todo queda en la bitácora.
  *
+ * Si el servidor no permite ocultar lo que se escribe (Hostinger), o con
+ * --temporal, no pide la contraseña: genera una temporal y el sistema obliga
+ * a cambiarla en el primer ingreso.
+ *
  * Si el hosting no tiene consola, se ejecuta en la computadora con:
  *   php scripts/crear_administrador.php --sql
  * y muestra la sentencia SQL para pegarla en phpMyAdmin. La sentencia lleva
@@ -33,10 +37,11 @@ if (tieneOpcion('sql')) {
     $admin = pedirDatosAdministrador();
     $texto = fn(string $valor) => "'" . str_replace(["\\", "'"], ["\\\\", "\\'"], $valor) . "'";
     echo "\nPegue esta sentencia en la pestaña SQL de phpMyAdmin, con la base del sistema elegida:\n\n";
-    echo "INSERT INTO usuario (id_rol, id_puesto, nombre_completo, usuario, contrasena_hash)\n";
+    echo "INSERT INTO usuario (id_rol, id_puesto, nombre_completo, usuario, contrasena_hash, debe_cambiar_pass)\n";
     echo "SELECT r.id_rol, (SELECT MIN(id_puesto) FROM puesto_salud), {$texto($admin['nombre'])}, "
-       . "{$texto($admin['usuario'])},\n       {$texto($admin['hash'])}\n";
+       . "{$texto($admin['usuario'])},\n       {$texto($admin['hash'])}, " . ($admin['temporal'] === null ? 0 : 1) . "\n";
     echo "FROM rol r WHERE r.nombre = 'administrador';\n\n";
+    mostrarContrasenaTemporal($admin);
     exit(0);
 }
 
@@ -65,21 +70,25 @@ if ($existente) {
     }
     $datos = pedirDatosAdministrador(false, false);
     $db->prepare("UPDATE usuario SET contrasena_hash = :hash, id_rol = :rol, activo = 1,
-                         fecha_baja = NULL, debe_cambiar_pass = 0
+                         fecha_baja = NULL, debe_cambiar_pass = :cambiar
                   WHERE id_usuario = :id")
-       ->execute([':hash' => $datos['hash'], ':rol' => $idRol, ':id' => $existente['id_usuario']]);
+       ->execute([':hash' => $datos['hash'], ':rol' => $idRol, ':cambiar' => $datos['temporal'] === null ? 0 : 1,
+                  ':id' => $existente['id_usuario']]);
     registrarEnBitacora($db, (int)$existente['id_usuario'], 'restablecer_pass', (int)$existente['id_usuario'],
         "Recuperación de emergencia desde la consola del administrador \"$usuario\"");
     echo "\nListo: \"$usuario\" ya puede ingresar con la contraseña nueva.\n";
+    mostrarContrasenaTemporal($datos);
 } else {
     echo "\nSe creará el administrador \"$usuario\".\n";
     $datos = pedirDatosAdministrador(false);
     $idPuesto = (int)$db->query('SELECT MIN(id_puesto) FROM puesto_salud')->fetchColumn();
-    $db->prepare("INSERT INTO usuario (id_rol, id_puesto, nombre_completo, usuario, contrasena_hash)
-                  VALUES (:rol, :puesto, :nombre, :usuario, :hash)")
+    $db->prepare("INSERT INTO usuario (id_rol, id_puesto, nombre_completo, usuario, contrasena_hash, debe_cambiar_pass)
+                  VALUES (:rol, :puesto, :nombre, :usuario, :hash, :cambiar)")
        ->execute([':rol' => $idRol, ':puesto' => $idPuesto, ':nombre' => $datos['nombre'],
-                  ':usuario' => $usuario, ':hash' => $datos['hash']]);
+                  ':usuario' => $usuario, ':hash' => $datos['hash'],
+                  ':cambiar' => $datos['temporal'] === null ? 0 : 1]);
     $id = (int)$db->lastInsertId();
     registrarEnBitacora($db, $id, 'crear', $id, "Administrador \"$usuario\" creado desde la consola");
     echo "\nListo: ya puede ingresar con el usuario \"$usuario\".\n";
+    mostrarContrasenaTemporal($datos);
 }

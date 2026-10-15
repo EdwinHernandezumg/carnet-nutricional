@@ -11,6 +11,8 @@
  * 3. Verifica que todo quedó cargado.
  * 4. Crea la cuenta del primer administrador, con la contraseña que se
  *    escribe en ese momento. Ninguna contraseña viaja en los archivos.
+ *    Si el servidor no permite ocultar lo que se escribe (Hostinger), o con
+ *    --temporal, genera una contraseña temporal que se cambia al primer ingreso.
  *
  * Para probar la instalación en otra base vacía sin tocar la de config.php:
  *   php scripts/instalar.php --base=nombre_de_la_base
@@ -92,14 +94,16 @@ $admin = pedirDatosAdministrador();
 
 $idRol    = (int)$db->query("SELECT id_rol FROM rol WHERE nombre = 'administrador'")->fetchColumn();
 $idPuesto = (int)$db->query('SELECT id_puesto FROM puesto_salud ORDER BY id_puesto LIMIT 1')->fetchColumn();
-$db->prepare("INSERT INTO usuario (id_rol, id_puesto, nombre_completo, usuario, contrasena_hash)
-              VALUES (:rol, :puesto, :nombre, :usuario, :hash)")
+$db->prepare("INSERT INTO usuario (id_rol, id_puesto, nombre_completo, usuario, contrasena_hash, debe_cambiar_pass)
+              VALUES (:rol, :puesto, :nombre, :usuario, :hash, :cambiar)")
    ->execute([':rol' => $idRol, ':puesto' => $idPuesto, ':nombre' => $admin['nombre'],
-              ':usuario' => $admin['usuario'], ':hash' => $admin['hash']]);
+              ':usuario' => $admin['usuario'], ':hash' => $admin['hash'],
+              ':cambiar' => $admin['temporal'] === null ? 0 : 1]);
 $idAdmin = (int)$db->lastInsertId();
 registrarEnBitacora($db, $idAdmin, 'crear', $idAdmin, 'Instalación del sistema: cuenta del primer administrador');
 
 echo "\nInstalación terminada. Ya puede ingresar con el usuario \"{$admin['usuario']}\".\n";
+mostrarContrasenaTemporal($admin);
 if (APP_ENTORNO !== 'produccion') {
     echo "\nRecuerde: en el servidor, APP_ENTORNO debe ser 'produccion' en config/config.php,\n";
     echo "para que no se muestren errores técnicos en pantalla.\n";

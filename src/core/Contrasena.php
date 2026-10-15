@@ -42,4 +42,21 @@ class Contrasena
     {
         return empty(self::validar($pass));
     }
+
+    /**
+     * Genera una contraseña temporal legible pero razonablemente segura.
+     * Formato: 2 letras mayúsculas + 4 dígitos + 2 minúsculas (ej. "KM4821tz").
+     * La usan la recuperación por el administrador y los scripts de consola.
+     */
+    public static function generarTemporal(): string
+    {
+        $may = 'ABCDEFGHJKLMNPQRSTUVWXYZ';   // sin I ni O (se confunden)
+        $min = 'abcdefghijkmnpqrstuvwxyz';   // sin l
+        $num = '23456789';                   // sin 0 ni 1
+        $r = '';
+        for ($i = 0; $i < 2; $i++) $r .= $may[random_int(0, strlen($may) - 1)];
+        for ($i = 0; $i < 4; $i++) $r .= $num[random_int(0, strlen($num) - 1)];
+        for ($i = 0; $i < 2; $i++) $r .= $min[random_int(0, strlen($min) - 1)];
+        return $r;
+    }
 }

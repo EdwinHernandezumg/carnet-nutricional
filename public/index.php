@@ -374,7 +374,8 @@ switch ($accion) {
         $usuarios = Usuario::listar();
         $mensaje  = $_GET['ok'] ?? '';
         $temporal = $_SESSION['temporal_generada'] ?? '';
-        unset($_SESSION['temporal_generada']);
+        $usuarioTemporal = $_SESSION['temporal_usuario'] ?? '';
+        unset($_SESSION['temporal_generada'], $_SESSION['temporal_usuario']);
         require __DIR__ . '/../views/usuarios/lista.php';
         break;
 
@@ -423,6 +424,7 @@ switch ($accion) {
 
         $temporal = Usuario::crear($datos, Auth::usuario()['id']);
         $_SESSION['temporal_generada'] = $temporal;
+        $_SESSION['temporal_usuario']  = $datos['usuario'];
         header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Usuario creado correctamente.'));
         exit;
 
@@ -432,6 +434,7 @@ switch ($accion) {
         if ($idU > 0) {
             $temporal = Usuario::restablecerContrasena($idU, Auth::usuario()['id']);
             $_SESSION['temporal_generada'] = $temporal;
+            $_SESSION['temporal_usuario']  = Usuario::obtener($idU)['usuario'] ?? '';
         }
         header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Contraseña restablecida.'));
         exit;
@@ -815,7 +818,8 @@ function obtenerDatosFormulario(): array
     return [
         'nombres'          => Formato::nombrePropio($_POST['nombres'] ?? ''),
         'apellidos'        => Formato::nombrePropio($_POST['apellidos'] ?? ''),
-        'fecha_nacimiento' => $_POST['fecha_nacimiento'] ?? '',
+        // Se escribe como día/mes/año; se guarda como año-mes-día.
+        'fecha_nacimiento' => Formato::fechaIso($_POST['fecha_nacimiento'] ?? ''),
         'sexo'             => $_POST['sexo'] ?? '',
         // El CUI y el teléfono se aceptan con espacios o guiones (5555-1234),
         // como se acostumbra escribirlos: se quitan antes de validar.

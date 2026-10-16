@@ -8,6 +8,14 @@ $titulo = $esEdicion ? 'Editar niño' : 'Registrar niño';
 // En un registro nuevo, la fecha de nacimiento más antigua aceptada (menor de 7 años).
 $fechaMinima = (new DateTime(Nino::fechaLimiteNacimiento()))->modify('+1 day')->format('Y-m-d');
 
+// La fecha de nacimiento se escribe como día/mes/año (se copia del carnet con
+// el teclado numérico); en la base se guarda como año-mes-día.
+$fechaNacimientoPantalla = $datos['fecha_nacimiento'] ?? '';
+$fechaLeida = DateTime::createFromFormat('!Y-m-d', $fechaNacimientoPantalla);
+if ($fechaLeida && $fechaLeida->format('Y-m-d') === $fechaNacimientoPantalla) {
+    $fechaNacimientoPantalla = $fechaLeida->format('d/m/Y');
+}
+
 require __DIR__ . '/../layouts/encabezado.php';
 ?>
 
@@ -57,11 +65,14 @@ require __DIR__ . '/../layouts/encabezado.php';
                 <label for="fecha_nacimiento">Fecha de nacimiento *</label>
                 <div class="con-icono">
                     <?= Icono::ver('calendario', 20) ?>
-                    <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required
-                        max="<?= date('Y-m-d') ?>"
-                        <?= $esEdicion ? '' : 'min="' . $fechaMinima . '"' ?>
-                        value="<?= htmlspecialchars($datos['fecha_nacimiento'] ?? '') ?>">
+                    <input type="text" id="fecha_nacimiento" name="fecha_nacimiento" required
+                        inputmode="numeric" autocomplete="off" maxlength="10"
+                        placeholder="dd/mm/aaaa" data-filtro="fecha"
+                        data-maxima="<?= date('Y-m-d') ?>"
+                        data-minima="<?= $esEdicion ? '' : $fechaMinima ?>"
+                        value="<?= htmlspecialchars($fechaNacimientoPantalla) ?>">
                 </div>
+                <small class="edad-calculada" id="edad-calculada" aria-live="polite"></small>
             </div>
             <div class="campo">
                 <label for="sexo">Sexo *</label>
@@ -260,20 +271,66 @@ require __DIR__ . '/../layouts/encabezado.php';
         revisar();
     })();
 
-    // Mensaje claro cuando la fecha queda fuera de rango (también se valida en el servidor).
+    // Fecha de nacimiento escrita como día/mes/año: pone las barras mientras se
+    // escribe, muestra la edad que resulta (para notar un error de dedo) y da un
+    // mensaje claro si la fecha no sirve. El servidor la vuelve a validar.
     (function() {
         var fecha = document.getElementById('fecha_nacimiento');
+        var edad = document.getElementById('edad-calculada');
+
+        function ponerBarras(evento) {
+            // Solo al escribir: al borrar no se agregan barras, para no estorbar.
+            if (evento && evento.inputType && evento.inputType.indexOf('insert') !== 0) {
+                return;
+            }
+            var digitos = fecha.value.replace(/\D/g, '').slice(0, 8);
+            var texto = digitos.slice(0, 2);
+            if (digitos.length > 2) texto += '/' + digitos.slice(2, 4);
+            if (digitos.length > 4) texto += '/' + digitos.slice(4);
+            if (digitos.length === 2 || digitos.length === 4) texto += '/';
+            fecha.value = texto;
+        }
+
+        // Devuelve la fecha como año-mes-día, o '' si no es una fecha real.
+        function leerFecha(texto) {
+            var p = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (!p) return '';
+            var dia = +p[1], mes = +p[2], anio = +p[3];
+            var d = new Date(anio, mes - 1, dia);
+            if (d.getFullYear() !== anio || d.getMonth() !== mes - 1 || d.getDate() !== dia) return '';
+            return anio + '-' + ('0' + mes).slice(-2) + '-' + ('0' + dia).slice(-2);
+        }
+
+        function textoEdad(iso) {
+            var p = iso.split('-'), hoy = new Date();
+            var meses = (hoy.getFullYear() - p[0]) * 12 + (hoy.getMonth() + 1 - p[1]);
+            if (hoy.getDate() < +p[2]) meses--;
+            if (meses < 1) return 'menos de 1 mes';
+            var anios = Math.floor(meses / 12), resto = meses % 12, partes = [];
+            if (anios) partes.push(anios + (anios === 1 ? ' año' : ' años'));
+            if (resto) partes.push(resto + (resto === 1 ? ' mes' : ' meses'));
+            return partes.join(' ');
+        }
 
         function revisarFecha() {
+            var iso = leerFecha(fecha.value);
             var mensaje = '';
-            if (fecha.validity.rangeUnderflow) {
-                mensaje = 'El sistema registra niños menores de <?= Nino::EDAD_MAXIMA_ANIOS ?> años.';
-            } else if (fecha.validity.rangeOverflow) {
+            if (fecha.value !== '' && !iso) {
+                mensaje = 'Escriba la fecha como día/mes/año, por ejemplo 25/02/2024.';
+            } else if (iso && iso > fecha.dataset.maxima) {
                 mensaje = 'La fecha de nacimiento no puede ser posterior a hoy.';
+            } else if (iso && fecha.dataset.minima && iso < fecha.dataset.minima) {
+                mensaje = 'El sistema registra niños menores de <?= Nino::EDAD_MAXIMA_ANIOS ?> años.';
             }
             fecha.setCustomValidity(mensaje);
+            edad.textContent = iso && !mensaje ? 'Edad: ' + textoEdad(iso) : (iso ? mensaje : '');
+            edad.className = 'edad-calculada' + (mensaje && iso ? ' edad-calculada-mal' : '');
         }
-        fecha.addEventListener('input', revisarFecha);
+
+        fecha.addEventListener('input', function(evento) {
+            ponerBarras(evento);
+            revisarFecha();
+        });
         fecha.addEventListener('change', revisarFecha);
         revisarFecha();
     })();

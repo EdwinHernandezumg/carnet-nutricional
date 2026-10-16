@@ -41,6 +41,22 @@ class Formato
      * htmlspecialchars. Si está vacía, muestra el aviso en gris ("Sin dato"
      * o el texto indicado).
      */
+    /**
+     * Fecha escrita en pantalla como día/mes/año (25/02/2024, también con guion
+     * o punto) convertida a año-mes-día para guardarla. Si ya viene como
+     * año-mes-día, o no es una fecha real, se devuelve tal cual y la validación
+     * (Validacion::fecha) da el mensaje.
+     */
+    public static function fechaIso(string $texto): string
+    {
+        $texto = trim($texto);
+        if (preg_match('/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/', $texto, $p)
+            && checkdate((int) $p[2], (int) $p[1], (int) $p[3])) {
+            return sprintf('%04d-%02d-%02d', $p[3], $p[2], $p[1]);
+        }
+        return $texto;
+    }
+
     public static function fecha(?string $fecha, string $textoVacio = self::SIN_DATO): string
     {
         if ($fecha === null || trim($fecha) === '') {

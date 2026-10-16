@@ -4,6 +4,7 @@
  *   palabras  lo mismo que nombre, y además coma
  *   digitos   solo números (teléfono, CUI)
  *   usuario   letras sin tilde, números, punto, guion y guion bajo
+ *   fecha     números y la barra de día/mes/año
  *
  * Si se escribe o se pega un carácter no permitido, simplemente no aparece.
  * Es solo una comodidad: el servidor vuelve a validar todo
@@ -14,7 +15,8 @@
         nombre:   /[^\p{L}\s'.\-]/gu,
         palabras: /[^\p{L}\s'.,\-]/gu,
         digitos:  /\D/g,
-        usuario:  /[^A-Za-z0-9._\-]/g
+        usuario:  /[^A-Za-z0-9._\-]/g,
+        fecha:    /[^\d\/]/g
     };
 
     document.addEventListener('input', function (evento) {

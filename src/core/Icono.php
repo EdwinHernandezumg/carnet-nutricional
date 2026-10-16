@@ -55,6 +55,7 @@ class Icono
             'guardar' => '<path d="M5 12l5 5L19 7"/>',
             'editar' => '<path d="M4 20h4l10-10a2.1 2.1 0 0 0-3-3L5 17z"/><path d="M14.5 6.5l3 3"/>',
             'ojo' => '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+            'copiar' => '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',
             'buscar' => '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
             'filtrar' => '<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
             'volver' => '<path d="M15 5l-7 7 7 7"/>',

@@ -1,10 +1,20 @@
 <?php
 /**
  * Listado de usuarios (área de administración).
- * Variables: $usuarios, $mensaje (opcional), $temporal (opcional)
+ * Variables: $usuarios, $mensaje (opcional), $temporal y $usuarioTemporal (opcionales)
  */
 $titulo = 'Gestión de usuarios';
 require __DIR__ . '/../layouts/encabezado.php';
+
+// Mensaje con los datos de ingreso, listo para copiar o enviar por WhatsApp.
+$mensajeIngreso = '';
+if (!empty($temporal)) {
+    $mensajeIngreso = APP_NOMBRE . "\n"
+        . 'Dirección: ' . APP_URL . "\n"
+        . (!empty($usuarioTemporal) ? 'Usuario: ' . $usuarioTemporal . "\n" : '')
+        . 'Contraseña temporal: ' . $temporal . "\n"
+        . 'Al ingresar, el sistema le pedirá cambiarla por una contraseña suya.';
+}
 ?>
 
 <h1 class="titulo-pagina">Gestión de usuarios</h1>
@@ -15,11 +25,59 @@ require __DIR__ . '/../layouts/encabezado.php';
 
 <?php if (!empty($temporal)): ?>
     <div class="caja-temporal">
-        <strong>Contraseña temporal generada:</strong>
-        <code class="pass-temporal"><?= htmlspecialchars($temporal) ?></code>
-        <p>Comuníquela al usuario. Se le pedirá cambiarla al ingresar.
+        <?php if (!empty($usuarioTemporal)): ?>
+            <p class="dato-temporal"><span>Usuario:</span>
+                <code class="pass-temporal"><?= htmlspecialchars($usuarioTemporal) ?></code></p>
+        <?php endif; ?>
+        <p class="dato-temporal"><span>Contraseña temporal:</span>
+            <code class="pass-temporal"><?= htmlspecialchars($temporal) ?></code></p>
+        <div class="acciones-temporal">
+            <button type="button" class="btn-secundario" id="copiar-ingreso"
+                    data-texto="<?= htmlspecialchars($mensajeIngreso) ?>">
+                <?= Icono::ver('copiar', 18) ?> <span>Copiar datos de ingreso</span>
+            </button>
+            <a class="btn-whatsapp" target="_blank" rel="noopener"
+               href="https://wa.me/?text=<?= rawurlencode($mensajeIngreso) ?>">
+                <?= Icono::ver('whatsapp', 18) ?> Enviar por WhatsApp
+            </a>
+        </div>
+        <p>Envíela solo a la persona dueña de la cuenta. Se le pedirá cambiarla al ingresar.
            Esta contraseña no se volverá a mostrar.</p>
     </div>
+    <script>
+        // Copia la dirección, el usuario y la contraseña temporal, para pegarlos
+        // en un mensaje o en un documento.
+        (function () {
+            var boton = document.getElementById('copiar-ingreso');
+            var etiqueta = boton.querySelector('span');
+            function avisar(texto) {
+                etiqueta.textContent = texto;
+                setTimeout(function () { etiqueta.textContent = 'Copiar datos de ingreso'; }, 2500);
+            }
+            function copiarSinPortapapeles(texto) {
+                var area = document.createElement('textarea');
+                area.value = texto;
+                area.setAttribute('readonly', '');
+                area.style.position = 'fixed';
+                area.style.opacity = '0';
+                document.body.appendChild(area);
+                area.select();
+                var listo = false;
+                try { listo = document.execCommand('copy'); } catch (e) { listo = false; }
+                document.body.removeChild(area);
+                avisar(listo ? 'Copiado' : 'No se pudo copiar');
+            }
+            boton.addEventListener('click', function () {
+                var texto = boton.dataset.texto;
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(texto).then(function () { avisar('Copiado'); },
+                        function () { copiarSinPortapapeles(texto); });
+                } else {
+                    copiarSinPortapapeles(texto);
+                }
+            });
+        })();
+    </script>
 <?php endif; ?>
 
 <div class="barra-acciones">

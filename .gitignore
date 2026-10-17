@@ -13,6 +13,7 @@ node_modules/
 error_log
 *.tmp
 Thumbs.db
+~$*
 desktop.ini
 
 # Carpetas del editor
@@ -24,3 +25,9 @@ desktop.ini
 
 # Instrucciones locales para el asistente (contienen contraseñas de prueba)
 CLAUDE.md
+
+# Generador de los manuales: dependencias y capturas temporales
+docs/manuales/generador/node_modules/
+docs/manuales/generador/package-lock.json
+docs/manuales/generador/capturas/
+docs/manuales/generador/capturas-doc/

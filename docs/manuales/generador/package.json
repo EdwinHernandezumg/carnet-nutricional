@@ -1,0 +1,10 @@
+{
+  "name": "generador-manuales",
+  "private": true,
+  "description": "Genera los manuales técnico y de usuario y los materiales de la prueba del Carnet Digital",
+  "dependencies": {
+    "docx": "^9.11.0",
+    "jszip": "^3.10.1",
+    "puppeteer-core": "^23.11.1"
+  }
+}

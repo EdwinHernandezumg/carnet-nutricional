@@ -137,8 +137,9 @@ $periodo = $filtros['mes_completo']
         <a class="boton secundario" href="<?= APP_URL ?>/index.php?accion=reportes">Volver a Reportes</a>
     </div>
     <p>La hoja se imprime en papel <?= htmlspecialchars(mb_strtolower($papel[0])) ?>, horizontal. Quedan en blanco para
-       llenar a mano: número de historia clínica, discapacidad, tipo de consulta (primera o reconsulta),
-       referencia y código CIE-10, porque el sistema no los registra. Las filas sin datos son para los demás
+       llenar a mano: discapacidad, tipo de consulta (primera o reconsulta), referencia, el número de
+       historia clínica de los niños sin número de carnet y el código CIE-10 del control de crecimiento,
+       porque el sistema no los registra. En la vacunación, esa columna lleva la vacuna y la dosis. Las filas sin datos son para los demás
        pacientes del día.</p>
 </div>
 
@@ -223,7 +224,7 @@ $periodo = $filtros['mes_completo']
                     <?php endif; ?>
                     <tr>
                         <td class="c"><?= $f['dia'] ?></td>
-                        <td></td>
+                        <td class="c chico"><?= $celda($f['historia']) ?></td>
                         <td><?= $celda($f['nombre']) ?></td>
                         <td class="c chico"><?= $celda($f['cui']) ?></td>
                         <td class="cod"><?= $celda($f['sexo']) ?></td>

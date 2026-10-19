@@ -4,7 +4,7 @@
 --
 -- Tablas oficiales de la OMS (2006) para peso para la edad, talla para la edad, peso para la longitud y peso para la talla.
 --
--- Generado el 19-10-2026 10:26 desde la base local con:
+-- Generado el 19-10-2026 10:52 desde la base local con:
 --   php scripts/exportar_esquema.php
 -- No editar a mano: cambiar la base local y volver a generarlo.
 -- ============================================================================

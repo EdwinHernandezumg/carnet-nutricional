@@ -161,7 +161,7 @@ $cita = $carnet['proxima_cita'];
         <div><span>Fecha de nacimiento</span><strong><?= Formato::fecha($nino['fecha_nacimiento']) ?></strong> (<?= htmlspecialchars(Formato::edad($nino['fecha_nacimiento'])) ?>)</div>
         <div><span>Sexo</span><strong><?= $nino['sexo'] === 'M' ? 'Masculino' : 'Femenino' ?></strong></div>
         <div><span>CUI</span><strong><?= $dato($nino['cui']) ?></strong></div>
-        <div><span>No. de registro</span><strong><?= (int)$nino['id_nino'] ?></strong></div>
+        <div><span>No. de carnet</span><strong><?= $dato($nino['numero_carnet']) ?></strong></div>
         <div><span>Pueblo</span><strong><?= $dato($pueblo) ?></strong></div>
         <div><span>Comunidad (paraje)</span><strong><?= $dato($nino['paraje_nombre']) ?></strong></div>
         <div><span>Nombre de la madre o responsable</span><strong><?= $dato($nino['nombre_madre']) ?></strong></div>

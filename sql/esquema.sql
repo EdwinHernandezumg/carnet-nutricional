@@ -4,7 +4,7 @@
 --
 -- Se importa en una base vacía, antes de datos_iniciales.sql y oms_lms.sql.
 --
--- Generado el 19-10-2026 10:26 desde la base local con:
+-- Generado el 19-10-2026 10:52 desde la base local con:
 --   php scripts/exportar_esquema.php
 -- No editar a mano: cambiar la base local y volver a generarlo.
 -- ============================================================================
@@ -145,6 +145,7 @@ CREATE TABLE `nino` (
   `id_sector` int(11) NOT NULL,
   `id_paraje` int(11) DEFAULT NULL,
   `cui` varchar(13) DEFAULT NULL,
+  `numero_carnet` varchar(20) DEFAULT NULL,
   `nombres` varchar(100) NOT NULL,
   `apellidos` varchar(100) NOT NULL,
   `fecha_nacimiento` date NOT NULL,
@@ -164,6 +165,7 @@ CREATE TABLE `nino` (
   KEY `idx_nino_cui` (`cui`),
   KEY `idx_nino_estado` (`estado`),
   KEY `idx_nino_nombre` (`apellidos`,`nombres`),
+  KEY `idx_nino_numero_carnet` (`numero_carnet`),
   CONSTRAINT `fk_nino_paraje` FOREIGN KEY (`id_paraje`) REFERENCES `paraje` (`id_paraje`),
   CONSTRAINT `fk_nino_sector` FOREIGN KEY (`id_sector`) REFERENCES `sector` (`id_sector`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

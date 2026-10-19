@@ -72,6 +72,9 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
     <span><?= $nino['sexo'] === 'M' ? 'Masculino' : 'Femenino' ?></span>
     <span>Edad: <?= Formato::edad($nino['fecha_nacimiento']) ?></span>
     <span>Nac. <?= Formato::fecha($nino['fecha_nacimiento']) ?></span>
+    <?php if (!empty($nino['numero_carnet'])): ?>
+        <span>Carnet <?= htmlspecialchars($nino['numero_carnet']) ?></span>
+    <?php endif; ?>
     <span>Territorio <?= htmlspecialchars($nino['territorio_numero']) ?> · Sector <?= htmlspecialchars($nino['sector_letra']) ?></span>
     <span>Paraje: <?= Formato::dato($nino['paraje_nombre']) ?></span>
     <span class="etiqueta etiqueta-<?= $nino['estado'] === 'activo' ? 'activo' : 'egresado' ?>"><?= htmlspecialchars(ucfirst($nino['estado'])) ?></span>

@@ -197,7 +197,7 @@ switch ($accion) {
         }
 
         $datos = obtenerDatosFormulario();
-        $errores = validarNino($datos);
+        $errores = validarNino($datos, false, $idNino);
         if ($errores) {
             $sectores = Catalogo::sectores();
             $parajes  = Catalogo::parajes();
@@ -1031,6 +1031,8 @@ function obtenerDatosFormulario(): array
         // El CUI y el teléfono se aceptan con espacios o guiones (5555-1234),
         // como se acostumbra escribirlos: se quitan antes de validar.
         'cui'              => str_replace([' ', '-'], '', $_POST['cui'] ?? ''),
+        // Número de carnet del puesto (columna "No. Historia clínica" del SIGSA 3).
+        'numero_carnet'    => strtoupper(trim($_POST['numero_carnet'] ?? '')),
         'pueblo'           => $_POST['pueblo'] ?? '',
         // La comunidad lingüística solo se guarda si el pueblo es maya.
         'comunidad_linguistica' => ($_POST['pueblo'] ?? '') === (string) Catalogo::PUEBLO_MAYA
@@ -1048,8 +1050,10 @@ function obtenerDatosFormulario(): array
  * Valida los datos del niño. $esNuevo indica un registro nuevo: solo ahí se
  * exige que sea menor de 7 años. Al editar no se aplica, porque un niño
  * registrado a tiempo puede cumplir 7 y aún hay que poder corregir sus datos.
+ * $idNino es el niño que se edita, para que su propio número de carnet no
+ * cuente como repetido.
  */
-function validarNino(array $d, bool $esNuevo = false): array
+function validarNino(array $d, bool $esNuevo = false, ?int $idNino = null): array
 {
     // Los largos máximos son los de cada columna de la tabla nino.
     $errores = [
@@ -1064,6 +1068,7 @@ function validarNino(array $d, bool $esNuevo = false): array
             'Comunidad lingüística: elija una opción de la lista.'),
         Validacion::texto($d['direccion'], 'Dirección', 200),
         Validacion::cui($d['cui']),
+        Validacion::codigo($d['numero_carnet'], 'Número de carnet', 20),
         Validacion::digitos($d['telefono'], 'Teléfono', 8),
         Validacion::enLista($d['sexo'], ['M', 'F'], 'Debe seleccionar el sexo.'),
     ];
@@ -1087,6 +1092,15 @@ function validarNino(array $d, bool $esNuevo = false): array
         $sectorDelParaje = array_column(Catalogo::parajes(), 'id_sector', 'id_paraje')[$d['id_paraje']] ?? null;
         if ((string) $sectorDelParaje !== (string) $d['id_sector']) {
             $errores[] = 'El paraje elegido no pertenece al sector seleccionado.';
+        }
+    }
+
+    // El número de carnet no se repite dentro del puesto de salud.
+    if ($d['numero_carnet'] !== '' && ctype_digit((string) $d['id_sector'])) {
+        $otro = Nino::carnetRepetido($d['numero_carnet'], (int) $d['id_sector'], $idNino);
+        if ($otro) {
+            $errores[] = 'Número de carnet: ya lo tiene ' . $otro['nombres'] . ' ' . $otro['apellidos']
+                       . '. Revise el número en el carnet.';
         }
     }
 

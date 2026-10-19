@@ -72,7 +72,7 @@ $descripcionOrden = $descripciones[$orden][$direccion];
 
 <form method="get" action="<?= APP_URL ?>/index.php" class="filtros">
     <input type="hidden" name="accion" value="ninos">
-    <input type="text" name="texto" placeholder="Buscar por nombre"
+    <input type="text" name="texto" placeholder="Nombre o número de carnet"
            value="<?= htmlspecialchars($filtros['texto'] ?? '') ?>">
     <select name="id_sector">
         <option value="">Todos los sectores</option>
@@ -128,7 +128,11 @@ $descripcionOrden = $descripciones[$orden][$direccion];
         <tbody>
             <?php foreach ($ninos as $n): ?>
                 <tr>
-                    <td class="celda-titulo"><?= htmlspecialchars($n['apellidos'] . ', ' . $n['nombres']) ?></td>
+                    <td class="celda-titulo"><?= htmlspecialchars($n['apellidos'] . ', ' . $n['nombres']) ?>
+                        <?php if (!empty($n['numero_carnet'])): ?>
+                            <small class="celda-carnet">Carnet <?= htmlspecialchars($n['numero_carnet']) ?></small>
+                        <?php endif; ?>
+                    </td>
                     <td data-label="Edad"><?= edadTexto($n['fecha_nacimiento']) ?></td>
                     <td data-label="Sexo"><?= $n['sexo'] === 'M' ? 'M' : 'F' ?></td>
                     <td data-label="Territorio / Sector">T<?= htmlspecialchars($n['territorio_numero']) ?> · <?= htmlspecialchars($n['sector_letra']) ?></td>

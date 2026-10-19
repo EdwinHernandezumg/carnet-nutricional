@@ -5,6 +5,7 @@
  *   digitos   solo números (teléfono, CUI)
  *   usuario   letras sin tilde, números, punto, guion y guion bajo
  *   fecha     números y la barra de día/mes/año
+ *   codigo    letras sin tilde, números, guion y barra (número de carnet)
  *
  * Si se escribe o se pega un carácter no permitido, simplemente no aparece.
  * Es solo una comodidad: el servidor vuelve a validar todo
@@ -16,7 +17,8 @@
         palabras: /[^\p{L}\s'.,\-]/gu,
         digitos:  /\D/g,
         usuario:  /[^A-Za-z0-9._\-]/g,
-        fecha:    /[^\d\/]/g
+        fecha:    /[^\d\/]/g,
+        codigo:   /[^A-Za-z0-9\/\-]/g
     };
 
     document.addEventListener('input', function (evento) {

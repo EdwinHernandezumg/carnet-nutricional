@@ -94,6 +94,16 @@ require __DIR__ . '/../layouts/encabezado.php';
                         value="<?= htmlspecialchars($datos['cui'] ?? '') ?>">
                 </div>
             </div>
+            <!-- Número del carnet del puesto: es el "No. Historia clínica" del SIGSA 3 -->
+            <div class="campo">
+                <label for="numero_carnet">Número de carnet (si tiene)</label>
+                <div class="con-icono">
+                    <?= Icono::ver('documento', 20) ?>
+                    <input type="text" id="numero_carnet" name="numero_carnet" maxlength="20" data-filtro="codigo"
+                        autocapitalize="characters" spellcheck="false" placeholder="Como está en el carnet"
+                        value="<?= htmlspecialchars($datos['numero_carnet'] ?? '') ?>">
+                </div>
+            </div>
         </div>
 
         <!-- Pueblo y comunidad lingüística, con los códigos del SIGSA 3 y 5a.

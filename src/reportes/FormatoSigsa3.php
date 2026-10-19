@@ -19,13 +19,15 @@ class FormatoSigsa3
     const FILAS_POR_HOJA = 20;
 
     /**
-     * Código CIE-10 de cada tipo de atención. Están vacíos hasta que el puesto
-     * confirme cuáles escribe (pregunta pendiente para la visita). Al ponerlos
-     * aquí, la hoja los imprime sola.
+     * Código CIE-10 del control de crecimiento y de la suplementación. Están
+     * vacíos hasta que el puesto confirme cuáles escribe; al ponerlos aquí, la
+     * hoja los imprime sola. En la vacunación no se escribe un código: en la
+     * visita del 16 de octubre de 2026 el puesto explicó que en esa columna
+     * anota la vacuna y la dosis (Hexavalente 1a, SPR R1...), y el sistema lo
+     * hace igual.
      */
     const CIE10 = [
         'control'    => '',
-        'vacunacion' => '',
         'suplemento' => '',
     ];
 
@@ -133,9 +135,12 @@ class FormatoSigsa3
                 $cie10[] = self::CIE10['control'];
             }
             if (!empty($a['vacunas'])) {
-                $diagnostico[] = 'Vacunación: ' . implode(', ', array_map(
-                    fn($v) => $v['nombre_vacuna'] . ' ' . $v['dosis'], $a['vacunas']));
-                $cie10[] = self::CIE10['vacunacion'];
+                // Como lo llena el puesto: "Vacunación" en el diagnóstico y la
+                // vacuna con su dosis en la columna del código CIE-10.
+                $diagnostico[] = 'Vacunación';
+                foreach ($a['vacunas'] as $v) {
+                    $cie10[] = $v['nombre_vacuna'] . ' ' . $v['dosis'];
+                }
             }
             if (!empty($a['suplementos']) && !$diagnostico) {
                 $diagnostico[] = 'Suplementación';
@@ -150,6 +155,8 @@ class FormatoSigsa3
             $filas[] = [
                 'fecha'        => $fecha,
                 'dia'          => (int)substr($fecha, 8, 2),
+                // El puesto usa el número de carnet como número de historia clínica.
+                'historia'     => $nino['numero_carnet'] ?? '',
                 'nombre'       => $nino['nombres'] . ' ' . $nino['apellidos'],
                 'cui'          => $nino['cui'] ?? '',
                 'sexo'         => $nino['sexo'],

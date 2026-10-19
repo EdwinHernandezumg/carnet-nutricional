@@ -57,6 +57,22 @@ class Validacion
         return self::largo($valor, $campo, $maximo);
     }
 
+    /**
+     * Código o número de documento (número de carnet): letras sin tilde,
+     * números, guion y barra, sin espacios. Por ejemplo "125", "T8-045" o
+     * "045/2026".
+     */
+    public static function codigo(string $valor, string $campo, int $maximo): ?string
+    {
+        if ($valor === '') {
+            return null;
+        }
+        if (!preg_match('/^[A-Za-z0-9][A-Za-z0-9\/\-]*$/', $valor)) {
+            return "$campo: solo se aceptan letras sin tilde, números, guion (-) y barra (/), sin espacios.";
+        }
+        return self::largo($valor, $campo, $maximo);
+    }
+
     /** Solo dígitos, exactamente $cantidad (vacío permitido si no es obligatorio). */
     public static function digitos(string $valor, string $campo, int $cantidad, bool $obligatorio = false): ?string
     {

@@ -76,10 +76,10 @@ class Nino
         $db = Database::obtener();
 
         $sql = "INSERT INTO nino
-                (id_sector, id_paraje, cui, nombres, apellidos, fecha_nacimiento,
+                (id_sector, id_paraje, cui, numero_carnet, nombres, apellidos, fecha_nacimiento,
                  sexo, pueblo, comunidad_linguistica, nombre_madre, nombre_padre, telefono, direccion, estado)
                 VALUES
-                (:id_sector, :id_paraje, :cui, :nombres, :apellidos, :fecha_nacimiento,
+                (:id_sector, :id_paraje, :cui, :numero_carnet, :nombres, :apellidos, :fecha_nacimiento,
                  :sexo, :pueblo, :comunidad_linguistica, :nombre_madre, :nombre_padre, :telefono, :direccion, 'activo')";
 
         $stmt = $db->prepare($sql);
@@ -87,6 +87,7 @@ class Nino
             ':id_sector'        => $datos['id_sector'],
             ':id_paraje'        => $datos['id_paraje'] ?: null,
             ':cui'              => $datos['cui'] ?: null,
+            ':numero_carnet'    => $datos['numero_carnet'] ?: null,
             ':nombres'          => $datos['nombres'],
             ':apellidos'        => $datos['apellidos'],
             ':fecha_nacimiento' => $datos['fecha_nacimiento'],
@@ -123,6 +124,7 @@ class Nino
                     id_sector = :id_sector,
                     id_paraje = :id_paraje,
                     cui = :cui,
+                    numero_carnet = :numero_carnet,
                     nombres = :nombres,
                     apellidos = :apellidos,
                     fecha_nacimiento = :fecha_nacimiento,
@@ -140,6 +142,7 @@ class Nino
             ':id_sector'        => $datos['id_sector'],
             ':id_paraje'        => $datos['id_paraje'] ?: null,
             ':cui'              => $datos['cui'] ?: null,
+            ':numero_carnet'    => $datos['numero_carnet'] ?: null,
             ':nombres'          => $datos['nombres'],
             ':apellidos'        => $datos['apellidos'],
             ':fecha_nacimiento' => $datos['fecha_nacimiento'],
@@ -180,6 +183,27 @@ class Nino
         $stmt->execute([':id_nino' => $idNino]);
         $r = $stmt->fetch();
         return $r ?: null;
+    }
+
+    /**
+     * Niño del mismo puesto de salud que ya tiene ese número de carnet, o
+     * null si nadie lo tiene. $idExcepto es el niño que se está editando.
+     */
+    public static function carnetRepetido(string $numero, int $idSector, ?int $idExcepto = null): ?array
+    {
+        $db = Database::obtener();
+        $sql = "SELECT n.id_nino, n.nombres, n.apellidos
+                FROM nino n
+                JOIN sector s ON s.id_sector = n.id_sector
+                JOIN territorio t ON t.id_territorio = s.id_territorio
+                WHERE n.numero_carnet = :numero AND n.id_nino <> :id
+                  AND t.id_puesto = (SELECT t2.id_puesto FROM sector s2
+                                     JOIN territorio t2 ON t2.id_territorio = s2.id_territorio
+                                     WHERE s2.id_sector = :id_sector)
+                LIMIT 1";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':numero' => $numero, ':id' => $idExcepto ?? 0, ':id_sector' => $idSector]);
+        return $stmt->fetch() ?: null;
     }
 
     /**
@@ -243,10 +267,13 @@ class Nino
         $params = [];
 
         if (!empty($filtros['texto'])) {
-            $where[] = "(n.nombres LIKE :texto1 OR n.apellidos LIKE :texto2 OR CONCAT(n.nombres, ' ', n.apellidos) LIKE :texto3)";
+            // También por número de carnet, exacto: la enfermera lo lee del carnet que trae la madre.
+            $where[] = "(n.nombres LIKE :texto1 OR n.apellidos LIKE :texto2 OR CONCAT(n.nombres, ' ', n.apellidos) LIKE :texto3"
+                     . " OR n.numero_carnet = :texto4)";
             $params[':texto1'] = '%' . $filtros['texto'] . '%';
             $params[':texto2'] = '%' . $filtros['texto'] . '%';
             $params[':texto3'] = '%' . $filtros['texto'] . '%';
+            $params[':texto4'] = $filtros['texto'];
         }
         if (!empty($filtros['id_sector'])) {
             $where[] = "n.id_sector = :id_sector";
@@ -257,7 +284,7 @@ class Nino
             $params[':estado'] = $filtros['estado'];
         }
 
-        $sql = "SELECT n.id_nino, n.nombres, n.apellidos, n.cui, n.fecha_nacimiento,
+        $sql = "SELECT n.id_nino, n.nombres, n.apellidos, n.cui, n.numero_carnet, n.fecha_nacimiento,
                        n.sexo, n.estado, n.fecha_registro,
                        s.letra AS sector_letra, t.numero AS territorio_numero,
                        p.nombre AS paraje_nombre

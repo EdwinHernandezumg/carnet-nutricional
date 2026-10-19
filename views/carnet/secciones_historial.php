@@ -50,6 +50,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
     </summary>
     <div class="leyenda-esquema">
         <span><span class="esq-marca esq-marca-ok">●</span> Aplicada</span>
+        <span><span class="esq-marca esq-marca-cubierta">●</span> Cubierta con el esquema anterior: revisar en el carnet</span>
         <span><span class="esq-marca esq-marca-pendiente">●</span> Pendiente: por su edad ya le tocaba</span>
         <span><span class="esq-marca">○</span> Todavía no le toca</span>
     </div>
@@ -66,9 +67,9 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
                     </small>
                     <?php if ($e['estado'] === 'aplicada'): ?>
                         <small class="esq-fecha"><?= Formato::fecha($e['fecha']) ?></small>
-                        <?php if ($e['equivalente']): ?>
-                            <small>Con <?= htmlspecialchars($e['equivalente']) ?> (esquema anterior)</small>
-                        <?php endif; ?>
+                    <?php elseif ($e['estado'] === 'cubierta'): ?>
+                        <small class="esq-cubierta-texto">Cubierta: <?= htmlspecialchars($e['equivalente']) ?>
+                            el <?= Formato::fecha($e['fecha']) ?> (esquema anterior)</small>
                     <?php elseif ($e['estado'] === 'pendiente'): ?>
                         <small class="esq-falta">Pendiente</small>
                     <?php endif; ?>
@@ -78,7 +79,8 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
     </div>
     <p class="nota-esquema">Esquema nacional de vacunación vigente, según el cuaderno
        SIGSA 5a 2026 del Ministerio de Salud. Las dosis del esquema anterior (carnet
-       de 2018) aparecen en la lista de arriba y cuentan para la dosis equivalente.</p>
+       de 2018) aparecen en la lista de arriba; la dosis nueva que reemplazan se
+       marca como cubierta, no como aplicada, para revisarla en el carnet.</p>
 </details>
 
 <!-- ================= SUPLEMENTACIÓN ================= -->

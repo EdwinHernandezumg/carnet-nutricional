@@ -803,6 +803,9 @@ body.con-grafica-ampliada { overflow: hidden; }
    y todavía no le toca (gris). */
 .esq-aplicada { background: var(--teal-claro); }
 .esq-aplicada .esq-marca, .esq-marca-ok { color: var(--teal); }
+.esq-cubierta { background: #e8eef7; }
+.esq-cubierta .esq-marca, .esq-marca-cubierta { color: #4a6fa5; }
+.item-esquema .esq-cubierta-texto { color: #34527d; font-weight: 600; }
 .esq-pendiente { background: #ffe8d6; }
 .esq-pendiente .esq-marca, .esq-marca-pendiente { color: #d9822b; }
 .item-esquema .esq-falta { color: #a8551a; font-weight: 700; }
@@ -990,4 +993,19 @@ body.con-grafica-ampliada { overflow: hidden; }
        porque en las tarjetas no hay encabezados que tocar. */
     .orden-tel { display: flex; }
     .ayuda-tabla { display: none; }
+}
+
+/* ---------- Listas desplegables con flecha propia ----------
+   En el iPhone (Safari), con la apariencia nativa, el relleno izquierdo no se
+   respeta y el icono del campo quedaba encima de "Seleccione" (visita del 16
+   de octubre de 2026). Sin la apariencia nativa, la lista se ve igual en
+   Android, iPhone y computadora. Va al final para ganar a los estilos de cada
+   pantalla; la flecha es un SVG incrustado, sin servicios externos. */
+select:not([multiple]) {
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235b6b7c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 12px 8px;
+    padding-right: 2.3rem;
 }

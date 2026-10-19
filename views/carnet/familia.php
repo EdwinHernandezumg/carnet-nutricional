@@ -185,7 +185,8 @@ $cita = $carnet['proxima_cita'];
                     <td class="fecha">
                         <?php if ($e['estado'] === 'aplicada'): ?>
                             <?= Formato::fecha($e['fecha']) ?>
-                            <?php if ($e['equivalente']): ?><br><small>con <?= htmlspecialchars($e['equivalente']) ?></small><?php endif; ?>
+                        <?php elseif ($e['estado'] === 'cubierta'): ?>
+                            <?= Formato::fecha($e['fecha']) ?><br><small>con <?= htmlspecialchars($e['equivalente']) ?> (esquema anterior)</small>
                         <?php elseif ($e['estado'] === 'pendiente'): ?>
                             <span class="pendiente">Pendiente</span>
                         <?php endif; ?>

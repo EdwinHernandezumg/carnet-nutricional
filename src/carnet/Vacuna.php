@@ -121,8 +121,13 @@ class Vacuna
             $clave = $c['nombre'] . '|' . $c['dosis'];
             $fecha = $puestas[$clave] ?? ($cubiertas[$id]['fecha'] ?? null);
 
-            if ($fecha !== null) {
+            // "Cubierta": no se puso esta dosis, sino la del esquema anterior que
+            // la reemplaza. No se muestra como aplicada (la jefa del puesto pidió
+            // no darla por hecha) ni como pendiente (no se debe repetir).
+            if (isset($puestas[$clave])) {
                 $estado = 'aplicada';
+            } elseif ($fecha !== null) {
+                $estado = 'cubierta';
             } elseif ($c['edad_meses'] !== null && $edadMeses >= (int)$c['edad_meses']) {
                 $estado = 'pendiente';
             } else {

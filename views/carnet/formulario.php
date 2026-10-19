@@ -90,32 +90,83 @@ require __DIR__ . '/../layouts/encabezado.php';
 
 <?php elseif ($tipo === 'suplemento'): ?>
 
+    <?php $suplementoElegido = $_POST['tipo_sup'] ?? ''; ?>
+    <div class="campo">
+        <label for="tipo_sup">Suplemento *</label>
+        <!-- Los suplementos salen del catálogo que mantiene el administrador -->
+        <select id="tipo_sup" name="tipo_sup" required>
+            <option value="">Seleccione</option>
+            <?php foreach ($catalogo as $c): ?>
+                <?php $edades = Suplementacion::etiquetaEdades($c['edad_desde_meses'], $c['edad_hasta_meses']); ?>
+                <option value="<?= htmlspecialchars($c['nombre']) ?>"
+                    data-detalle="<?= htmlspecialchars(implode(' · ', array_filter([$c['presentacion'], $c['indicacion'], $edades]))) ?>"
+                    data-desde="<?= htmlspecialchars((string)$c['edad_desde_meses']) ?>"
+                    data-hasta="<?= htmlspecialchars((string)$c['edad_hasta_meses']) ?>"
+                    data-edades="<?= htmlspecialchars(mb_strtolower($edades)) ?>"
+                    <?= $suplementoElegido === $c['nombre'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($c['nombre']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <small id="detalle-sup" class="detalle-suplemento"></small>
+        <p id="aviso-edad-sup" class="aviso-carga carga-alta" role="status" hidden></p>
+    </div>
+
     <div class="fila">
-        <div class="campo">
-            <label for="tipo_sup">Suplemento *</label>
-            <select id="tipo_sup" name="tipo_sup" required>
-                <option value="">Seleccione</option>
-                <?php foreach ($catalogo as $c): ?>
-                    <option value="<?= htmlspecialchars($c['nombre']) ?>">
-                        <?= htmlspecialchars($c['nombre']) ?>
-                        <?php if ($c['presentacion']): ?>
-                            (<?= htmlspecialchars($c['presentacion']) ?>)
-                        <?php endif; ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
         <div class="campo">
             <label for="fecha_entrega">Fecha de entrega *</label>
             <input type="date" id="fecha_entrega" name="fecha_entrega" required
-                   min="<?= htmlspecialchars($nino['fecha_nacimiento']) ?>" max="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>">
+                   min="<?= htmlspecialchars($nino['fecha_nacimiento']) ?>" max="<?= date('Y-m-d') ?>"
+                   value="<?= htmlspecialchars($_POST['fecha_entrega'] ?? date('Y-m-d')) ?>">
         </div>
         <div class="campo">
             <label for="cantidad">Cantidad entregada</label>
             <input type="text" id="cantidad" name="cantidad" maxlength="50"
-                   placeholder="Ej. 30 sobres, 1 frasco">
+                   placeholder="Ej. 30 sobres, 1 frasco"
+                   value="<?= htmlspecialchars($_POST['cantidad'] ?? '') ?>">
         </div>
     </div>
+
+    <script>
+        // Al elegir el suplemento, muestra su presentación, indicación y edad, y
+        // avisa si el niño está fuera de esa edad en la fecha de entrega. Solo
+        // orienta a la enfermera: no impide guardar.
+        (function () {
+            var nacimiento = '<?= htmlspecialchars($nino['fecha_nacimiento']) ?>';
+            var lista = document.getElementById('tipo_sup');
+            var fecha = document.getElementById('fecha_entrega');
+            var detalle = document.getElementById('detalle-sup');
+            var aviso = document.getElementById('aviso-edad-sup');
+
+            // Meses cumplidos entre dos fechas aaaa-mm-dd.
+            function mesesCumplidos(desde, hasta) {
+                var a = desde.split('-').map(Number), b = hasta.split('-').map(Number);
+                return (b[0] - a[0]) * 12 + (b[1] - a[1]) - (b[2] < a[2] ? 1 : 0);
+            }
+
+            function revisar() {
+                var opcion = lista.options[lista.selectedIndex];
+                detalle.textContent = opcion && opcion.value ? opcion.dataset.detalle : '';
+                aviso.hidden = true;
+                if (!opcion || !opcion.value || !fecha.value) {
+                    return;
+                }
+                var meses = mesesCumplidos(nacimiento, fecha.value);
+                var desde = opcion.dataset.desde === '' ? null : Number(opcion.dataset.desde);
+                var hasta = opcion.dataset.hasta === '' ? null : Number(opcion.dataset.hasta);
+                if ((desde !== null && meses < desde) || (hasta !== null && meses > hasta)) {
+                    aviso.textContent = 'Este suplemento es para niños ' + opcion.dataset.edades
+                        + ' y el niño tiene ' + meses + (meses === 1 ? ' mes' : ' meses')
+                        + ' en la fecha de entrega. Revise antes de guardar.';
+                    aviso.hidden = false;
+                }
+            }
+
+            lista.addEventListener('change', revisar);
+            fecha.addEventListener('change', revisar);
+            revisar();
+        })();
+    </script>
 
 <?php else: /* cita */ ?>
 

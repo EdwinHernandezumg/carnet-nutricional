@@ -873,6 +873,75 @@ switch ($accion) {
         require __DIR__ . '/../views/carnet/registro.php';
         break;
 
+        // ---------- Catálogo de suplementos (solo administrador) ----------
+    // El puesto agrega los suplementos nuevos y desactiva los que ya no
+    // entrega (visita del 16 de octubre de 2026: dejó el hierro y agregó el
+    // suplemento nutricional lipídico). Nunca se borra uno.
+    case 'suplementos_catalogo':
+        Auth::exigirRol(['administrador']);
+        $suplementos = Suplementacion::catalogoCompleto();
+        $mensaje = $_GET['ok'] ?? '';
+        require __DIR__ . '/../views/carnet/suplementos_catalogo.php';
+        break;
+
+    case 'suplemento_catalogo_nuevo':
+    case 'suplemento_catalogo_editar':
+    case 'suplemento_catalogo_guardar':
+        Auth::exigirRol(['administrador']);
+        $idSuplemento = (int)($_GET['id'] ?? 0);
+        $suplemento = $idSuplemento > 0 ? Suplementacion::obtenerDelCatalogo($idSuplemento) : null;
+        if ($idSuplemento > 0 && !$suplemento) {
+            header('Location: ' . APP_URL . '/index.php?accion=suplementos_catalogo');
+            exit;
+        }
+        // Con entregas registradas, el nombre queda fijo (ver Suplementacion::actualizarEnCatalogo).
+        $nombreFijo = $suplemento && (int)$suplemento['entregas'] > 0;
+        $errores = [];
+
+        if ($accion !== 'suplemento_catalogo_guardar') {
+            $datos = [
+                'nombre'           => $suplemento['nombre'] ?? '',
+                'presentacion'     => $suplemento['presentacion'] ?? '',
+                'indicacion'       => $suplemento['indicacion'] ?? '',
+                'edad_desde_meses' => (string)($suplemento['edad_desde_meses'] ?? ''),
+                'edad_hasta_meses' => (string)($suplemento['edad_hasta_meses'] ?? ''),
+            ];
+            require __DIR__ . '/../views/carnet/suplemento_catalogo_formulario.php';
+            break;
+        }
+
+        $limpiar = fn(string $campo) => trim(preg_replace('/\s+/u', ' ', (string)($_POST[$campo] ?? '')));
+        $datos = [
+            'nombre'           => $nombreFijo ? $suplemento['nombre'] : $limpiar('nombre'),
+            'presentacion'     => $limpiar('presentacion'),
+            'indicacion'       => $limpiar('indicacion'),
+            'edad_desde_meses' => $limpiar('edad_desde_meses'),
+            'edad_hasta_meses' => $limpiar('edad_hasta_meses'),
+        ];
+        $errores = Suplementacion::validarCatalogo($datos, $suplemento ? $idSuplemento : null);
+        if ($errores) {
+            require __DIR__ . '/../views/carnet/suplemento_catalogo_formulario.php';
+            break;
+        }
+
+        $idUsuario = Auth::usuario()['id'];
+        if ($suplemento) {
+            Suplementacion::actualizarEnCatalogo($idSuplemento, $datos, $idUsuario);
+            $mensajeOk = 'Suplemento actualizado.';
+        } else {
+            Suplementacion::crearEnCatalogo($datos, $idUsuario);
+            $mensajeOk = 'Suplemento agregado. Ya aparece al registrar entregas.';
+        }
+        header('Location: ' . APP_URL . '/index.php?accion=suplementos_catalogo&ok=' . urlencode($mensajeOk));
+        exit;
+
+    case 'suplemento_catalogo_estado':
+        Auth::exigirRol(['administrador']);
+        $activo = ($_POST['activo'] ?? '1') === '1';
+        Suplementacion::cambiarEstadoCatalogo((int)($_POST['id'] ?? 0), $activo, Auth::usuario()['id']);
+        $mensajeOk = $activo ? 'Suplemento activado.' : 'Suplemento desactivado. Ya no aparece al registrar entregas.';
+        header('Location: ' . APP_URL . '/index.php?accion=suplementos_catalogo&ok=' . urlencode($mensajeOk));
+        exit;
 
         // ---------- Inicio / login ----------
     case 'inicio':

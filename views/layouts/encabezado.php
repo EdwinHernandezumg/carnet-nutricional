@@ -65,7 +65,8 @@ if (!function_exists('nav_activo')) {
         <?php endif; ?>
 
         <?php if (Auth::tieneRol('administrador')): ?>
-            <a<?= nav_activo($accionActual, ['usuarios','usuario_nuevo','usuario_editar','usuario_actualizar']) ?>
+            <a<?= nav_activo($accionActual, ['usuarios','usuario_nuevo','usuario_editar','usuario_actualizar',
+                    'suplementos_catalogo','suplemento_catalogo_nuevo','suplemento_catalogo_editar','suplemento_catalogo_guardar']) ?>
                href="<?= APP_URL ?>/index.php?accion=usuarios" data-orden="3">
                 <?= Icono::ver('usuarios') ?> <span>Usuarios</span>
             </a>

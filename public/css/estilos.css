@@ -1027,3 +1027,6 @@ select:not([multiple]) {
    varias líneas. */
 .fila-anulada td.acciones-fila { white-space: normal; min-width: 14rem; }
 .tabla-tarjetas .fila-anulada td.acciones-fila { display: block; }
+
+/* Presentación, indicación y edad del suplemento elegido (formulario de entrega). */
+.detalle-suplemento { display: block; min-height: 1.2rem; margin-top: 0.35rem; }

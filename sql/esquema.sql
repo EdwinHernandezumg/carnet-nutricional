@@ -4,7 +4,7 @@
 --
 -- Se importa en una base vacía, antes de datos_iniciales.sql y oms_lms.sql.
 --
--- Generado el 19-10-2026 00:24 desde la base local con:
+-- Generado el 19-10-2026 10:26 desde la base local con:
 --   php scripts/exportar_esquema.php
 -- No editar a mano: cambiar la base local y volver a generarlo.
 -- ============================================================================
@@ -16,6 +16,9 @@ CREATE TABLE `catalogo_suplemento` (
   `id_catalogo_suplemento` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(80) NOT NULL,
   `presentacion` varchar(60) DEFAULT NULL,
+  `indicacion` varchar(100) DEFAULT NULL,
+  `edad_desde_meses` tinyint(3) unsigned DEFAULT NULL,
+  `edad_hasta_meses` tinyint(3) unsigned DEFAULT NULL,
   `orden` int(11) NOT NULL DEFAULT 0,
   `activo` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id_catalogo_suplemento`),
@@ -169,7 +172,7 @@ CREATE TABLE `suplementacion` (
   `id_suplementacion` int(11) NOT NULL AUTO_INCREMENT,
   `id_nino` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
-  `tipo` varchar(50) NOT NULL,
+  `tipo` varchar(80) NOT NULL,
   `fecha_entrega` date NOT NULL,
   `cantidad` varchar(50) DEFAULT NULL,
   `anulado` tinyint(1) NOT NULL DEFAULT 0,

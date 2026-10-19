@@ -82,6 +82,10 @@ if (!empty($temporal)) {
 
 <div class="barra-acciones">
     <a href="<?= APP_URL ?>/index.php?accion=usuario_nuevo" class="btn-primario">Nuevo usuario</a>
+    <!-- El catálogo de suplementos también lo mantiene el administrador -->
+    <a href="<?= APP_URL ?>/index.php?accion=suplementos_catalogo" class="btn-secundario">
+        <?= Icono::ver('suplemento', 20) ?> Catálogo de suplementos
+    </a>
 </div>
 
 <table class="tabla tabla-tarjetas">

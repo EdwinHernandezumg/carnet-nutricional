@@ -4,7 +4,7 @@
 --
 -- Puesto de Salud de Chivarreto: 2 territorios, 7 sectores y 29 parajes. Esquema de vacunación del cuaderno SIGSA 5a 2026.
 --
--- Generado el 19-10-2026 00:24 desde la base local con:
+-- Generado el 19-10-2026 10:26 desde la base local con:
 --   php scripts/exportar_esquema.php
 -- No editar a mano: cambiar la base local y volver a generarlo.
 -- ============================================================================
@@ -69,14 +69,15 @@ INSERT INTO `paraje` (`id_paraje`, `id_sector`, `nombre`, `activo`) VALUES
 (28, 7, 'Chi Chavez', 1),
 (29, 7, 'Chi Ajtij', 1);
 
--- catalogo_suplemento (6 filas)
-INSERT INTO `catalogo_suplemento` (`id_catalogo_suplemento`, `nombre`, `presentacion`, `orden`, `activo`) VALUES
-(1, 'Vitamina A', 'Cápsula', 1, 1),
-(2, 'Hierro (sulfato ferroso)', 'Jarabe o tableta', 2, 1),
-(3, 'Micronutrientes espolvoreados', 'Sobres', 3, 1),
-(4, 'Zinc', 'Jarabe o tableta', 4, 1),
-(5, 'Desparasitante (albendazol)', 'Tableta', 5, 1),
-(6, 'Alimento complementario fortificado', 'Bolsa', 6, 1);
+-- catalogo_suplemento (7 filas)
+INSERT INTO `catalogo_suplemento` (`id_catalogo_suplemento`, `nombre`, `presentacion`, `indicacion`, `edad_desde_meses`, `edad_hasta_meses`, `orden`, `activo`) VALUES
+(1, 'Vitamina A', 'Cápsula', NULL, NULL, NULL, 1, 1),
+(2, 'Hierro (sulfato ferroso)', 'Jarabe o tableta', NULL, NULL, NULL, 2, 0),
+(3, 'Micronutrientes espolvoreados', 'Sobres', NULL, NULL, NULL, 3, 1),
+(4, 'Zinc', 'Jarabe o tableta', NULL, NULL, NULL, 4, 1),
+(5, 'Desparasitante (albendazol)', 'Tableta', NULL, NULL, NULL, 5, 1),
+(6, 'Alimento complementario fortificado', 'Bolsa', NULL, NULL, NULL, 6, 1),
+(7, 'Suplemento nutricional lipídico (SNL)', 'Sobre de 20 g', '1 sobre al día; entrega mensual', 6, 23, 2, 1);
 
 -- catalogo_vacuna (30 filas)
 INSERT INTO `catalogo_vacuna` (`id_catalogo_vacuna`, `nombre`, `dosis`, `edad_sugerida`, `edad_meses`, `vigente`, `equivale_a`, `orden`, `activo`) VALUES

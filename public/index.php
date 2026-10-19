@@ -568,6 +568,9 @@ switch ($accion) {
         $idU = (int)($_POST['id'] ?? 0);
         if ($idU > 0) {
             $temporal = Usuario::restablecerContrasena($idU, Auth::usuario()['id']);
+            // Como en la recuperación por correo: si perdió el teléfono, ese
+            // teléfono deja de ser de confianza y se vuelve a pedir el código.
+            Verificacion::olvidarDispositivos($idU);
             $_SESSION['temporal_generada'] = $temporal;
             $_SESSION['temporal_usuario']  = Usuario::obtener($idU)['usuario'] ?? '';
         }

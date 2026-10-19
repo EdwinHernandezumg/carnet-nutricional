@@ -98,7 +98,7 @@ class Usuario
             'restablecer_pass',
             'usuario',
             $idUsuario,
-            'Restablecimiento de contraseña (temporal generada)'
+            'Restablecimiento de contraseña (temporal generada; se vuelve a pedir el código en sus dispositivos)'
         );
 
         return $temporal;

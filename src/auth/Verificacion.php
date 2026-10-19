@@ -8,8 +8,13 @@
  * - Código de ingreso: 6 números al correo cuando se entra desde un teléfono
  *   o una computadora nuevos. Con el cierre de sesión a los 20 minutos, pedir
  *   un código en cada ingreso obligaría a las enfermeras a abrir el correo
- *   varias veces al día; por eso el dispositivo queda de confianza 30 días. Al
- *   administrador se le pide siempre, porque su cuenta puede crear usuarios.
+ *   varias veces al día; por eso el dispositivo queda de confianza 90 días
+ *   (al principio eran 30; se amplió el 19 de octubre de 2026 porque los
+ *   plazos cortos tienen poca aceptación, y las demás protecciones siguen: la
+ *   contraseña en cada ingreso y los dispositivos olvidados al restablecerla).
+ *   Al administrador se le pide siempre, porque su cuenta puede crear usuarios.
+ * - Un mismo navegador recuerda a cada persona por separado: el puesto tiene
+ *   una sola computadora para varias enfermeras.
  *
  * En la base se guarda solo el resumen SHA-256 de cada enlace, código y
  * dispositivo: quien llegara a leer la base no podría usarlos.
@@ -20,15 +25,19 @@ class Verificacion
     const MINUTOS_ENLACE = 30;
     const MINUTOS_CODIGO = 10;
     const INTENTOS_CODIGO = 5;
-    const DIAS_DISPOSITIVO = 30;
+    const DIAS_DISPOSITIVO = 90;
 
     /** Límites contra el abuso: enlaces y códigos por hora, y espera entre códigos. */
     const ENLACES_POR_HORA = 3;
     const CODIGOS_POR_HORA = 6;
     const SEGUNDOS_ENTRE_CODIGOS = 60;
 
-    /** Nombre de la cookie que identifica al dispositivo de confianza. */
-    const COOKIE_DISPOSITIVO = 'dispositivo_confianza';
+    /**
+     * Inicio del nombre de la cookie del dispositivo de confianza. Lleva
+     * después el id del usuario: así la computadora compartida del puesto
+     * recuerda a cada enfermera y una no reemplaza a la otra.
+     */
+    const COOKIE_DISPOSITIVO = 'dispositivo_confianza_';
 
     private static function resumen(string $valor): string
     {
@@ -185,7 +194,7 @@ class Verificacion
     /** Indica si este navegador ya es de confianza para el usuario. */
     public static function esDispositivoDeConfianza(int $idUsuario): bool
     {
-        $token = $_COOKIE[self::COOKIE_DISPOSITIVO] ?? '';
+        $token = $_COOKIE[self::COOKIE_DISPOSITIVO . $idUsuario] ?? '';
         if (!is_string($token) || !preg_match('/^[0-9a-f]{64}$/', $token)) {
             return false;
         }
@@ -198,7 +207,7 @@ class Verificacion
         return $stmt->fetchColumn() > 0;
     }
 
-    /** Recuerda este navegador por 30 días para el usuario. */
+    /** Recuerda este navegador para el usuario por DIAS_DISPOSITIVO días. */
     public static function recordarDispositivo(int $idUsuario): void
     {
         $token = bin2hex(random_bytes(32));
@@ -213,7 +222,7 @@ class Verificacion
             ':descripcion' => mb_substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 150),
         ]);
 
-        setcookie(self::COOKIE_DISPOSITIVO, $token, [
+        setcookie(self::COOKIE_DISPOSITIVO . $idUsuario, $token, [
             'expires'  => time() + $dias * 86400,
             'path'     => parse_url(APP_URL, PHP_URL_PATH) ?: '/',
             'httponly' => true,
@@ -223,8 +232,9 @@ class Verificacion
     }
 
     /**
-     * Olvida todos los dispositivos del usuario: al recuperar la contraseña se
-     * vuelve a pedir el código en todos, por si alguien más la conocía.
+     * Olvida todos los dispositivos del usuario: al recuperar la contraseña
+     * por correo o al restablecerla el administrador, se vuelve a pedir el
+     * código en todos (por ejemplo, si se perdió el teléfono).
      */
     public static function olvidarDispositivos(int $idUsuario): void
     {

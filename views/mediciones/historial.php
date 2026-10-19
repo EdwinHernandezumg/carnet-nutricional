@@ -85,11 +85,6 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 <?php endif; ?>
 
 <div class="barra-acciones">
-    <?php if (Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo'): ?>
-        <a href="<?= APP_URL ?>/index.php?accion=medicion_nueva&id_nino=<?= (int)$nino['id_nino'] ?>" class="btn-primario">
-            Nueva medición
-        </a>
-    <?php endif; ?>
     <a href="<?= APP_URL ?>/index.php?accion=ninos" class="btn-secundario">Volver al listado</a>
     <a href="<?= APP_URL ?>/index.php?accion=nino_graficas&id=<?= (int)$nino['id_nino'] ?>" class="btn-primario">
         Ver gráficas de crecimiento
@@ -101,6 +96,15 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 </div>
 
 <h2 class="subtitulo-seccion">Mediciones registradas</h2>
+
+<!-- El botón va en su sección, como "Registrar vacuna": en el teléfono queda junto a la tabla -->
+<?php if ($puedeEditar): ?>
+    <div class="barra-acciones">
+        <a href="<?= APP_URL ?>/index.php?accion=medicion_nueva&id_nino=<?= (int)$nino['id_nino'] ?>" class="btn-primario">
+            Nueva medición
+        </a>
+    </div>
+<?php endif; ?>
 
 <?php if (empty($mediciones)): ?>
     <p class="vacio">Este niño aún no tiene mediciones registradas.</p>

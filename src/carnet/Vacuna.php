@@ -68,6 +68,48 @@ class Vacuna
     }
 
     /**
+     * Registra varias dosis aplicadas el mismo día y en el mismo lugar, cada
+     * una con su lote (en una visita al niño casi siempre se le ponen dos o
+     * tres vacunas). Se guardan todas o ninguna.
+     *
+     * @param array $dosis Cada una con nombre_vacuna, dosis y lote.
+     */
+    public static function crearVarias(int $idNino, array $dosis, string $fecha, int $lugar, int $idUsuario): void
+    {
+        $db = Database::obtener();
+        $db->beginTransaction();
+        try {
+            foreach ($dosis as $d) {
+                self::crear([
+                    'id_nino'          => $idNino,
+                    'nombre_vacuna'    => $d['nombre_vacuna'],
+                    'dosis'            => $d['dosis'],
+                    'fecha_aplicacion' => $fecha,
+                    'lote'             => $d['lote'],
+                    'lugar_vacunacion' => $lugar,
+                ], $idUsuario);
+            }
+            $db->commit();
+        } catch (Throwable $e) {
+            $db->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Dosis que el niño ya tiene registradas (sin las anuladas), como
+     * "nombre|dosis" => fecha de aplicación (la más antigua si se repite).
+     */
+    public static function dosisRegistradas(int $idNino): array
+    {
+        $puestas = [];
+        foreach (array_reverse(self::listarPorNino($idNino)) as $a) {
+            $puestas[$a['nombre_vacuna'] . '|' . $a['dosis']] ??= $a['fecha_aplicacion'];
+        }
+        return $puestas;
+    }
+
+    /**
      * Vacunas aplicadas a un niño, de la más reciente a la más antigua. Las
      * anuladas solo se incluyen si se piden (el historial las muestra tachadas).
      */
@@ -97,10 +139,7 @@ class Vacuna
         $catalogo = self::catalogo();
 
         // Dosis registradas, por "nombre|dosis" (la más antigua si se repite).
-        $puestas = [];
-        foreach (array_reverse(self::listarPorNino($idNino)) as $a) {
-            $puestas[$a['nombre_vacuna'] . '|' . $a['dosis']] ??= $a['fecha_aplicacion'];
-        }
+        $puestas = self::dosisRegistradas($idNino);
 
         // Dosis del esquema anterior que cubren una del vigente.
         $cubiertas = [];
@@ -140,6 +179,7 @@ class Vacuna
             }
 
             $esquema[] = [
+                'id'            => $id,
                 'nombre'        => $c['nombre'],
                 'dosis'         => $c['dosis'],
                 'edad_sugerida' => $c['edad_sugerida'],

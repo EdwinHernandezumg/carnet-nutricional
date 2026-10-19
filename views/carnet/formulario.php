@@ -1,11 +1,13 @@
 <?php
 /**
  * Formularios de vacuna, suplemento y cita.
- * Variables: $nino, $tipo ('vacuna'|'suplemento'|'cita'), $catalogo, $errores
+ * Variables: $nino, $tipo ('vacuna'|'suplemento'|'cita'), $catalogo, $errores;
+ * para vacunas también $esquema (Vacuna::esquemaDelNino) y $registradas
+ * (Vacuna::dosisRegistradas).
  */
 $errores = $errores ?? [];
 $titulos = [
-    'vacuna'     => 'Registrar vacuna aplicada',
+    'vacuna'     => 'Registrar vacunas aplicadas',
     'suplemento' => 'Registrar entrega de suplemento',
     'cita'       => 'Programar cita',
 ];
@@ -36,33 +38,32 @@ require __DIR__ . '/../layouts/encabezado.php';
 <?php if ($tipo === 'vacuna'): ?>
 
     <?php
-    // Esquema vigente y esquema anterior, en grupos separados de la lista.
-    $grupos = [
-        'Esquema nacional vigente (2026)' => array_filter($catalogo, fn($c) => $c['vigente']),
-        'Esquema anterior (carnet de 2018): solo dosis ya aplicadas' => array_filter($catalogo, fn($c) => !$c['vigente']),
-    ];
-    $vacunaElegida = $_POST['vacuna_sel'] ?? '';
-    $lugarElegido  = (string)($_POST['lugar_vacunacion'] ?? Vacuna::LUGAR_PREDETERMINADO);
+    // Varias dosis a la vez: en una visita casi siempre se ponen dos o tres
+    // vacunas. Las dosis se agrupan para que la enfermera vea primero las que
+    // le tocan al niño; las que ya tiene registradas no se ofrecen.
+    $pendientes = array_filter($esquema, fn($e) => $e['estado'] === 'pendiente');
+    $otras      = array_filter($esquema, fn($e) => in_array($e['estado'], ['proxima', 'cubierta'], true));
+    $anteriores = array_filter($catalogo, fn($c) => !$c['vigente'] && !isset($registradas[$c['nombre'] . '|' . $c['dosis']]));
+    $lugarElegido = (string)($_POST['lugar_vacunacion'] ?? Vacuna::LUGAR_PREDETERMINADO);
+
+    // Casilla de una dosis, con su lote debajo (se ve al marcarla).
+    function casillaDosis(int $id, string $nombre, string $dosis, ?string $nota): string
+    {
+        $marcada = ($_POST['dosis_' . $id] ?? '') === '1';
+        $titulo  = htmlspecialchars($nombre . ' ' . $dosis);
+        return '<div class="dosis-item">'
+            . '<label class="dosis-casilla"><input type="checkbox" name="dosis_' . $id . '" value="1"' . ($marcada ? ' checked' : '') . '>'
+            . '<span><strong>' . htmlspecialchars($nombre) . '</strong> ' . htmlspecialchars($dosis)
+            . ($nota ? ' <small>' . htmlspecialchars($nota) . '</small>' : '') . '</span></label>'
+            . '<div class="dosis-lote"><label for="lote_' . $id . '">Lote de ' . $titulo . '</label>'
+            . '<input type="text" id="lote_' . $id . '" name="lote_' . $id . '" maxlength="50"'
+            . ' value="' . htmlspecialchars(trim($_POST['lote_' . $id] ?? '')) . '"></div>'
+            . '</div>';
+    }
+
+    // Un grupo plegado se abre si trae una dosis marcada (al volver con errores).
+    $hayMarcada = fn(array $ids) => (bool)array_filter($ids, fn($id) => ($_POST['dosis_' . $id] ?? '') === '1');
     ?>
-    <div class="campo">
-        <label for="vacuna_sel">Vacuna y dosis *</label>
-        <select id="vacuna_sel" name="vacuna_sel" required>
-            <option value="">Seleccione</option>
-            <?php foreach ($grupos as $nombreGrupo => $opciones): ?>
-                <optgroup label="<?= htmlspecialchars($nombreGrupo) ?>">
-                    <?php foreach ($opciones as $c): ?>
-                        <?php $valor = $c['nombre'] . '|' . $c['dosis']; ?>
-                        <option value="<?= htmlspecialchars($valor) ?>" <?= $vacunaElegida === $valor ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($c['nombre'] . ' · ' . $c['dosis']) ?>
-                            <?php if ($c['edad_sugerida']): ?>
-                                (<?= htmlspecialchars($c['edad_sugerida']) ?>)
-                            <?php endif; ?>
-                        </option>
-                    <?php endforeach; ?>
-                </optgroup>
-            <?php endforeach; ?>
-        </select>
-    </div>
 
     <div class="fila">
         <div class="campo">
@@ -70,11 +71,6 @@ require __DIR__ . '/../layouts/encabezado.php';
             <input type="date" id="fecha_aplicacion" name="fecha_aplicacion" required
                    min="<?= htmlspecialchars($nino['fecha_nacimiento']) ?>" max="<?= date('Y-m-d') ?>"
                    value="<?= htmlspecialchars($_POST['fecha_aplicacion'] ?? date('Y-m-d')) ?>">
-        </div>
-        <div class="campo">
-            <label for="lote">Lote</label>
-            <input type="text" id="lote" name="lote" maxlength="50"
-                   value="<?= htmlspecialchars($_POST['lote'] ?? '') ?>">
         </div>
         <div class="campo">
             <label for="lugar_vacunacion">Lugar de vacunación *</label>
@@ -87,6 +83,45 @@ require __DIR__ . '/../layouts/encabezado.php';
             </select>
         </div>
     </div>
+    <p class="ayuda-grupo">La fecha y el lugar valen para todas las dosis que marque.</p>
+
+    <fieldset>
+        <legend>Dosis pendientes para su edad</legend>
+        <?php if (!$pendientes): ?>
+            <p class="vacio">No tiene dosis pendientes del esquema vigente.
+                Si se le aplicó otra, búsquela en los grupos de abajo.</p>
+        <?php else: ?>
+            <div class="lista-dosis">
+                <?php foreach ($pendientes as $e): ?>
+                    <?= casillaDosis($e['id'], $e['nombre'], $e['dosis'], $e['edad_sugerida']) ?>
+                <?php endforeach; ?>
+            </div>
+            <p class="ayuda-grupo dosis-ayuda">Marque las que se aplicaron y escriba el lote de cada una.</p>
+        <?php endif; ?>
+    </fieldset>
+
+    <?php if ($otras): ?>
+        <details class="bloque-dosis" <?= $hayMarcada(array_column($otras, 'id')) ? 'open' : '' ?>>
+            <summary>Otras dosis del esquema vigente (<?= count($otras) ?>)</summary>
+            <div class="lista-dosis">
+                <?php foreach ($otras as $e): ?>
+                    <?= casillaDosis($e['id'], $e['nombre'], $e['dosis'],
+                        $e['estado'] === 'cubierta' ? 'cubierta con ' . $e['equivalente'] : $e['edad_sugerida']) ?>
+                <?php endforeach; ?>
+            </div>
+        </details>
+    <?php endif; ?>
+
+    <?php if ($anteriores): ?>
+        <details class="bloque-dosis" <?= $hayMarcada(array_column($anteriores, 'id_catalogo_vacuna')) ? 'open' : '' ?>>
+            <summary>Esquema anterior (carnet de 2018): solo dosis ya aplicadas</summary>
+            <div class="lista-dosis">
+                <?php foreach ($anteriores as $c): ?>
+                    <?= casillaDosis((int)$c['id_catalogo_vacuna'], $c['nombre'], $c['dosis'], $c['edad_sugerida']) ?>
+                <?php endforeach; ?>
+            </div>
+        </details>
+    <?php endif; ?>
 
 <?php elseif ($tipo === 'suplemento'): ?>
 

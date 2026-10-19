@@ -31,7 +31,7 @@ $url = APP_URL . '/index.php?accion=';
         <?= Icono::ver('medicion') ?> Registrar medición
     </a>
     <a href="<?= $url ?>vacuna_nueva&id_nino=<?= $idN ?>" class="btn-secundario">
-        <?= Icono::ver('vacuna') ?> Registrar vacuna
+        <?= Icono::ver('vacuna') ?> Registrar vacunas
     </a>
     <a href="<?= $url ?>suplemento_nuevo&id_nino=<?= $idN ?>" class="btn-secundario">
         <?= Icono::ver('suplemento') ?> Registrar suplemento

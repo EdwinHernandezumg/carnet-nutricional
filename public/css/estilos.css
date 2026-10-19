@@ -1030,3 +1030,34 @@ select:not([multiple]) {
 
 /* Presentación, indicación y edad del suplemento elegido (formulario de entrega). */
 .detalle-suplemento { display: block; min-height: 1.2rem; margin-top: 0.35rem; }
+
+/* ---------- Varias vacunas a la vez ----------
+   Cada dosis es una casilla grande, fácil de tocar en el teléfono; su lote
+   aparece debajo al marcarla. */
+.lista-dosis {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.6rem;
+}
+.dosis-item { border: 1.5px solid var(--linea); border-radius: var(--radio); background: #fff; }
+.dosis-item:has(input[type="checkbox"]:checked) { border-color: var(--teal); background: var(--teal-claro); }
+.dosis-casilla {
+    display: flex; gap: 0.75rem; align-items: center;
+    padding: 0.75rem 0.9rem; cursor: pointer; color: var(--marino);
+}
+.dosis-casilla input { width: 1.35rem; height: 1.35rem; flex-shrink: 0; accent-color: var(--teal); }
+.dosis-casilla small { display: block; color: var(--gris-suave); font-size: 0.85rem; }
+.dosis-lote { display: none; padding: 0 0.9rem 0.85rem; }
+.dosis-lote label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--marino); }
+.dosis-lote input {
+    width: 100%; padding: 0.6rem 0.8rem; border: 1.5px solid var(--linea);
+    border-radius: var(--radio); font-size: 1rem; font-family: inherit;
+}
+.dosis-item:has(input[type="checkbox"]:checked) .dosis-lote { display: block; }
+/* Navegadores antiguos sin :has(): el lote siempre a la vista. */
+@supports not selector(:has(*)) { .dosis-lote { display: block; } }
+.dosis-ayuda { margin: 0.8rem 0 0; }
+.bloque-dosis {
+    border: 1.5px solid var(--linea); border-radius: 12px;
+    padding: 0.9rem 1.2rem; margin-bottom: 1.2rem;
+}
+.bloque-dosis summary { cursor: pointer; font-weight: 700; color: var(--teal-osc); }
+.bloque-dosis[open] summary { margin-bottom: 0.9rem; }

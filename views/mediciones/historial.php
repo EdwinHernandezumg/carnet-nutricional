@@ -97,7 +97,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 
 <h2 class="subtitulo-seccion">Mediciones registradas</h2>
 
-<!-- El botón va en su sección, como "Registrar vacuna": en el teléfono queda junto a la tabla -->
+<!-- El botón va en su sección, como "Registrar vacunas": en el teléfono queda junto a la tabla -->
 <?php if ($puedeEditar): ?>
     <div class="barra-acciones">
         <a href="<?= APP_URL ?>/index.php?accion=medicion_nueva&id_nino=<?= (int)$nino['id_nino'] ?>" class="btn-primario">

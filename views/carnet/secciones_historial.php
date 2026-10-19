@@ -13,7 +13,7 @@ $puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 <?php if ($puedeEditar): ?>
     <div class="barra-acciones">
         <a href="<?= APP_URL ?>/index.php?accion=vacuna_nueva&id_nino=<?= (int)$nino['id_nino'] ?>" class="btn-primario">
-            Registrar vacuna
+            Registrar vacunas
         </a>
     </div>
 <?php endif; ?>

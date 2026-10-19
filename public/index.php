@@ -609,6 +609,8 @@ switch ($accion) {
         }
         $tipo = 'vacuna';
         $catalogo = Vacuna::catalogo();
+        $esquema = Vacuna::esquemaDelNino($idNino, $nino['fecha_nacimiento']);
+        $registradas = Vacuna::dosisRegistradas($idNino);
         require __DIR__ . '/../views/carnet/formulario.php';
         break;
 
@@ -621,37 +623,55 @@ switch ($accion) {
             break;
         }
 
-        // La vacuna debe venir del catálogo, y la fecha estar entre el nacimiento y hoy.
-        $sel = $_POST['vacuna_sel'] ?? '';
-        $partes = explode('|', $sel);
-        $opcionesVacuna = array_map(fn($c) => $c['nombre'] . '|' . $c['dosis'], Vacuna::catalogo());
-        $errores = array_values(array_filter([
-            Validacion::enLista($sel, $opcionesVacuna, 'Debe seleccionar la vacuna de la lista.'),
-            Validacion::fecha($_POST['fecha_aplicacion'] ?? '', 'Fecha de aplicación',
-                $nino['fecha_nacimiento'], date('Y-m-d'), 'anterior al nacimiento', 'posterior a hoy'),
-            Validacion::texto(trim($_POST['lote'] ?? ''), 'Lote', 50),
-            Validacion::enLista($_POST['lugar_vacunacion'] ?? '', array_keys(Vacuna::LUGARES),
-                'Debe seleccionar el lugar de vacunación.'),
-        ]));
+        // Varias dosis a la vez: cada casilla marcada se llama dosis_<id del
+        // catálogo> y su lote, lote_<id>. Se recorren las del catálogo, así que
+        // solo cuentan dosis que existen. No se aceptan nombres con [], porque
+        // este archivo descarta los parámetros que llegan como lista.
+        $catalogo = Vacuna::catalogo();
+        $registradas = Vacuna::dosisRegistradas($idNino);
+        $elegidas = [];
+        $errores = [];
+        foreach ($catalogo as $c) {
+            $id = (int)$c['id_catalogo_vacuna'];
+            if (($_POST['dosis_' . $id] ?? '') !== '1') {
+                continue;
+            }
+            $nombreDosis = $c['nombre'] . ' ' . $c['dosis'];
+            $lote = trim($_POST['lote_' . $id] ?? '');
+            $errores[] = Validacion::texto($lote, 'Lote de ' . $nombreDosis, 50);
+            // Evita registrarla dos veces (por ejemplo, al tocar Guardar dos veces).
+            $yaPuesta = $registradas[$c['nombre'] . '|' . $c['dosis']] ?? null;
+            if ($yaPuesta !== null) {
+                $errores[] = $nombreDosis . ': ya está registrada el ' . Formato::fechaTexto($yaPuesta)
+                    . '. Si ese registro está mal, anúlelo en el historial.';
+            }
+            $elegidas[] = ['nombre_vacuna' => $c['nombre'], 'dosis' => $c['dosis'], 'lote' => $lote];
+        }
+        if (!$elegidas) {
+            $errores[] = 'Dosis: marque al menos una vacuna aplicada.';
+        }
+        $errores[] = Validacion::fecha($_POST['fecha_aplicacion'] ?? '', 'Fecha de aplicación',
+            $nino['fecha_nacimiento'], date('Y-m-d'), 'anterior al nacimiento', 'posterior a hoy');
+        $errores[] = Validacion::enLista($_POST['lugar_vacunacion'] ?? '', array_keys(Vacuna::LUGARES),
+            'Debe seleccionar el lugar de vacunación.');
+        $errores = array_values(array_filter($errores));
 
         if ($errores) {
             $tipo = 'vacuna';
-            $catalogo = Vacuna::catalogo();
+            $esquema = Vacuna::esquemaDelNino($idNino, $nino['fecha_nacimiento']);
             require __DIR__ . '/../views/carnet/formulario.php';
             break;
         }
 
-        Vacuna::crear([
-            'id_nino'          => $idNino,
-            'nombre_vacuna'    => $partes[0],
-            'dosis'            => $partes[1],
-            'fecha_aplicacion' => $_POST['fecha_aplicacion'],
-            'lote'             => trim($_POST['lote'] ?? ''),
-            'lugar_vacunacion' => (int)$_POST['lugar_vacunacion'],
-        ], Auth::usuario()['id']);
+        Vacuna::crearVarias($idNino, $elegidas, $_POST['fecha_aplicacion'],
+            (int)$_POST['lugar_vacunacion'], Auth::usuario()['id']);
 
+        $nombres = array_map(fn($e) => $e['nombre_vacuna'] . ' ' . $e['dosis'], $elegidas);
+        $mensajeOk = count($elegidas) === 1
+            ? 'Vacuna registrada: ' . $nombres[0] . '.'
+            : 'Se registraron ' . count($elegidas) . ' vacunas: ' . implode(', ', $nombres) . '.';
         header('Location: ' . APP_URL . '/index.php?accion=nino_historial&id=' . $idNino
-            . '&ok=' . urlencode('Vacuna registrada correctamente.'));
+            . '&ok=' . urlencode($mensajeOk));
         exit;
 
         // ---------- Suplementación ----------

@@ -104,6 +104,8 @@ if (!empty($temporal)) {
                 <td data-label="Sector">
                     <?php if ($u['sector_letra']): ?>
                         T<?= htmlspecialchars($u['territorio_numero']) ?> · <?= htmlspecialchars($u['sector_letra']) ?>
+                    <?php elseif ($u['rol'] === 'enfermeria'): ?>
+                        Apoyo (todos los sectores)
                     <?php else: ?>
                         <?= Formato::sinDato('Sin sector') ?>
                     <?php endif; ?>
@@ -117,6 +119,10 @@ if (!empty($temporal)) {
                     <?php endif; ?>
                 </td>
                 <td class="acciones-fila">
+                    <!-- Corregir nombre, usuario, rol o sector -->
+                    <a href="<?= APP_URL ?>/index.php?accion=usuario_editar&id=<?= (int)$u['id_usuario'] ?>"
+                       class="enlace-boton">Editar</a>
+
                     <!-- Restablecer contraseña -->
                     <form method="post" action="<?= APP_URL ?>/index.php?accion=usuario_restablecer"
                           onsubmit="return confirm('¿Generar una contraseña temporal para este usuario?');"

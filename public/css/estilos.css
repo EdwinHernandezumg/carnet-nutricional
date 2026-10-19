@@ -113,6 +113,8 @@ body {
 .coincidencia { min-height: 1.3rem; margin: -0.4rem 0 0.9rem; font-size: 0.92rem; font-weight: 600; }
 .coincidencia-ok { color: var(--teal-osc); }
 .coincidencia-mal { color: #b42318; }
+.salir-cambio { text-align: center; margin-top: 1rem; font-size: 0.92rem; }
+.salir-cambio a { color: var(--gris-suave); }
 .ingreso-pie {
     margin-top: 2rem; margin-bottom: auto; text-align: center;
     color: var(--gris-suave); font-size: 0.82rem; letter-spacing: 0.3px;

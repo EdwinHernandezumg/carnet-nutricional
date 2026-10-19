@@ -277,7 +277,8 @@ class Nino
     /**
      * Determina si el usuario puede ESCRIBIR (crear/editar) en un sector dado.
      * Administrador: no captura datos clínicos.
-     * Enfermería: solo su sector asignado; otros sectores se permiten con advertencia.
+     * Enfermería: su sector asignado; otros sectores se permiten con advertencia.
+     * Enfermería sin sector (de apoyo): todos los sectores, sin advertencia.
      * Consulta: nunca escribe.
      *
      * Devuelve: 'permitido', 'advertencia' o 'denegado'.
@@ -292,7 +293,9 @@ class Nino
             return 'denegado';
         }
         if ($usuario['rol'] === 'enfermeria') {
-            if ((int) $usuario['id_sector'] === $idSectorDestino) {
+            // Sin sector asignado es una enfermera de apoyo: trabaja en todos
+            // los sectores sin advertencia (la bitácora registra todo igual).
+            if (empty($usuario['id_sector']) || (int) $usuario['id_sector'] === $idSectorDestino) {
                 return 'permitido';
             }
             // Sector distinto: se permite pero se advierte y queda en bitácora.

@@ -55,6 +55,8 @@ $error = $error ?? null;
 
             <button type="submit">Guardar y continuar</button>
         </form>
+        <!-- Para salir sin cambiarla: al volver a entrar, se pedirá de nuevo. -->
+        <p class="salir-cambio"><a href="<?= APP_URL ?>/index.php?accion=logout">Salir sin cambiarla</a></p>
     </div>
 
     <script>

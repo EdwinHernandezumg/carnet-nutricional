@@ -1,16 +1,19 @@
 <?php
 
 /**
- * Formulario de creación de usuario.
- * Variables: $roles, $sectores, $errores, $datos
+ * Formulario de usuario: crear uno nuevo o corregir uno existente.
+ * Variables: $roles, $sectores, $errores, $datos; al editar, $usuarioEditado
+ * y $esPropio (si el administrador se edita a sí mismo).
  */
 $errores = $errores ?? [];
 $datos = $datos ?? [];
-$titulo = 'Nuevo usuario';
+$esEdicion = isset($usuarioEditado) && $usuarioEditado;
+$esPropio = $esPropio ?? false;
+$titulo = $esEdicion ? 'Editar usuario' : 'Nuevo usuario';
 require __DIR__ . '/../layouts/encabezado.php';
 ?>
 
-<h1 class="titulo-pagina">Nuevo usuario</h1>
+<h1 class="titulo-pagina"><?= $titulo ?></h1>
 
 <?php if ($errores): ?>
     <div class="mensaje-error">
@@ -22,7 +25,9 @@ require __DIR__ . '/../layouts/encabezado.php';
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= APP_URL ?>/index.php?accion=usuario_guardar" class="formulario">
+<form method="post"
+    action="<?= APP_URL ?>/index.php?accion=<?= $esEdicion ? 'usuario_actualizar&id=' . (int)$usuarioEditado['id_usuario'] : 'usuario_guardar' ?>"
+    class="formulario">
 
     <div class="campo">
         <label for="nombre_completo">Nombre completo *</label>
@@ -41,7 +46,7 @@ require __DIR__ . '/../layouts/encabezado.php';
         </div>
         <div class="campo">
             <label for="id_rol">Rol *</label>
-            <select id="id_rol" name="id_rol" required>
+            <select id="id_rol" name="id_rol" required <?= $esPropio ? 'disabled' : '' ?>>
                 <option value="">Seleccione</option>
                 <?php foreach ($roles as $r): ?>
                     <option value="<?= $r['id_rol'] ?>"
@@ -50,13 +55,16 @@ require __DIR__ . '/../layouts/encabezado.php';
                     </option>
                 <?php endforeach; ?>
             </select>
+            <?php if ($esPropio): ?>
+                <small>No puede cambiar su propio rol.</small>
+            <?php endif; ?>
         </div>
     </div>
 
     <div class="campo">
         <label for="id_sector">Sector (solo para enfermería)</label>
         <select id="id_sector" name="id_sector">
-            <option value="">Sin sector (administrador / consulta)</option>
+            <option value="">Sin sector (administrador, consulta o enfermería de apoyo)</option>
             <?php foreach ($sectores as $s): ?>
                 <option value="<?= $s['id_sector'] ?>"
                     <?= (($datos['id_sector'] ?? '') == $s['id_sector']) ? 'selected' : '' ?>>
@@ -66,14 +74,21 @@ require __DIR__ . '/../layouts/encabezado.php';
         </select>
     </div>
 
-    <div class="aviso-instrumento">
-        El sistema generará una contraseña temporal automáticamente. Se mostrará
-        una vez creada, para comunicarla al usuario. Deberá cambiarla en su primer ingreso.
-    </div>
+    <?php if ($esEdicion): ?>
+        <div class="aviso-instrumento">
+            Si cambia el nombre de usuario, la persona entrará con el nuevo; su contraseña no cambia.
+            El cambio queda en la bitácora.
+        </div>
+    <?php else: ?>
+        <div class="aviso-instrumento">
+            El sistema generará una contraseña temporal automáticamente. Se mostrará
+            una vez creada, para comunicarla al usuario. Deberá cambiarla en su primer ingreso.
+        </div>
+    <?php endif; ?>
 
     <div class="acciones">
         <a href="<?= APP_URL ?>/index.php?accion=usuarios" class="btn-secundario">Cancelar</a>
-        <button type="submit" class="btn-primario">Crear usuario</button>
+        <button type="submit" class="btn-primario"><?= $esEdicion ? 'Guardar cambios' : 'Crear usuario' ?></button>
     </div>
 </form>
 

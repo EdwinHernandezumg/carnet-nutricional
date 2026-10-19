@@ -151,11 +151,44 @@ class Usuario
     /**
      * Verifica si un nombre de usuario ya existe (para validación).
      */
-    public static function usuarioExiste(string $usuario): bool
+    public static function usuarioExiste(string $usuario, ?int $idExcepto = null): bool
     {
         $db = Database::obtener();
-        $stmt = $db->prepare("SELECT 1 FROM usuario WHERE usuario = :u LIMIT 1");
-        $stmt->execute([':u' => $usuario]);
+        $stmt = $db->prepare("SELECT 1 FROM usuario WHERE usuario = :u AND id_usuario <> :excepto LIMIT 1");
+        $stmt->execute([':u' => $usuario, ':excepto' => $idExcepto ?? 0]);
         return (bool)$stmt->fetch();
+    }
+
+    /**
+     * Corrige el nombre, el usuario, el rol o el sector de una cuenta. Deja en
+     * la bitácora qué cambió, con el valor anterior y el nuevo.
+     */
+    public static function actualizar(int $id, array $d, int $idAdmin): void
+    {
+        $antes = self::obtener($id);
+        $db = Database::obtener();
+        $db->prepare("UPDATE usuario SET nombre_completo = :nombre, usuario = :usuario,
+                             id_rol = :id_rol, id_sector = :id_sector
+                      WHERE id_usuario = :id")
+           ->execute([
+               ':nombre'    => $d['nombre_completo'],
+               ':usuario'   => $d['usuario'],
+               ':id_rol'    => $d['id_rol'],
+               ':id_sector' => $d['id_sector'] ?: null,
+               ':id'        => $id,
+           ]);
+
+        $cambios = [];
+        $campos = ['nombre_completo' => 'nombre', 'usuario' => 'usuario', 'id_rol' => 'rol', 'id_sector' => 'sector'];
+        foreach ($campos as $columna => $etiqueta) {
+            $anterior = (string)($antes[$columna] ?? '');
+            $nuevo    = (string)($d[$columna] ?? '');
+            if ($anterior !== $nuevo) {
+                $cambios[] = "$etiqueta de \"" . ($anterior === '' ? 'ninguno' : $anterior)
+                           . "\" a \"" . ($nuevo === '' ? 'ninguno' : $nuevo) . '"';
+            }
+        }
+        Bitacora::registrar($idAdmin, 'actualizar', 'usuario', $id,
+            'Edición de usuario ' . $d['usuario'] . ': ' . ($cambios ? implode('; ', $cambios) : 'sin cambios'));
     }
 }

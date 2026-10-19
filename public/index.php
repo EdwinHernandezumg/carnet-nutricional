@@ -388,32 +388,8 @@ switch ($accion) {
 
     case 'usuario_guardar':
         Auth::exigirRol(['administrador']);
-        $datos = [
-            'nombre_completo' => Formato::nombrePropio($_POST['nombre_completo'] ?? ''),
-            'usuario'         => trim($_POST['usuario'] ?? ''),
-            'id_rol'          => $_POST['id_rol'] ?? '',
-            'id_sector'       => $_POST['id_sector'] ?? '',
-        ];
-        // Rol y sector deben existir; enfermería necesita un sector, porque los
-        // permisos de escritura dependen de él (Nino::permisoEscritura).
-        $roles = array_column(Catalogo::roles(), 'nombre', 'id_rol');
-        $errores = array_values(array_filter([
-            Validacion::nombrePersona($datos['nombre_completo'], 'Nombre completo', 150, true),
-            Validacion::enLista($datos['id_rol'], array_keys($roles), 'Debe seleccionar un rol de la lista.'),
-        ]));
-        if (!preg_match('/^[A-Za-z0-9._-]{3,50}$/', $datos['usuario'])) {
-            $errores[] = 'El nombre de usuario debe tener de 3 a 50 caracteres: letras sin tilde, números,'
-                       . ' punto, guion o guion bajo. Sin espacios.';
-        } elseif (Usuario::usuarioExiste($datos['usuario'])) {
-            $errores[] = 'Ese nombre de usuario ya existe.';
-        }
-        if ($datos['id_sector'] !== '') {
-            $errores[] = Validacion::enLista($datos['id_sector'], array_column(Catalogo::sectores(), 'id_sector'),
-                'Debe seleccionar un sector de la lista.');
-        } elseif (($roles[$datos['id_rol']] ?? '') === 'enfermeria') {
-            $errores[] = 'Un usuario de enfermería debe tener un sector asignado.';
-        }
-        $errores = array_values(array_filter($errores));
+        $datos   = obtenerDatosUsuario();
+        $errores = validarUsuario($datos);
 
         if ($errores) {
             $roles    = Catalogo::roles();
@@ -426,6 +402,55 @@ switch ($accion) {
         $_SESSION['temporal_generada'] = $temporal;
         $_SESSION['temporal_usuario']  = $datos['usuario'];
         header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Usuario creado correctamente.'));
+        exit;
+
+    // Corregir el nombre, el usuario, el rol o el sector de una cuenta (por
+    // ejemplo, un nombre cambiado por el autocorrector). Nunca se borra una
+    // cuenta: lo que registró y la bitácora quedan ligados a ella.
+    case 'usuario_editar':
+    case 'usuario_actualizar':
+        Auth::exigirRol(['administrador']);
+        $usuarioEditado = Usuario::obtener((int)($_GET['id'] ?? 0));
+        if (!$usuarioEditado) {
+            header('Location: ' . APP_URL . '/index.php?accion=usuarios');
+            exit;
+        }
+        $idEditado = (int)$usuarioEditado['id_usuario'];
+        $esPropio  = $idEditado === (int)Auth::usuario()['id'];
+
+        if ($accion === 'usuario_editar') {
+            $datos = [
+                'nombre_completo' => $usuarioEditado['nombre_completo'],
+                'usuario'         => $usuarioEditado['usuario'],
+                'id_rol'          => (string)$usuarioEditado['id_rol'],
+                'id_sector'       => (string)($usuarioEditado['id_sector'] ?? ''),
+            ];
+            $roles    = Catalogo::roles();
+            $sectores = Catalogo::sectores();
+            require __DIR__ . '/../views/usuarios/formulario.php';
+            break;
+        }
+
+        $datos = obtenerDatosUsuario();
+        if ($esPropio) {
+            // El administrador no puede quitarse a sí mismo el rol: se quedaría
+            // sin acceso a la gestión de usuarios.
+            $datos['id_rol'] = (string)$usuarioEditado['id_rol'];
+        }
+        $errores = validarUsuario($datos, $idEditado);
+        if ($errores) {
+            $roles    = Catalogo::roles();
+            $sectores = Catalogo::sectores();
+            require __DIR__ . '/../views/usuarios/formulario.php';
+            break;
+        }
+
+        Usuario::actualizar($idEditado, $datos, Auth::usuario()['id']);
+        if ($esPropio) {
+            $_SESSION['usuario']['nombre']  = $datos['nombre_completo'];
+            $_SESSION['usuario']['usuario'] = $datos['usuario'];
+        }
+        header('Location: ' . APP_URL . '/index.php?accion=usuarios&ok=' . urlencode('Usuario actualizado correctamente.'));
         exit;
 
     case 'usuario_restablecer':
@@ -813,6 +838,43 @@ switch ($accion) {
  * Lee los datos del formulario del niño. Los nombres se guardan con la inicial
  * de cada palabra en mayúscula, aunque se tecleen en minúscula o en mayúscula.
  */
+/** Lee los datos del formulario de usuario (crear o editar). */
+function obtenerDatosUsuario(): array
+{
+    return [
+        'nombre_completo' => Formato::nombrePropio($_POST['nombre_completo'] ?? ''),
+        'usuario'         => trim($_POST['usuario'] ?? ''),
+        'id_rol'          => $_POST['id_rol'] ?? '',
+        'id_sector'       => $_POST['id_sector'] ?? '',
+    ];
+}
+
+/**
+ * Valida los datos de un usuario. Al editar, se pasa su id para que su propio
+ * nombre de usuario no cuente como repetido. El rol y el sector deben existir;
+ * enfermería sin sector es una enfermera de apoyo, que registra en todos los
+ * sectores (Nino::permisoEscritura).
+ */
+function validarUsuario(array $datos, ?int $idExcepto = null): array
+{
+    $roles = array_column(Catalogo::roles(), 'nombre', 'id_rol');
+    $errores = [
+        Validacion::nombrePersona($datos['nombre_completo'], 'Nombre completo', 150, true),
+        Validacion::enLista($datos['id_rol'], array_keys($roles), 'Rol: debe seleccionar un rol de la lista.'),
+    ];
+    if (!preg_match('/^[A-Za-z0-9._-]{3,50}$/', $datos['usuario'])) {
+        $errores[] = 'Nombre de usuario: debe tener de 3 a 50 caracteres: letras sin tilde, números,'
+                   . ' punto, guion o guion bajo. Sin espacios.';
+    } elseif (Usuario::usuarioExiste($datos['usuario'], $idExcepto)) {
+        $errores[] = 'Nombre de usuario: ya existe.';
+    }
+    if ($datos['id_sector'] !== '') {
+        $errores[] = Validacion::enLista($datos['id_sector'], array_column(Catalogo::sectores(), 'id_sector'),
+            'Sector: debe seleccionar un sector de la lista.');
+    }
+    return array_values(array_filter($errores));
+}
+
 function obtenerDatosFormulario(): array
 {
     return [

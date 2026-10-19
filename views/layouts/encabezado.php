@@ -44,14 +44,16 @@ if (!function_exists('nav_activo')) {
     -->
     <nav class="barra-nav" aria-label="Menú principal">
 
-        <a<?= nav_activo($accionActual, ['panel_alertas']) ?>
-           href="<?= APP_URL ?>/index.php?accion=panel_alertas" data-orden="1">
-            <?= Icono::ver('seguimiento') ?> <span>Seguimiento</span>
+        <!-- Niños primero: lo primero que hace la enfermera es buscar al niño
+             que llegó (visita al puesto, 16 de octubre de 2026). -->
+        <a<?= nav_activo($accionActual, ['ninos','nino_historial','nino_editar','nino_graficas','nino_registrado']) ?>
+           href="<?= APP_URL ?>/index.php?accion=ninos" data-orden="1">
+            <?= Icono::ver('ninos') ?> <span>Niños</span>
         </a>
 
-        <a<?= nav_activo($accionActual, ['ninos','nino_historial','nino_editar','nino_graficas','nino_registrado']) ?>
-           href="<?= APP_URL ?>/index.php?accion=ninos" data-orden="2">
-            <?= Icono::ver('ninos') ?> <span>Niños</span>
+        <a<?= nav_activo($accionActual, ['panel_alertas']) ?>
+           href="<?= APP_URL ?>/index.php?accion=panel_alertas" data-orden="2">
+            <?= Icono::ver('seguimiento') ?> <span>Seguimiento</span>
         </a>
 
         <?php if (Auth::tieneRol('enfermeria')): ?>
@@ -63,7 +65,7 @@ if (!function_exists('nav_activo')) {
         <?php endif; ?>
 
         <?php if (Auth::tieneRol('administrador')): ?>
-            <a<?= nav_activo($accionActual, ['usuarios','usuario_nuevo']) ?>
+            <a<?= nav_activo($accionActual, ['usuarios','usuario_nuevo','usuario_editar','usuario_actualizar']) ?>
                href="<?= APP_URL ?>/index.php?accion=usuarios" data-orden="3">
                 <?= Icono::ver('usuarios') ?> <span>Usuarios</span>
             </a>

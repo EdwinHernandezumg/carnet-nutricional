@@ -80,6 +80,7 @@ class Alerta
                 FROM medicion m
                 JOIN medicion actual ON actual.id_medicion = :id_actual
                 WHERE m.id_nino = :id_nino
+                  AND m.anulado = 0
                   AND (m.fecha_toma < actual.fecha_toma
                        OR (m.fecha_toma = actual.fecha_toma AND m.id_medicion < actual.id_medicion))
                 ORDER BY m.fecha_toma DESC, m.id_medicion DESC
@@ -116,7 +117,7 @@ class Alerta
         FROM nino n
         JOIN medicion m ON m.id_medicion = (
             SELECT m2.id_medicion FROM medicion m2
-            WHERE m2.id_nino = n.id_nino
+            WHERE m2.id_nino = n.id_nino AND m2.anulado = 0
             ORDER BY m2.fecha_toma DESC, m2.id_medicion DESC
             LIMIT 1
         )

@@ -4,7 +4,7 @@
 --
 -- Puesto de Salud de Chivarreto: 2 territorios, 7 sectores y 29 parajes. Esquema de vacunación del cuaderno SIGSA 5a 2026.
 --
--- Generado el 14-10-2026 15:17 desde la base local con:
+-- Generado el 19-10-2026 00:24 desde la base local con:
 --   php scripts/exportar_esquema.php
 -- No editar a mano: cambiar la base local y volver a generarlo.
 -- ============================================================================

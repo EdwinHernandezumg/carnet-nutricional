@@ -4,7 +4,7 @@
 --
 -- Se importa en una base vacía, antes de datos_iniciales.sql y oms_lms.sql.
 --
--- Generado el 14-10-2026 15:17 desde la base local con:
+-- Generado el 19-10-2026 00:24 desde la base local con:
 --   php scripts/exportar_esquema.php
 -- No editar a mano: cambiar la base local y volver a generarlo.
 -- ============================================================================
@@ -172,9 +172,16 @@ CREATE TABLE `suplementacion` (
   `tipo` varchar(50) NOT NULL,
   `fecha_entrega` date NOT NULL,
   `cantidad` varchar(50) DEFAULT NULL,
+  `anulado` tinyint(1) NOT NULL DEFAULT 0,
+  `motivo_anulacion` varchar(200) DEFAULT NULL,
+  `referencia_conocimiento` varchar(60) DEFAULT NULL,
+  `anulado_por` int(11) DEFAULT NULL,
+  `fecha_anulacion` datetime DEFAULT NULL,
   PRIMARY KEY (`id_suplementacion`),
   KEY `fk_suplementacion_usuario` (`id_usuario`),
   KEY `idx_suplementacion_nino` (`id_nino`),
+  KEY `fk_suplementacion_anulado_por` (`anulado_por`),
+  CONSTRAINT `fk_suplementacion_anulado_por` FOREIGN KEY (`anulado_por`) REFERENCES `usuario` (`id_usuario`),
   CONSTRAINT `fk_suplementacion_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`),
   CONSTRAINT `fk_suplementacion_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -188,9 +195,16 @@ CREATE TABLE `vacuna_aplicada` (
   `fecha_aplicacion` date NOT NULL,
   `lote` varchar(50) DEFAULT NULL,
   `lugar_vacunacion` tinyint(3) unsigned DEFAULT NULL,
+  `anulado` tinyint(1) NOT NULL DEFAULT 0,
+  `motivo_anulacion` varchar(200) DEFAULT NULL,
+  `referencia_conocimiento` varchar(60) DEFAULT NULL,
+  `anulado_por` int(11) DEFAULT NULL,
+  `fecha_anulacion` datetime DEFAULT NULL,
   PRIMARY KEY (`id_vacuna_aplicada`),
   KEY `fk_vacuna_usuario` (`id_usuario`),
   KEY `idx_vacuna_nino` (`id_nino`),
+  KEY `fk_vacuna_anulado_por` (`anulado_por`),
+  CONSTRAINT `fk_vacuna_anulado_por` FOREIGN KEY (`anulado_por`) REFERENCES `usuario` (`id_usuario`),
   CONSTRAINT `fk_vacuna_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`),
   CONSTRAINT `fk_vacuna_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -205,10 +219,17 @@ CREATE TABLE `cita` (
   `fecha_asistencia` date DEFAULT NULL,
   `motivo` varchar(100) DEFAULT NULL,
   `observaciones` varchar(300) DEFAULT NULL,
+  `anulado` tinyint(1) NOT NULL DEFAULT 0,
+  `motivo_anulacion` varchar(200) DEFAULT NULL,
+  `referencia_conocimiento` varchar(60) DEFAULT NULL,
+  `anulado_por` int(11) DEFAULT NULL,
+  `fecha_anulacion` datetime DEFAULT NULL,
   PRIMARY KEY (`id_cita`),
   KEY `fk_cita_nino` (`id_nino`),
   KEY `idx_cita_fecha` (`fecha_programada`,`estado`),
   KEY `fk_cita_usuario` (`id_usuario`),
+  KEY `fk_cita_anulado_por` (`anulado_por`),
+  CONSTRAINT `fk_cita_anulado_por` FOREIGN KEY (`anulado_por`) REFERENCES `usuario` (`id_usuario`),
   CONSTRAINT `fk_cita_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`),
   CONSTRAINT `fk_cita_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -224,9 +245,16 @@ CREATE TABLE `medicion` (
   `edad_meses` int(11) NOT NULL,
   `observaciones` varchar(300) DEFAULT NULL,
   `fecha_registro` datetime NOT NULL DEFAULT current_timestamp(),
+  `anulado` tinyint(1) NOT NULL DEFAULT 0,
+  `motivo_anulacion` varchar(200) DEFAULT NULL,
+  `referencia_conocimiento` varchar(60) DEFAULT NULL,
+  `anulado_por` int(11) DEFAULT NULL,
+  `fecha_anulacion` datetime DEFAULT NULL,
   PRIMARY KEY (`id_medicion`),
   KEY `fk_medicion_usuario` (`id_usuario`),
   KEY `idx_medicion_nino_fecha` (`id_nino`,`fecha_toma`),
+  KEY `fk_medicion_anulado_por` (`anulado_por`),
+  CONSTRAINT `fk_medicion_anulado_por` FOREIGN KEY (`anulado_por`) REFERENCES `usuario` (`id_usuario`),
   CONSTRAINT `fk_medicion_nino` FOREIGN KEY (`id_nino`) REFERENCES `nino` (`id_nino`),
   CONSTRAINT `fk_medicion_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`),
   CONSTRAINT `chk_medicion_peso` CHECK (`peso_kg` > 0 and `peso_kg` < 60),

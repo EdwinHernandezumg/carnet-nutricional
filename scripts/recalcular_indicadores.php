@@ -25,7 +25,7 @@ require __DIR__ . '/../src/alertas/Alerta.php';
 
 $db = Database::obtener();
 $mediciones = $db->query(
-    "SELECT id_medicion, id_nino FROM medicion ORDER BY id_nino, fecha_toma, id_medicion"
+    "SELECT id_medicion, id_nino FROM medicion WHERE anulado = 0 ORDER BY id_nino, fecha_toma, id_medicion"
 )->fetchAll();
 
 $db->beginTransaction();

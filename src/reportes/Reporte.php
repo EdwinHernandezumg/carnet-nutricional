@@ -219,14 +219,14 @@ class Reporte
                        n.id_sector, s.letra AS sector, t.id_territorio, t.numero AS territorio,
                        n.id_paraje, p.nombre AS paraje,
                        m.id_medicion, m.fecha_toma,
-                       (SELECT MAX(m4.fecha_toma) FROM medicion m4 WHERE m4.id_nino = n.id_nino) AS ultimo_control
+                       (SELECT MAX(m4.fecha_toma) FROM medicion m4 WHERE m4.id_nino = n.id_nino AND m4.anulado = 0) AS ultimo_control
                 FROM nino n
                 JOIN sector s     ON s.id_sector = n.id_sector
                 JOIN territorio t ON t.id_territorio = s.id_territorio
                 LEFT JOIN paraje p ON p.id_paraje = n.id_paraje
                 LEFT JOIN medicion m ON m.id_medicion = (
                     SELECT m2.id_medicion FROM medicion m2
-                    WHERE m2.id_nino = n.id_nino AND m2.fecha_toma BETWEEN :desde AND :hasta
+                    WHERE m2.id_nino = n.id_nino AND m2.anulado = 0 AND m2.fecha_toma BETWEEN :desde AND :hasta
                     ORDER BY m2.fecha_toma DESC, m2.id_medicion DESC
                     LIMIT 1
                 )
@@ -465,7 +465,7 @@ class Reporte
         $stmt = Database::obtener()->prepare(
             "SELECT SUM(estado = 'inasistencia') AS faltas, SUM(estado IN ('cumplida', 'inasistencia')) AS atendidas
              FROM cita
-             WHERE fecha_programada BETWEEN :desde AND :hasta
+             WHERE anulado = 0 AND fecha_programada BETWEEN :desde AND :hasta
                AND id_nino IN (" . implode(', ', $marcadores) . ")"
         );
         $stmt->execute($params);
@@ -503,7 +503,7 @@ class Reporte
                 "SELECT m.id_nino, m.fecha_toma, COALESCE(a.nivel, 'normal') AS nivel
                  FROM medicion m
                  LEFT JOIN alerta a ON a.id_medicion = m.id_medicion
-                 WHERE m.fecha_toma BETWEEN :inicio AND :fin
+                 WHERE m.anulado = 0 AND m.fecha_toma BETWEEN :inicio AND :fin
                    AND m.id_nino IN (" . implode(', ', $marcadores) . ")
                  ORDER BY m.fecha_toma, m.id_medicion"
             );

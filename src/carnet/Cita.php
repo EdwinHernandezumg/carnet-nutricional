@@ -80,14 +80,19 @@ class Cita
         Bitacora::registrar($idUsuario, 'editar', 'cita', $idCita, 'Aviso de cita enviado');
     }
 
-    /** Citas de un niño. */
-    public static function listarPorNino(int $idNino): array
+    /**
+     * Citas de un niño. Las anuladas solo se incluyen si se piden (el
+     * historial las muestra tachadas).
+     */
+    public static function listarPorNino(int $idNino, bool $incluirAnuladas = false): array
     {
         $db = Database::obtener();
-        $sql = "SELECT c.*, u.nombre_completo AS programada_por
+        $sql = "SELECT c.*, u.nombre_completo AS programada_por, ua.nombre_completo AS anulado_por_nombre
                 FROM cita c
                 LEFT JOIN usuario u ON u.id_usuario = c.id_usuario
-                WHERE c.id_nino = :id
+                LEFT JOIN usuario ua ON ua.id_usuario = c.anulado_por
+                WHERE c.id_nino = :id"
+             . ($incluirAnuladas ? '' : ' AND c.anulado = 0') . "
                 ORDER BY c.fecha_programada DESC";
         $stmt = $db->prepare($sql);
         $stmt->execute([':id' => $idNino]);
@@ -104,6 +109,7 @@ class Cita
 
         $where = [
             "c.estado = 'programada'",
+            "c.anulado = 0",
             "n.estado = 'activo'",
             "c.fecha_programada BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL :dias DAY)",
         ];
@@ -144,6 +150,7 @@ class Cita
                 JOIN sector s ON s.id_sector = n.id_sector
                 JOIN territorio t ON t.id_territorio = s.id_territorio
                 WHERE c.estado = 'programada'
+                  AND c.anulado = 0
                   AND c.fecha_programada < CURDATE()
                   AND n.estado = 'activo'
                 ORDER BY c.fecha_programada";
@@ -162,6 +169,7 @@ class Cita
         $sql = "SELECT fecha_programada, COUNT(*) AS cantidad
                 FROM cita
                 WHERE estado <> 'reprogramada'
+                  AND anulado = 0
                   AND fecha_programada >= :desde";
         $params = [':desde' => $desde];
         if ($hasta !== null) {
@@ -195,6 +203,7 @@ class Cita
                 LEFT JOIN paraje p ON p.id_paraje = n.id_paraje
                 WHERE c.fecha_programada = :fecha
                   AND c.estado <> 'reprogramada'
+                  AND c.anulado = 0
                 ORDER BY n.apellidos, n.nombres";
         $stmt = $db->prepare($sql);
         $stmt->execute([':fecha' => $fecha]);

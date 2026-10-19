@@ -84,14 +84,18 @@ class Medicion
 
     /**
      * Lista las mediciones de un niño, de la más reciente a la más antigua.
+     * Las anuladas solo se incluyen si se piden (el historial las muestra
+     * tachadas); para cálculos, gráficas y documentos no cuentan.
      */
-    public static function listarPorNino(int $idNino): array
+    public static function listarPorNino(int $idNino, bool $incluirAnuladas = false): array
     {
         $db = Database::obtener();
-        $sql = "SELECT m.*, u.nombre_completo AS registrado_por
+        $sql = "SELECT m.*, u.nombre_completo AS registrado_por, ua.nombre_completo AS anulado_por_nombre
                 FROM medicion m
                 JOIN usuario u ON u.id_usuario = m.id_usuario
-                WHERE m.id_nino = :id_nino
+                LEFT JOIN usuario ua ON ua.id_usuario = m.anulado_por
+                WHERE m.id_nino = :id_nino"
+             . ($incluirAnuladas ? '' : ' AND m.anulado = 0') . "
                 ORDER BY m.fecha_toma DESC, m.id_medicion DESC";
         $stmt = $db->prepare($sql);
         $stmt->execute([':id_nino' => $idNino]);

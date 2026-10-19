@@ -44,7 +44,7 @@ class GraficaCrecimiento
                     DATEDIFF(m.fecha_toma, n.fecha_nacimiento) AS edad_dias
              FROM medicion m
              JOIN nino n ON n.id_nino = m.id_nino
-             WHERE m.id_nino = :id
+             WHERE m.id_nino = :id AND m.anulado = 0
              ORDER BY m.fecha_toma, m.id_medicion"
         );
         $stmt->execute([':id' => $idNino]);

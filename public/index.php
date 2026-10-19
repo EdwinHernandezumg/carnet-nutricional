@@ -34,6 +34,7 @@ require_once __DIR__ . '/../src/core/Icono.php';
 require_once __DIR__ . '/../src/core/Formato.php';
 require_once __DIR__ . '/../src/core/Recurso.php';
 require_once __DIR__ . '/../src/core/Validacion.php';
+require_once __DIR__ . '/../src/core/Registro.php';
 
 // Ningún formulario del sistema envía listas (campo[]). Si un parámetro llega
 // como lista, alguien alteró la dirección o el formulario: se descarta aquí,
@@ -229,7 +230,8 @@ switch ($accion) {
             echo 'Niño no encontrado.';
             break;
         }
-        $mediciones = Medicion::listarPorNino($idNino);
+        // El historial muestra también lo anulado, tachado y con su motivo.
+        $mediciones = Medicion::listarPorNino($idNino, true);
 
         $db = Database::obtener();
 
@@ -247,18 +249,18 @@ switch ($accion) {
              WHERE a.estado = 'activa'
                AND a.id_medicion = (
                    SELECT m.id_medicion FROM medicion m
-                   WHERE m.id_nino = :id
+                   WHERE m.id_nino = :id AND m.anulado = 0
                    ORDER BY m.fecha_toma DESC, m.id_medicion DESC LIMIT 1
                )"
         );
         $stmtA->execute([':id' => $idNino]);
         $alertaActual = $stmtA->fetch();
 
-        // Datos del carnet: vacunas, suplementos y citas
-        $vacunas        = Vacuna::listarPorNino($idNino);
+        // Datos del carnet: vacunas, suplementos y citas (con lo anulado, tachado)
+        $vacunas        = Vacuna::listarPorNino($idNino, true);
         $esquemaVacunas = Vacuna::esquemaDelNino($idNino, $nino['fecha_nacimiento']);
-        $suplementos    = Suplementacion::listarPorNino($idNino);
-        $citas          = Cita::listarPorNino($idNino);
+        $suplementos    = Suplementacion::listarPorNino($idNino, true);
+        $citas          = Cita::listarPorNino($idNino, true);
 
         $mensaje = $_GET['ok'] ?? '';
         require __DIR__ . '/../views/mediciones/historial.php';
@@ -816,6 +818,60 @@ switch ($accion) {
         }
         http_response_code(204); // Sin contenido; se llama desde JavaScript.
         exit;
+
+        // ---------- Anular y corregir registros ----------
+        // Nada se borra: lo anulado queda tachado en el historial con su motivo.
+        // Durante el mes de la atención basta el motivo; si es de un mes
+        // anterior, se pide además la referencia del conocimiento (Registro).
+    case 'registro_anular':
+    case 'registro_anular_guardar':
+    case 'registro_corregir':
+    case 'registro_corregir_guardar':
+        Auth::exigirRol(['enfermeria']);
+        $esCorreccion = in_array($accion, ['registro_corregir', 'registro_corregir_guardar'], true);
+        $tipo = $_GET['tipo'] ?? '';
+        $idRegistro = (int)($_GET['id'] ?? 0);
+        $registro = Registro::tipoValido($tipo, $esCorreccion) ? Registro::obtener($tipo, $idRegistro) : null;
+        if (!$registro) {
+            echo 'Registro no encontrado.';
+            break;
+        }
+        $idNino = (int)$registro['id_nino'];
+        $urlHistorial = APP_URL . '/index.php?accion=nino_historial&id=' . $idNino;
+        if ($registro['anulado']) {
+            header('Location: ' . $urlHistorial . '&ok=' . urlencode('Ese registro ya estaba anulado.'));
+            exit;
+        }
+        $fueraDelMes = Registro::fueraDelMes(Registro::fechaAtencion($tipo, $registro));
+        $errores = [];
+        $datos = $esCorreccion
+            ? array_intersect_key($registro, Registro::CORREGIBLES[$tipo])
+            : [];
+        // El campo se llama motivo_cambio: la cita ya tiene su propio campo "motivo".
+        $motivo = trim($_POST['motivo_cambio'] ?? '');
+        $referencia = trim($_POST['referencia'] ?? '');
+
+        if (in_array($accion, ['registro_anular_guardar', 'registro_corregir_guardar'], true)) {
+            $errores = Registro::validarMotivo($motivo, $referencia, $fueraDelMes);
+            if ($esCorreccion) {
+                [$datos, $erroresDatos] = Registro::validarCorreccion($tipo, $_POST, $registro['fecha_nacimiento']);
+                $errores = array_merge($erroresDatos, $errores);
+            }
+            if (!$errores) {
+                $idUsuario = Auth::usuario()['id'];
+                if ($esCorreccion) {
+                    Registro::corregir($tipo, $idRegistro, $datos, $motivo, $referencia, $idUsuario);
+                    $mensajeOk = 'Se corrigió ' . Registro::TIPOS[$tipo]['articulo'] . '.';
+                } else {
+                    Registro::anular($tipo, $idRegistro, $motivo, $referencia, $idUsuario);
+                    $mensajeOk = 'Se anuló ' . Registro::TIPOS[$tipo]['articulo'] . '. Queda tachada en el historial.';
+                }
+                header('Location: ' . $urlHistorial . '&ok=' . urlencode($mensajeOk));
+                exit;
+            }
+        }
+        require __DIR__ . '/../views/carnet/registro.php';
+        break;
 
 
         // ---------- Inicio / login ----------

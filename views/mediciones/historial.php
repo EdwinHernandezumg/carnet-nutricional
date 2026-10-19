@@ -33,6 +33,32 @@ function celdaZ(array $porTipo, string $tipo, string $etiqueta): string
         . number_format($z, 2) . '</span></td>';
 }
 
+/**
+ * Botones para corregir o anular un registro, o la nota de anulación si ya
+ * se anuló (queda tachado en la tabla, como la línea roja del carnet). Se usa
+ * también en views/carnet/secciones_historial.php.
+ */
+function accionesRegistro(string $tipo, array $r, int $id, bool $puedeEditar): string
+{
+    if (!empty($r['anulado'])) {
+        return '<span class="nota-anulado">Anulada el ' . Formato::fecha(substr((string)$r['fecha_anulacion'], 0, 10))
+            . ' por ' . htmlspecialchars($r['anulado_por_nombre'] ?? '') . '. Motivo: '
+            . htmlspecialchars($r['motivo_anulacion'] ?? '')
+            . (!empty($r['referencia_conocimiento']) ? '. Conocimiento: ' . htmlspecialchars($r['referencia_conocimiento']) : '')
+            . '</span>';
+    }
+    if (!$puedeEditar) {
+        return '';
+    }
+    $url = APP_URL . '/index.php?accion=';
+    $html = '';
+    if (Registro::tipoValido($tipo, true)) {
+        $html .= '<a class="enlace-boton" href="' . $url . 'registro_corregir&tipo=' . $tipo . '&id=' . $id . '">Corregir</a> ';
+    }
+    return $html . '<a class="enlace-boton enlace-anular" href="' . $url . 'registro_anular&tipo=' . $tipo . '&id=' . $id . '">Anular</a>';
+}
+
+$puedeEditar = Auth::tieneRol('enfermeria') && $nino['estado'] === 'activo';
 ?>
 
 <h1 class="titulo-pagina">Historial del niño</h1>
@@ -90,11 +116,12 @@ function celdaZ(array $porTipo, string $tipo, string $etiqueta): string
                 <th>T/E (Z)</th>
                 <th>P/T (Z)</th>
                 <th>Registró</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($mediciones as $m): ?>
-                <tr>
+                <tr<?= $m['anulado'] ? ' class="fila-anulada"' : '' ?>>
                     <td class="celda-titulo"><?= Formato::fecha($m['fecha_toma']) ?></td>
                     <td data-label="Edad"><?= edadLegibleH((int)$m['edad_meses']) ?></td>
                     <td data-label="Peso (kg)"><?= htmlspecialchars($m['peso_kg']) ?></td>
@@ -111,6 +138,7 @@ function celdaZ(array $porTipo, string $tipo, string $etiqueta): string
                     echo celdaZ($porTipo, isset($porTipo['peso_longitud']) ? 'peso_longitud' : 'peso_talla', 'P/T (Z)');
                     ?>
                     <td data-label="Registró"><?= htmlspecialchars($m['registrado_por']) ?></td>
+                    <td class="acciones-fila"><?= accionesRegistro('medicion', $m, (int)$m['id_medicion'], $puedeEditar) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

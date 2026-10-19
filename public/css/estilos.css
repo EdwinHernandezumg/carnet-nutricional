@@ -1009,3 +1009,21 @@ select:not([multiple]) {
     background-size: 12px 8px;
     padding-right: 2.3rem;
 }
+
+/* ---------- Registros anulados ----------
+   Como la línea roja en el carnet: el registro anulado sigue a la vista,
+   tachado, con la nota de quién lo anuló, cuándo y por qué. */
+.fila-anulada td:not(.acciones-fila) { text-decoration: line-through; color: #8a96a3; }
+.fila-anulada td:not(.acciones-fila) .etiqueta { opacity: 0.55; }
+.fila-anulada { background: #fbf5f4; }
+.nota-anulado { display: block; color: #a4231a; font-size: 0.88rem; font-weight: 600; line-height: 1.4; }
+.enlace-boton.enlace-anular { color: #a4231a; }
+.aviso-mes {
+    background: #fff4e5; border: 1.5px solid #f2c27a; border-left-width: 5px;
+    border-radius: var(--radio); padding: 0.85rem 1rem; margin-bottom: 1.2rem; color: #7a4b0c;
+}
+/* La nota de anulación no es un botón: se muestra aunque en el teléfono se
+   oculten las celdas de acciones vacías, y en la computadora se parte en
+   varias líneas. */
+.fila-anulada td.acciones-fila { white-space: normal; min-width: 14rem; }
+.tabla-tarjetas .fila-anulada td.acciones-fila { display: block; }

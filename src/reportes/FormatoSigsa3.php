@@ -100,14 +100,14 @@ class FormatoSigsa3
                       JOIN territorio t ON t.id_territorio = s.id_territorio AND t.id_puesto = :puesto";
 
         $agregar("SELECT x.id_medicion, x.id_nino, x.fecha_toma AS fecha FROM medicion x $delPuesto
-                  WHERE x.fecha_toma BETWEEN :desde1 AND :hasta1 ORDER BY x.id_medicion",
+                  WHERE x.anulado = 0 AND x.fecha_toma BETWEEN :desde1 AND :hasta1 ORDER BY x.id_medicion",
             $rango('1') + [':puesto' => $puesto['id_puesto']], 'mediciones');
         $agregar("SELECT x.id_nino, x.fecha_aplicacion AS fecha, x.nombre_vacuna, x.dosis FROM vacuna_aplicada x $delPuesto
-                  WHERE x.fecha_aplicacion BETWEEN :desde2 AND :hasta2 ORDER BY x.id_vacuna_aplicada",
+                  WHERE x.anulado = 0 AND x.fecha_aplicacion BETWEEN :desde2 AND :hasta2 ORDER BY x.id_vacuna_aplicada",
             $rango('2') + [':puesto' => $puesto['id_puesto']], 'vacunas');
         $agregar("SELECT x.id_nino, x.fecha_entrega AS fecha, x.tipo, x.cantidad, c.presentacion
                   FROM suplementacion x LEFT JOIN catalogo_suplemento c ON c.nombre = x.tipo $delPuesto
-                  WHERE x.fecha_entrega BETWEEN :desde3 AND :hasta3 ORDER BY x.id_suplementacion",
+                  WHERE x.anulado = 0 AND x.fecha_entrega BETWEEN :desde3 AND :hasta3 ORDER BY x.id_suplementacion",
             $rango('3') + [':puesto' => $puesto['id_puesto']], 'suplementos');
 
         // Clasificaciones de cada medición.

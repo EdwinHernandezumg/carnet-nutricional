@@ -89,6 +89,13 @@ define('APP_NOMBRE', 'Carnet Digital de Monitoreo Nutricional Infantil');
 define('APP_URL', 'https://su-dominio.com');
 define('APP_ENTORNO', 'produccion'); // desarrollo, produccion
 
+// Correo saliente (recuperar la contraseña y código de ingreso).
+define('SMTP_HOST', 'smtp.hostinger.com');
+define('SMTP_PUERTO', 465);
+define('SMTP_USUARIO', 'sistema@su-dominio.com');
+define('SMTP_CONTRASENA', 'ESCRIBA_AQUI_LA_CONTRASENA_DEL_BUZON');
+define('SMTP_REMITENTE_NOMBRE', 'Carnet Digital Chivarreto');
+
 date_default_timezone_set('America/Guatemala');
 ```
 
@@ -96,6 +103,11 @@ date_default_timezone_set('America/Guatemala');
 - `APP_URL` va sin `www`, sin barra al final y sin `/public`.
 - `APP_ENTORNO` en `produccion`: no muestra errores técnicos en pantalla y los
   guarda en `carnet-nutricional/errores_php.log`, fuera de la carpeta pública.
+- `SMTP_...`: el buzón del dominio, creado antes en el hPanel (Correos
+  electrónicos → Buzones → Agregar buzón). Con `SMTP_CONTRASENA` vacía el
+  sistema funciona sin correo: no ofrece recuperar la contraseña ni pide el
+  código de ingreso. Cada usuario necesita además su correo registrado en
+  Usuarios → Editar.
 
 Revisarlo desde la consola, sin mostrar la contraseña:
 
@@ -106,6 +118,16 @@ php -r 'require "config/config.php"; try { new PDO("mysql:host=" . DB_HOST . ";d
 ```
 
 Debe decir `No syntax errors detected` y `Conexion correcta`.
+
+Probar el correo, enviando un mensaje a un correo propio:
+
+```
+php scripts/probar_correo.php su-correo@gmail.com
+```
+
+Debe decir `Listo: el servidor aceptó el mensaje` y el mensaje debe llegar (si
+no aparece, revisar la carpeta de spam). Si falla, muestra la causa; la más
+común es la contraseña del buzón mal escrita en `config.php`.
 
 ## 4. Crear las tablas y el administrador
 
@@ -188,8 +210,17 @@ git pull
 ```
 
 El cambio se ve en el sitio de inmediato. Si el cambio trae un archivo nuevo en
-`sql/migraciones/`, ejecutarlo en la base del servidor (pestaña SQL de
-phpMyAdmin) después del `git pull`.
+`sql/migraciones/`, ejecutarlo en la base del servidor justo después del
+`git pull`, en la misma carpeta (pide la contraseña de la base; si no muestra
+nada, quedó aplicado):
+
+```
+mysql -u u123456789_carnet -D u123456789_carnet -p < sql/migraciones/NOMBRE_DEL_ARCHIVO.sql
+```
+
+En Hostinger no sirve `source` dentro de `mysql`, porque su cliente está en
+modo protegido (sandbox). También se puede pegar el contenido del archivo en la
+pestaña SQL de phpMyAdmin.
 
 ## Si algo falla
 

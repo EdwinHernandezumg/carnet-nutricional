@@ -3,9 +3,10 @@
  * Pantalla de ingreso. Como el puesto de salud no tiene logo, el nombre del
  * sistema hace de logo: aparece arriba, con un emblema y un leve movimiento
  * de flotación (ver "Pantalla de ingreso" en estilos.css).
- * Variable: $error (opcional).
+ * Variables: $error y $aviso (opcionales).
  */
 $error = $error ?? null;
+$aviso = $aviso ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -36,6 +37,9 @@ $error = $error ?? null;
             <?php if ($error): ?>
                 <div class="mensaje-error"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
+            <?php if ($aviso): ?>
+                <div class="mensaje-ok"><?= htmlspecialchars($aviso) ?></div>
+            <?php endif; ?>
 
             <form method="post" action="<?= APP_URL ?>/index.php?accion=login">
                 <label for="usuario">Usuario</label>
@@ -58,6 +62,10 @@ $error = $error ?? null;
 
                 <button type="submit"><?= Icono::ver('entrar', 20) ?> Ingresar</button>
             </form>
+            <?php if (Correo::activo()): ?>
+                <!-- Recuperación por correo; sin correo configurado, la hace el administrador. -->
+                <p class="salir-cambio"><a href="<?= APP_URL ?>/index.php?accion=recuperar">¿Olvidó su contraseña?</a></p>
+            <?php endif; ?>
         </div>
 
     </main>

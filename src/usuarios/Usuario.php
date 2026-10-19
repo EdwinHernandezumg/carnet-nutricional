@@ -14,7 +14,7 @@ class Usuario
     public static function listar(): array
     {
         $db = Database::obtener();
-        $sql = "SELECT u.id_usuario, u.nombre_completo, u.usuario, u.activo,
+        $sql = "SELECT u.id_usuario, u.nombre_completo, u.usuario, u.correo, u.activo,
                        u.debe_cambiar_pass, r.nombre AS rol,
                        s.letra AS sector_letra, t.numero AS territorio_numero
                 FROM usuario u
@@ -52,14 +52,15 @@ class Usuario
         $hash = password_hash($temporal, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO usuario
-                (id_rol, id_puesto, id_sector, nombre_completo, usuario, contrasena_hash, debe_cambiar_pass)
-                VALUES (:id_rol, 1, :id_sector, :nombre, :usuario, :hash, TRUE)";
+                (id_rol, id_puesto, id_sector, nombre_completo, usuario, correo, contrasena_hash, debe_cambiar_pass)
+                VALUES (:id_rol, 1, :id_sector, :nombre, :usuario, :correo, :hash, TRUE)";
         $stmt = $db->prepare($sql);
         $stmt->execute([
             ':id_rol'    => $d['id_rol'],
             ':id_sector' => $d['id_sector'] ?: null,
             ':nombre'    => $d['nombre_completo'],
             ':usuario'   => $d['usuario'],
+            ':correo'    => $d['correo'] ?: null,
             ':hash'      => $hash,
         ]);
         $id = (int)$db->lastInsertId();
@@ -104,10 +105,12 @@ class Usuario
     }
 
     /**
-     * Cambia la contraseña del propio usuario (primer ingreso o cambio voluntario).
-     * Quita la marca de cambio obligatorio.
+     * Cambia la contraseña del propio usuario (primer ingreso, cambio
+     * voluntario o enlace de recuperación enviado al correo). Quita la marca
+     * de cambio obligatorio.
      */
-    public static function cambiarContrasenaPropia(int $idUsuario, string $nueva): void
+    public static function cambiarContrasenaPropia(int $idUsuario, string $nueva,
+                                                   string $detalle = 'Cambio de contraseña propia'): void
     {
         $hash = password_hash($nueva, PASSWORD_DEFAULT);
         $db = Database::obtener();
@@ -122,7 +125,7 @@ class Usuario
             'cambiar_pass',
             'usuario',
             $idUsuario,
-            'Cambio de contraseña propia'
+            $detalle
         );
     }
 
@@ -167,19 +170,21 @@ class Usuario
     {
         $antes = self::obtener($id);
         $db = Database::obtener();
-        $db->prepare("UPDATE usuario SET nombre_completo = :nombre, usuario = :usuario,
+        $db->prepare("UPDATE usuario SET nombre_completo = :nombre, usuario = :usuario, correo = :correo,
                              id_rol = :id_rol, id_sector = :id_sector
                       WHERE id_usuario = :id")
            ->execute([
                ':nombre'    => $d['nombre_completo'],
                ':usuario'   => $d['usuario'],
+               ':correo'    => $d['correo'] ?: null,
                ':id_rol'    => $d['id_rol'],
                ':id_sector' => $d['id_sector'] ?: null,
                ':id'        => $id,
            ]);
 
         $cambios = [];
-        $campos = ['nombre_completo' => 'nombre', 'usuario' => 'usuario', 'id_rol' => 'rol', 'id_sector' => 'sector'];
+        $campos = ['nombre_completo' => 'nombre', 'usuario' => 'usuario', 'correo' => 'correo',
+                   'id_rol' => 'rol', 'id_sector' => 'sector'];
         foreach ($campos as $columna => $etiqueta) {
             $anterior = (string)($antes[$columna] ?? '');
             $nuevo    = (string)($d[$columna] ?? '');

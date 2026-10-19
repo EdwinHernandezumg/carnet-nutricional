@@ -35,6 +35,16 @@ require __DIR__ . '/../layouts/encabezado.php';
             value="<?= htmlspecialchars($datos['nombre_completo'] ?? '') ?>">
     </div>
 
+    <!-- Correo personal (las enfermeras no tienen institucional): recuperar la
+         contraseña y recibir el código al entrar desde un dispositivo nuevo. -->
+    <div class="campo">
+        <label for="correo">Correo electrónico</label>
+        <input type="email" id="correo" name="correo" maxlength="150" inputmode="email"
+            autocapitalize="none" spellcheck="false" autocomplete="off" placeholder="nombre@gmail.com"
+            value="<?= htmlspecialchars($datos['correo'] ?? '') ?>">
+        <small>Para recuperar la contraseña y recibir el código de ingreso. Puede ser su correo personal.</small>
+    </div>
+
     <div class="fila">
         <div class="campo">
             <label for="usuario">Nombre de usuario *</label>

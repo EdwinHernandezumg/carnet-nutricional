@@ -16,6 +16,8 @@ require_once __DIR__ . '/../src/core/Sesion.php';
 require_once __DIR__ . '/../src/core/Bitacora.php';
 require_once __DIR__ . '/../src/core/Catalogo.php';
 require_once __DIR__ . '/../src/auth/Auth.php';
+require_once __DIR__ . '/../src/auth/Verificacion.php';
+require_once __DIR__ . '/../src/core/Correo.php';
 require_once __DIR__ . '/../src/ninos/Nino.php';
 require_once __DIR__ . '/../src/mediciones/Medicion.php';
 require_once __DIR__ . '/../src/usuarios/Usuario.php';
@@ -58,19 +60,124 @@ switch ($accion) {
         $usuario    = trim($_POST['usuario'] ?? '');
         $contrasena = $_POST['contrasena'] ?? '';
 
-        if (Auth::login($usuario, $contrasena)) {
-            Bitacora::registrar(Auth::usuario()['id'], 'login', 'usuario', Auth::usuario()['id'], 'Inicio de sesión');
-            // Los niños que ya cumplieron 7 años pasan a egresado (queda en bitácora).
-            Nino::egresarPorEdad(Auth::usuario()['id']);
-            if (Auth::debeCambiarPass()) {
-                header('Location: ' . APP_URL . '/index.php?accion=cambiar_pass');
-                exit;
-            }
-            header('Location: ' . Auth::paginaInicio());
+        $u = Auth::verificarCredenciales($usuario, $contrasena);
+        if (!$u) {
+            $error = 'Usuario o contraseña incorrectos.';
+            require __DIR__ . '/../views/auth/login.php';
+            break;
+        }
+        // Dispositivo nuevo, o administrador: antes de entrar, el código
+        // enviado a su correo (RF-13). La sesión todavía no se inicia.
+        if (Auth::necesitaCodigo($u)) {
+            session_regenerate_id(true);
+            $_SESSION['ingreso_pendiente'] = ['id' => (int)$u['id_usuario'], 'desde' => time()];
+            $_SESSION['ingreso_pendiente']['envio'] = enviarCodigoIngreso($u);
+            header('Location: ' . APP_URL . '/index.php?accion=verificar_codigo');
             exit;
         }
-        $error = 'Usuario o contraseña incorrectos.';
-        require __DIR__ . '/../views/auth/login.php';
+        $forma = '';
+        if (Correo::activo()) {
+            $forma = empty($u['correo']) ? 'sin correo registrado: no se pidió código' : 'dispositivo de confianza';
+        }
+        completarIngreso($u, $forma);
+        break;
+
+    // Código de ingreso enviado al correo: pantalla, revisión y reenvío.
+    case 'verificar_codigo':
+    case 'verificar_codigo_guardar':
+    case 'reenviar_codigo':
+        $u = ingresoPendiente();
+        if (!$u) {
+            header('Location: ' . APP_URL . '/index.php?accion=inicio&codigo_vencido=1');
+            exit;
+        }
+        $idPendiente = (int)$u['id_usuario'];
+        $error = null;
+
+        if ($accion === 'reenviar_codigo') {
+            $_SESSION['ingreso_pendiente']['envio'] = enviarCodigoIngreso($u);
+            header('Location: ' . APP_URL . '/index.php?accion=verificar_codigo');
+            exit;
+        }
+
+        if ($accion === 'verificar_codigo_guardar') {
+            unset($_SESSION['ingreso_pendiente']['envio']);
+            [$resultado, $quedan] = Verificacion::verificarCodigo($idPendiente, preg_replace('/\D/', '', $_POST['codigo'] ?? ''));
+            if ($resultado === 'correcto') {
+                // El administrador recibe el código siempre: su dispositivo no se recuerda.
+                if ($u['rol'] !== 'administrador' && ($_POST['recordar'] ?? '') === '1') {
+                    Verificacion::recordarDispositivo($idPendiente);
+                }
+                completarIngreso($u, 'con el código enviado al correo');
+            }
+            if ($resultado === 'bloqueado') {
+                Bitacora::registrar($idPendiente, 'codigo_bloqueado', 'usuario', $idPendiente,
+                    'Código de ingreso anulado por intentos fallidos');
+            }
+            $error = match ($resultado) {
+                'incorrecto' => 'El código no es correcto. ' . ($quedan === 1 ? 'Le queda 1 intento.' : "Le quedan $quedan intentos."),
+                'vencido'    => 'Ese código ya venció. Toque "Enviar otro código".',
+                default      => 'Ese código ya no sirve. Toque "Enviar otro código".',
+            };
+        }
+
+        $estadoEnvio = $_SESSION['ingreso_pendiente']['envio'] ?? null;
+        $segundosEspera = Verificacion::segundosParaReenviar($idPendiente);
+        require __DIR__ . '/../views/auth/verificar_codigo.php';
+        break;
+
+    // Recuperar la contraseña con un enlace enviado al correo (RF-13). La
+    // respuesta es la misma exista o no el usuario: así no se puede averiguar
+    // qué usuarios tiene el sistema.
+    case 'recuperar':
+    case 'recuperar_enviar':
+        if (!Correo::activo()) {
+            header('Location: ' . APP_URL . '/index.php?accion=inicio');
+            exit;
+        }
+        $enviado = false;
+        $error = null;
+        if ($accion === 'recuperar_enviar') {
+            $u = Auth::buscarParaIngreso(trim($_POST['usuario'] ?? ''));
+            if ($u && !empty($u['correo'])) {
+                enviarEnlaceRecuperacion($u);
+            }
+            $enviado = true;
+        }
+        require __DIR__ . '/../views/auth/recuperar.php';
+        break;
+
+    case 'restablecer':
+    case 'restablecer_guardar':
+        $claveEnlace = (string)($_GET['clave'] ?? $_POST['clave'] ?? '');
+        $enlace = Verificacion::enlaceVigente($claveEnlace);
+        if (!$enlace) {
+            $enviado = false;
+            $error = 'El enlace no es válido, ya se usó o ya venció. Pida uno nuevo.';
+            require __DIR__ . '/../views/auth/recuperar.php';
+            break;
+        }
+        $error = null;
+        if ($accion === 'restablecer_guardar') {
+            $nueva   = $_POST['nueva'] ?? '';
+            $repetir = $_POST['repetir'] ?? '';
+            $erroresPass = Contrasena::validar($nueva);
+            if ($erroresPass) {
+                $error = implode(' ', $erroresPass);
+            } elseif ($nueva !== $repetir) {
+                $error = 'Las contraseñas no coinciden.';
+            } else {
+                $idEnlace = (int)$enlace['id_usuario'];
+                Verificacion::marcarUsado((int)$enlace['id_codigo']);
+                Usuario::cambiarContrasenaPropia($idEnlace, $nueva, 'Contraseña nueva con el enlace enviado al correo');
+                // Por si alguien más conocía la contraseña: se vuelve a pedir el código en todos sus dispositivos.
+                Verificacion::olvidarDispositivos($idEnlace);
+                header('Location: ' . APP_URL . '/index.php?accion=inicio&restablecida=1');
+                exit;
+            }
+        }
+        $nombreEnlace = $enlace['nombre_completo'];
+        require __DIR__ . '/../views/auth/cambiar_pass.php';
         break;
 
     case 'logout':
@@ -424,6 +531,7 @@ switch ($accion) {
             $datos = [
                 'nombre_completo' => $usuarioEditado['nombre_completo'],
                 'usuario'         => $usuarioEditado['usuario'],
+                'correo'          => $usuarioEditado['correo'] ?? '',
                 'id_rol'          => (string)$usuarioEditado['id_rol'],
                 'id_sector'       => (string)($usuarioEditado['id_sector'] ?? ''),
             ];
@@ -970,7 +1078,12 @@ switch ($accion) {
             header('Location: ' . Auth::paginaInicio());
             exit;
         }
-        $error = isset($_GET['expiro']) ? 'La sesión se cerró por inactividad. Ingrese nuevamente.' : null;
+        $error = match (true) {
+            isset($_GET['expiro'])         => 'La sesión se cerró por inactividad. Ingrese nuevamente.',
+            isset($_GET['codigo_vencido']) => 'Pasó el tiempo para escribir el código. Ingrese nuevamente.',
+            default                        => null,
+        };
+        $aviso = isset($_GET['restablecida']) ? 'Su contraseña se cambió. Ya puede ingresar con la nueva.' : null;
         require __DIR__ . '/../views/auth/login.php';
         break;
 }
@@ -983,12 +1096,89 @@ switch ($accion) {
  * Lee los datos del formulario del niño. Los nombres se guardan con la inicial
  * de cada palabra en mayúscula, aunque se tecleen en minúscula o en mayúscula.
  */
+/**
+ * Inicia la sesión de un usuario ya verificado, lo deja en la bitácora con la
+ * forma de ingreso y lo lleva a su página principal (o a cambiar la
+ * contraseña temporal).
+ */
+function completarIngreso(array $u, string $forma): void
+{
+    Auth::iniciarSesion($u);
+    $id = (int)$u['id_usuario'];
+    Bitacora::registrar($id, 'login', 'usuario', $id, 'Inicio de sesión' . ($forma !== '' ? " ($forma)" : ''));
+    // Los niños que ya cumplieron 7 años pasan a egresado (queda en bitácora).
+    Nino::egresarPorEdad($id);
+    header('Location: ' . (Auth::debeCambiarPass() ? APP_URL . '/index.php?accion=cambiar_pass' : Auth::paginaInicio()));
+    exit;
+}
+
+/**
+ * Usuario que ya escribió bien su contraseña y espera el código del correo,
+ * o null si no hay ninguno o pasaron más de 15 minutos.
+ */
+function ingresoPendiente(): ?array
+{
+    $pendiente = $_SESSION['ingreso_pendiente'] ?? null;
+    if (!$pendiente || time() - (int)$pendiente['desde'] > 15 * 60) {
+        unset($_SESSION['ingreso_pendiente']);
+        return null;
+    }
+    return Auth::buscarParaIngreso('', (int)$pendiente['id']);
+}
+
+/**
+ * Crea un código de ingreso y lo envía al correo del usuario. Devuelve
+ * 'enviado', 'espera' (debe esperar para pedir otro) o 'error'.
+ */
+function enviarCodigoIngreso(array $u): string
+{
+    $id = (int)$u['id_usuario'];
+    $codigo = Verificacion::crearCodigo($id);
+    if ($codigo === null) {
+        return 'espera';
+    }
+    $texto = "Hola, {$u['nombre_completo']}:\n\n"
+        . "Su código para ingresar al Carnet Digital es:\n\n"
+        . "    $codigo\n\n"
+        . 'Vence en ' . Verificacion::MINUTOS_CODIGO . " minutos.\n\n"
+        . "Si usted no está ingresando al sistema, alguien conoce su contraseña: "
+        . "cámbiela y avise al administrador.\n";
+    // El código va también en el asunto: en el teléfono se lee en el aviso, sin abrir el correo.
+    if (!Correo::enviar($u['correo'], "Su código de ingreso: $codigo", $texto)) {
+        Bitacora::registrar($id, 'error_correo', 'usuario', $id, 'No se pudo enviar el código de ingreso');
+        return 'error';
+    }
+    return 'enviado';
+}
+
+/** Crea el enlace de recuperación y lo envía al correo del usuario. */
+function enviarEnlaceRecuperacion(array $u): void
+{
+    $id = (int)$u['id_usuario'];
+    $clave = Verificacion::crearEnlace($id);
+    if ($clave === null) {
+        return;
+    }
+    $texto = "Hola, {$u['nombre_completo']}:\n\n"
+        . "Se pidió crear una contraseña nueva para su usuario {$u['usuario']} en el "
+        . "Carnet Digital del Puesto de Salud Chivarreto.\n\n"
+        . 'Para hacerlo, abra este enlace. Sirve una sola vez y vence en '
+        . Verificacion::MINUTOS_ENLACE . " minutos:\n\n"
+        . APP_URL . '/index.php?accion=restablecer&clave=' . $clave . "\n\n"
+        . "Si usted no lo pidió, no haga nada: su contraseña no cambia.\n";
+    $enviado = Correo::enviar($u['correo'], 'Recuperar su contraseña del Carnet Digital', $texto);
+    Bitacora::registrar($id, $enviado ? 'recuperar_pass' : 'error_correo', 'usuario', $id,
+        $enviado ? 'Enlace de recuperación enviado al correo' : 'No se pudo enviar el enlace de recuperación');
+}
+
 /** Lee los datos del formulario de usuario (crear o editar). */
 function obtenerDatosUsuario(): array
 {
     return [
         'nombre_completo' => Formato::nombrePropio($_POST['nombre_completo'] ?? ''),
         'usuario'         => trim($_POST['usuario'] ?? ''),
+        // Correo personal: las enfermeras no tienen correo institucional.
+        'correo'          => mb_strtolower(trim($_POST['correo'] ?? '')),
         'id_rol'          => $_POST['id_rol'] ?? '',
         'id_sector'       => $_POST['id_sector'] ?? '',
     ];
@@ -1006,6 +1196,7 @@ function validarUsuario(array $datos, ?int $idExcepto = null): array
     $errores = [
         Validacion::nombrePersona($datos['nombre_completo'], 'Nombre completo', 150, true),
         Validacion::enLista($datos['id_rol'], array_keys($roles), 'Rol: debe seleccionar un rol de la lista.'),
+        Validacion::correo($datos['correo'], 'Correo electrónico', 150),
     ];
     if (!preg_match('/^[A-Za-z0-9._-]{3,50}$/', $datos['usuario'])) {
         $errores[] = 'Nombre de usuario: debe tener de 3 a 50 caracteres: letras sin tilde, números,'

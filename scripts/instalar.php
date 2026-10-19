@@ -70,7 +70,7 @@ try {
 
 // 3. Verificación: lo mínimo que el sistema necesita para funcionar.
 $esperado = [
-    'tablas'              => [count($db->query('SHOW TABLES')->fetchAll()), 17],
+    'tablas'              => [count($db->query('SHOW TABLES')->fetchAll()), 19],
     'roles'               => [(int)$db->query('SELECT COUNT(*) FROM rol')->fetchColumn(), 3],
     'parajes'             => [(int)$db->query('SELECT COUNT(*) FROM paraje')->fetchColumn(), 29],
     'dosis de vacunas'    => [(int)$db->query('SELECT COUNT(*) FROM catalogo_vacuna')->fetchColumn(), 30],

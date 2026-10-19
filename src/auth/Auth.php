@@ -6,36 +6,63 @@
 class Auth
 {
     /**
-     * Verifica las credenciales. Si son correctas, inicia la sesión.
-     * Devuelve true si autentica, false si no.
+     * Datos de un usuario activo para el ingreso, por su nombre de usuario o
+     * por su id. Devuelve null si no existe o está dado de baja.
      */
-    public static function login(string $usuario, string $contrasena): bool
+    public static function buscarParaIngreso(string $usuario = '', int $idUsuario = 0): ?array
     {
         $db = Database::obtener();
 
-        $sql = "SELECT u.id_usuario, u.nombre_completo, u.usuario, u.contrasena_hash,
+        $sql = "SELECT u.id_usuario, u.nombre_completo, u.usuario, u.correo, u.contrasena_hash,
                        u.activo, u.debe_cambiar_pass, u.id_rol, u.id_sector, r.nombre AS rol
                 FROM usuario u
                 JOIN rol r ON r.id_rol = u.id_rol
-                WHERE u.usuario = :usuario
+                WHERE (u.usuario = :usuario OR u.id_usuario = :id) AND u.activo = 1
                 LIMIT 1";
 
         $stmt = $db->prepare($sql);
-        $stmt->execute([':usuario' => $usuario]);
-        $u = $stmt->fetch();
+        $stmt->execute([':usuario' => $usuario, ':id' => $idUsuario]);
+        return $stmt->fetch() ?: null;
+    }
 
-        if (!$u) {
-            return false;
+    /**
+     * Verifica el usuario y la contraseña. Devuelve los datos del usuario si
+     * son correctos, o null. No inicia la sesión: antes puede faltar el código
+     * enviado al correo (ver necesitaCodigo).
+     */
+    public static function verificarCredenciales(string $usuario, string $contrasena): ?array
+    {
+        if ($usuario === '') {
+            return null;
         }
-        if (!$u['activo']) {
-            return false;
+        $u = self::buscarParaIngreso($usuario);
+        if (!$u || !password_verify($contrasena, $u['contrasena_hash'])) {
+            return null;
         }
-        if (!password_verify($contrasena, $u['contrasena_hash'])) {
-            return false;
-        }
+        return $u;
+    }
 
+    /**
+     * Indica si hay que pedir el código enviado al correo antes de entrar:
+     * siempre al administrador y, a los demás, en un dispositivo nuevo. Si el
+     * sistema no tiene correo configurado o la persona no tiene correo
+     * registrado, no se pide (el ingreso queda en la bitácora igual).
+     */
+    public static function necesitaCodigo(array $u): bool
+    {
+        if (!Correo::activo() || empty($u['correo'])) {
+            return false;
+        }
+        return $u['rol'] === 'administrador'
+            || !Verificacion::esDispositivoDeConfianza((int)$u['id_usuario']);
+    }
+
+    /** Inicia la sesión del usuario ya verificado. */
+    public static function iniciarSesion(array $u): void
+    {
         // Regeneramos el ID de sesión al autenticar (evita fijación de sesión).
         session_regenerate_id(true);
+        unset($_SESSION['ingreso_pendiente']);
 
         $_SESSION['usuario'] = [
             'id'        => $u['id_usuario'],
@@ -47,8 +74,6 @@ class Auth
             'debe_cambiar_pass' => (bool)$u['debe_cambiar_pass'],
         ];
         $_SESSION['ultima_actividad'] = time();
-
-        return true;
     }
 
     /** Indica si hay un usuario autenticado. */

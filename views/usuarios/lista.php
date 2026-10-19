@@ -93,6 +93,7 @@ if (!empty($temporal)) {
         <tr>
             <th>Nombre</th>
             <th>Usuario</th>
+            <th>Correo</th>
             <th>Rol</th>
             <th>Sector</th>
             <th>Estado</th>
@@ -104,6 +105,7 @@ if (!empty($temporal)) {
             <tr>
                 <td class="celda-titulo"><?= htmlspecialchars($u['nombre_completo']) ?></td>
                 <td data-label="Usuario"><?= htmlspecialchars($u['usuario']) ?></td>
+                <td data-label="Correo" class="celda-correo"><?= Formato::dato($u['correo'], 'Sin correo') ?></td>
                 <td data-label="Rol"><?= htmlspecialchars(ucfirst($u['rol'])) ?></td>
                 <td data-label="Sector">
                     <?php if ($u['sector_letra']): ?>

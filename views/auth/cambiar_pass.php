@@ -2,9 +2,13 @@
 
 /**
  * Pantalla de cambio de contraseña obligatorio (primer ingreso tras reseteo).
+ * También sirve para la contraseña nueva con el enlace enviado al correo: en
+ * ese caso llegan $claveEnlace (va oculta en el formulario) y $nombreEnlace.
  * Variables: $error (opcional)
  */
 $error = $error ?? null;
+$claveEnlace = $claveEnlace ?? null;
+$porEnlace = $claveEnlace !== null;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -20,14 +24,21 @@ $error = $error ?? null;
 
 <body class="pagina-login">
     <div class="tarjeta-login">
-        <h1>Cambiar contraseña</h1>
-        <p class="subtitulo">Por seguridad, defina una nueva contraseña personal.</p>
+        <h1><?= $porEnlace ? 'Contraseña nueva' : 'Cambiar contraseña' ?></h1>
+        <p class="subtitulo">
+            <?= $porEnlace
+                ? 'Hola, ' . htmlspecialchars($nombreEnlace) . '. Escriba su contraseña nueva.'
+                : 'Por seguridad, defina una nueva contraseña personal.' ?>
+        </p>
 
         <?php if ($error): ?>
             <div class="mensaje-error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <form method="post" action="<?= APP_URL ?>/index.php?accion=cambiar_pass_guardar">
+        <form method="post" action="<?= APP_URL ?>/index.php?accion=<?= $porEnlace ? 'restablecer_guardar' : 'cambiar_pass_guardar' ?>">
+            <?php if ($porEnlace): ?>
+                <input type="hidden" name="clave" value="<?= htmlspecialchars($claveEnlace) ?>">
+            <?php endif; ?>
             <label for="nueva">Nueva contraseña</label>
             <div class="medidor-fuerza" data-para="nueva"></div>
 
@@ -53,10 +64,14 @@ $error = $error ?? null;
             </div>
             <p class="coincidencia" id="coincidencia" aria-live="polite"></p>
 
-            <button type="submit">Guardar y continuar</button>
+            <button type="submit"><?= $porEnlace ? 'Guardar contraseña' : 'Guardar y continuar' ?></button>
         </form>
-        <!-- Para salir sin cambiarla: al volver a entrar, se pedirá de nuevo. -->
-        <p class="salir-cambio"><a href="<?= APP_URL ?>/index.php?accion=logout">Salir sin cambiarla</a></p>
+        <?php if ($porEnlace): ?>
+            <p class="salir-cambio"><a href="<?= APP_URL ?>/index.php?accion=inicio">Volver al ingreso</a></p>
+        <?php else: ?>
+            <!-- Para salir sin cambiarla: al volver a entrar, se pedirá de nuevo. -->
+            <p class="salir-cambio"><a href="<?= APP_URL ?>/index.php?accion=logout">Salir sin cambiarla</a></p>
+        <?php endif; ?>
     </div>
 
     <script>

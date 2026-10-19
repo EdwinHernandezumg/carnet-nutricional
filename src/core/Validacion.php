@@ -73,6 +73,18 @@ class Validacion
         return self::largo($valor, $campo, $maximo);
     }
 
+    /** Correo electrónico (opcional): con @ y dominio, sin espacios. */
+    public static function correo(string $valor, string $campo, int $maximo): ?string
+    {
+        if ($valor === '') {
+            return null;
+        }
+        if (!filter_var($valor, FILTER_VALIDATE_EMAIL)) {
+            return "$campo: revise que esté completo, por ejemplo nombre@gmail.com.";
+        }
+        return self::largo($valor, $campo, $maximo);
+    }
+
     /** Solo dígitos, exactamente $cantidad (vacío permitido si no es obligatorio). */
     public static function digitos(string $valor, string $campo, int $cantidad, bool $obligatorio = false): ?string
     {

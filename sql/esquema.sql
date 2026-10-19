@@ -1,10 +1,10 @@
 -- ============================================================================
 -- Carnet Digital de Monitoreo Nutricional Infantil
--- Estructura de la base de datos (17 tablas)
+-- Estructura de la base de datos (19 tablas)
 --
 -- Se importa en una base vacía, antes de datos_iniciales.sql y oms_lms.sql.
 --
--- Generado el 19-10-2026 10:52 desde la base local con:
+-- Generado el 19-10-2026 11:47 desde la base local con:
 --   php scripts/exportar_esquema.php
 -- No editar a mano: cambiar la base local y volver a generarlo.
 -- ============================================================================
@@ -100,6 +100,7 @@ CREATE TABLE `usuario` (
   `id_sector` int(11) DEFAULT NULL,
   `nombre_completo` varchar(150) NOT NULL,
   `usuario` varchar(50) NOT NULL,
+  `correo` varchar(150) DEFAULT NULL,
   `contrasena_hash` varchar(255) NOT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT 1,
   `debe_cambiar_pass` tinyint(1) NOT NULL DEFAULT 0,
@@ -128,6 +129,34 @@ CREATE TABLE `bitacora` (
   KEY `idx_bitacora_fecha` (`fecha_hora`),
   KEY `idx_bitacora_usuario` (`id_usuario`,`fecha_hora`),
   CONSTRAINT `fk_bitacora_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `codigo_acceso` (
+  `id_codigo` int(11) NOT NULL AUTO_INCREMENT,
+  `id_usuario` int(11) NOT NULL,
+  `tipo` enum('recuperacion','ingreso') NOT NULL,
+  `codigo_hash` char(64) NOT NULL,
+  `creado` datetime NOT NULL DEFAULT current_timestamp(),
+  `vence` datetime NOT NULL,
+  `usado` datetime DEFAULT NULL,
+  `intentos` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id_codigo`),
+  KEY `idx_codigo_usuario` (`id_usuario`,`tipo`),
+  KEY `idx_codigo_hash` (`codigo_hash`),
+  CONSTRAINT `fk_codigo_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `dispositivo_confianza` (
+  `id_dispositivo` int(11) NOT NULL AUTO_INCREMENT,
+  `id_usuario` int(11) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `descripcion` varchar(150) DEFAULT NULL,
+  `creado` datetime NOT NULL DEFAULT current_timestamp(),
+  `vence` datetime NOT NULL,
+  PRIMARY KEY (`id_dispositivo`),
+  UNIQUE KEY `uk_dispositivo_token` (`token_hash`),
+  KEY `idx_dispositivo_usuario` (`id_usuario`),
+  CONSTRAINT `fk_dispositivo_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `paraje` (

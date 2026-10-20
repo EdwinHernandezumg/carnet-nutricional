@@ -203,19 +203,44 @@ Debe aparecer `public_html -> carnet-nutricional/public`. Para volver atrás:
 
 Es una segunda instalación, aparte de la de producción, para que el asesor, el
 tribunal y el personal prueben el sistema sin ver ni tocar datos reales de
-niños. Se instala igual que la principal (pasos 1 a 6), con estas diferencias:
+niños. Probada en Hostinger el 19 de octubre de 2026
+(`pruebas.carnetchivarreto.com`):
 
-- Un subdominio (por ejemplo `pruebas.su-dominio.com`), una base de datos
-  propia y otra carpeta con su propio `git clone`.
-- En su `config.php`: los datos de esa base, `APP_URL` con el subdominio y
-  `APP_ENTORNO` en `'demostracion'`. Así no muestra errores técnicos y cada
-  pantalla lleva arriba la franja "Ambiente de demostración: todos los datos
-  son ficticios", también al imprimir.
-- Después de `scripts/instalar.php`, cargar los datos ficticios:
-
-```
-php scripts/cargar_demostracion.php
-```
+1. **Subdominio** en el hPanel (Dominios → Subdominios), por ejemplo `pruebas`,
+   sin carpeta personalizada. Hostinger lo pone en `public_html/pruebas`; como
+   `public_html` es el enlace a la carpeta pública de producción, esa carpeta
+   queda dentro de `carnet-nutricional/public`. Por eso se cambia por un enlace
+   (paso 3).
+2. **Copia del sistema**, al lado de la de producción:
+   ```
+   cd ~/domains/su-dominio.com && git clone https://github.com/EdwinHernandezumg/carnet-nutricional.git carnet-demostracion
+   ```
+3. **Enlace del subdominio** a la carpeta pública de la copia (solo se borra el
+   archivo de bienvenida de Hostinger; `rmdir` no borra carpetas con algo más):
+   ```
+   rm public_html/pruebas/default.php && rmdir public_html/pruebas && ln -s ~/domains/su-dominio.com/carnet-demostracion/public public_html/pruebas
+   ```
+4. **Base de datos** propia en el hPanel (por ejemplo `u123456789_demo`, con
+   su usuario y una contraseña distinta a la de producción).
+5. **`config.php`**: copiar el de producción y cambiarle, con el Administrador
+   de archivos del hPanel, `DB_NAME`, `DB_USER`, `DB_PASS`, `APP_URL` (el
+   subdominio) y `APP_ENTORNO` en `'demostracion'`. Así no muestra errores
+   técnicos y cada pantalla lleva arriba la franja "Ambiente de demostración:
+   todos los datos son ficticios", también al imprimir. El correo usa el mismo
+   buzón.
+   ```
+   cp carnet-nutricional/config/config.php carnet-demostracion/config/config.php
+   php -l carnet-demostracion/config/config.php && grep -E "DB_NAME|DB_USER|APP_URL|APP_ENTORNO" carnet-demostracion/config/config.php
+   ```
+6. **Tablas, administrador y datos ficticios**, dentro de `carnet-demostracion`:
+   ```
+   php -d display_errors=1 scripts/instalar.php
+   php -d display_errors=1 scripts/cargar_demostracion.php
+   ```
+   Si la instalación se corta con "MySQL server has gone away" después de
+   crear las tablas (pasaba antes de la corrección del 19 de octubre de 2026,
+   porque Hostinger cierra la conexión mientras se escribe), el administrador
+   se crea con `php -d display_errors=1 scripts/crear_administrador.php`.
 
 Carga 42 niños en los dos territorios con un año de controles, vacunas,
 suplementos y citas, con perfiles distintos (normal, cerca del umbral,

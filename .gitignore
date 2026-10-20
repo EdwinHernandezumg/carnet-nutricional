@@ -4,6 +4,10 @@ config/config.php
 # Archivos de entorno
 .env
 
+# En el servidor, enlace del subdominio de demostración dentro de la carpeta
+# pública de producción (ver "Ambiente de demostración" en docs/instalacion.md)
+/public/pruebas
+
 # Dependencias
 /vendor/
 node_modules/

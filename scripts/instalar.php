@@ -92,6 +92,12 @@ echo "\nAhora se crea la cuenta del administrador. Con ella se crean después\n"
 echo "las cuentas de las enfermeras desde Gestión de usuarios.\n\n";
 $admin = pedirDatosAdministrador();
 
+// Mientras se escriben los datos, el servidor de la base puede cerrar la
+// conexión por inactividad ("MySQL server has gone away": le pasó a la
+// instalación de la demostración en Hostinger, 19 de octubre de 2026).
+// Por eso se abre una conexión nueva antes de guardar.
+$db = conectar($base);
+
 $idRol    = (int)$db->query("SELECT id_rol FROM rol WHERE nombre = 'administrador'")->fetchColumn();
 $idPuesto = (int)$db->query('SELECT id_puesto FROM puesto_salud ORDER BY id_puesto LIMIT 1')->fetchColumn();
 $db->prepare("INSERT INTO usuario (id_rol, id_puesto, nombre_completo, usuario, contrasena_hash, debe_cambiar_pass)

@@ -57,6 +57,11 @@ while (preg_match('/^[A-Za-z0-9._-]{3,50}$/', $usuario) !== 1) {
     $usuario = preguntar('Usuario del administrador (nuevo o existente)', 'admin');
 }
 
+// Mientras se escriben los datos, el servidor de la base puede cerrar la
+// conexión por inactividad ("MySQL server has gone away", Hostinger, 19 de
+// octubre de 2026). Por eso se vuelve a conectar después de cada pregunta.
+$db = conectar($base);
+
 $stmt = $db->prepare('SELECT id_usuario, nombre_completo, activo FROM usuario WHERE usuario = :usuario');
 $stmt->execute([':usuario' => $usuario]);
 $existente = $stmt->fetch();
@@ -69,6 +74,7 @@ if ($existente) {
         exit("No se cambió nada.\n");
     }
     $datos = pedirDatosAdministrador(false, false);
+    $db = conectar($base);
     $db->prepare("UPDATE usuario SET contrasena_hash = :hash, id_rol = :rol, activo = 1,
                          fecha_baja = NULL, debe_cambiar_pass = :cambiar
                   WHERE id_usuario = :id")
@@ -81,6 +87,7 @@ if ($existente) {
 } else {
     echo "\nSe creará el administrador \"$usuario\".\n";
     $datos = pedirDatosAdministrador(false);
+    $db = conectar($base);
     $idPuesto = (int)$db->query('SELECT MIN(id_puesto) FROM puesto_salud')->fetchColumn();
     $db->prepare("INSERT INTO usuario (id_rol, id_puesto, nombre_completo, usuario, contrasena_hash, debe_cambiar_pass)
                   VALUES (:rol, :puesto, :nombre, :usuario, :hash, :cambiar)")

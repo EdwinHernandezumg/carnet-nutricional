@@ -19,6 +19,7 @@ $aviso = $aviso ?? null;
 </head>
 
 <body class="pagina-login">
+<?php require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
     <main class="ingreso">
 
         <!-- El nombre del sistema en lugar del logo, flotando suavemente -->

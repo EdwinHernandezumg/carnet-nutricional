@@ -19,6 +19,7 @@ $esAdministrador = $u['rol'] === 'administrador';
 </head>
 
 <body class="pagina-login">
+<?php require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
     <div class="tarjeta-login">
         <h1>Código de ingreso</h1>
         <p class="subtitulo">

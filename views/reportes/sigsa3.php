@@ -110,6 +110,7 @@ $periodo = $filtros['mes_completo']
     </style>
 </head>
 <body>
+<?php require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
 
 <div class="barra">
     <form method="get" action="<?= APP_URL ?>/index.php">

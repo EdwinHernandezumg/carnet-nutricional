@@ -104,7 +104,7 @@ registrarEnBitacora($db, $idAdmin, 'crear', $idAdmin, 'Instalación del sistema:
 
 echo "\nInstalación terminada. Ya puede ingresar con el usuario \"{$admin['usuario']}\".\n";
 mostrarContrasenaTemporal($admin);
-if (APP_ENTORNO !== 'produccion') {
-    echo "\nRecuerde: en el servidor, APP_ENTORNO debe ser 'produccion' en config/config.php,\n";
+if (APP_ENTORNO === 'desarrollo') {
+    echo "\nRecuerde: en el servidor, APP_ENTORNO debe ser 'produccion' (o 'demostracion') en config/config.php,\n";
     echo "para que no se muestren errores técnicos en pantalla.\n";
 }

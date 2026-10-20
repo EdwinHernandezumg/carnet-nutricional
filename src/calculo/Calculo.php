@@ -226,6 +226,17 @@ class Calculo
         return round($z, 2);
     }
 
+    /**
+     * Peso o talla que corresponde a una puntuación Z en un indicador, por
+     * ejemplo la talla de la mediana (Z = 0) a los 18 meses. Lo usa el script
+     * de datos de demostración. Devuelve null fuera de las tablas de la OMS.
+     */
+    public static function valorParaZ(string $indicador, string $sexo, float $x, float $z): ?float
+    {
+        $lms = self::lmsInterpolado($indicador, $sexo, $x);
+        return $lms === null ? null : self::valorEnZ($lms[0], $lms[1], $lms[2], $z);
+    }
+
     /** Fórmula LMS inversa: valor que corresponde a una puntuación Z dada. */
     public static function valorEnZ(float $L, float $M, float $S, float $z): float
     {

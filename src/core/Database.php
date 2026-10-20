@@ -5,13 +5,27 @@ class Database
 
     private static ?PDO $conexion = null;
 
+    /** Base distinta a la de config.php (solo para scripts de consola con --base=). */
+    private static ?string $base = null;
+
+    /**
+     * Hace que la conexión use otra base. Lo usan los scripts de consola con la
+     * opción --base=, para probar sin tocar la base de config.php. Se llama
+     * antes de la primera consulta.
+     */
+    public static function usarBase(string $base): void
+    {
+        self::$base = $base;
+        self::$conexion = null;
+    }
+
     public static function obtener(): PDO
     {
 
         if (self::$conexion === null) {
 
             $dsn = 'mysql:host=' . DB_HOST
-                . ';dbname=' . DB_NAME
+                . ';dbname=' . (self::$base ?? DB_NAME)
                 . ';charset=' . DB_CHARSET;
 
             $opciones = [

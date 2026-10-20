@@ -199,6 +199,35 @@ Debe aparecer `public_html -> carnet-nutricional/public`. Para volver atrás:
 6. Crear las cuentas de las enfermeras desde Gestión de usuarios, cada una con
    su sector.
 
+## Ambiente de demostración (datos ficticios)
+
+Es una segunda instalación, aparte de la de producción, para que el asesor, el
+tribunal y el personal prueben el sistema sin ver ni tocar datos reales de
+niños. Se instala igual que la principal (pasos 1 a 6), con estas diferencias:
+
+- Un subdominio (por ejemplo `pruebas.su-dominio.com`), una base de datos
+  propia y otra carpeta con su propio `git clone`.
+- En su `config.php`: los datos de esa base, `APP_URL` con el subdominio y
+  `APP_ENTORNO` en `'demostracion'`. Así no muestra errores técnicos y cada
+  pantalla lleva arriba la franja "Ambiente de demostración: todos los datos
+  son ficticios", también al imprimir.
+- Después de `scripts/instalar.php`, cargar los datos ficticios:
+
+```
+php scripts/cargar_demostracion.php
+```
+
+Carga 42 niños en los dos territorios con un año de controles, vacunas,
+suplementos y citas, con perfiles distintos (normal, cerca del umbral,
+desnutrición aguda y crónica, sobrepeso, uno que se recupera) para que se vean
+las alertas y los indicadores. No corre con `APP_ENTORNO` en `'produccion'` ni
+en una base que ya tenga niños. Las cuentas para entrar (por ejemplo, las del
+asesor) se crean después desde Usuarios.
+
+Cada cambio del sistema se prueba primero aquí y después se pasa a producción:
+`git pull` (y la migración, si la hay) en la carpeta de la demostración, se
+revisa, y luego lo mismo en la carpeta de producción.
+
 ## Actualizar el sistema
 
 En la computadora, guardar el cambio en Git y subirlo (`git push`). En el

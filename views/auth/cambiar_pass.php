@@ -23,6 +23,7 @@ $porEnlace = $claveEnlace !== null;
 <script src="<?= Recurso::url('js/fuerza-contrasena.js') ?>"></script>
 
 <body class="pagina-login">
+<?php require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
     <div class="tarjeta-login">
         <h1><?= $porEnlace ? 'Contraseña nueva' : 'Cambiar contraseña' ?></h1>
         <p class="subtitulo">

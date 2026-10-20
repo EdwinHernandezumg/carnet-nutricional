@@ -20,6 +20,7 @@ $error = $error ?? null;
 </head>
 
 <body class="pagina-login">
+<?php require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
     <div class="tarjeta-login">
         <h1>Recuperar contraseña</h1>
 

@@ -27,6 +27,7 @@ if (!function_exists('nav_activo')) {
     <link rel="stylesheet" href="<?= Recurso::url('css/estilos.css') ?>">
 </head>
 <body>
+<?php require __DIR__ . '/franja_demostracion.php'; ?>
 <header class="barra-superior">
 
     <!-- El nombre del sistema lleva a la página principal, como el logo en otros sistemas -->

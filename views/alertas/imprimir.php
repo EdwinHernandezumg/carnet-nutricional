@@ -43,6 +43,7 @@
     </style>
 </head>
 <body>
+<?php require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
 
 <button class="btn-imprimir" onclick="window.print()">Imprimir o guardar como PDF</button>
 <p class="nota-impresion">En el destino de la impresión, elija "Guardar como PDF" para obtener el archivo.</p>

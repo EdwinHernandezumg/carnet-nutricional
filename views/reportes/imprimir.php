@@ -64,6 +64,7 @@ $pct = fn($parte, $total) => $total ? round($parte * 100 / $total, 1) . ' %' : '
     </style>
 </head>
 <body class="modo-impresion">
+<?php require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
 
 <button class="btn-imprimir" onclick="window.print()">Imprimir o guardar como PDF</button>
 <p class="nota-impresion">En el destino de la impresión, elija "Guardar como PDF" para obtener el archivo.</p>

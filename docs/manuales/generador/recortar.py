@@ -12,7 +12,9 @@ from PIL import Image
 origen, salida = sys.argv[1], sys.argv[2]
 os.makedirs(salida, exist_ok=True)
 # Alto máximo en píxeles (las capturas del teléfono están a escala 2).
-especial = {'t08-graficas': 1350, 't07-historial': 1250, 't13-reportes': 1250, 't05-nino-registrado': 1250}
+especial = {'t08-graficas': 1350, 't07-historial': 1250, 't13-reportes': 1250, 't05-nino-registrado': 1250,
+            't04-registrar-nino': 1660, 't09-vacuna': 2120, 't19-anular': 1660, 't21-esquema': 1700,
+            't22-catalogo-suplementos': 1400}
 tamanos = {}
 for archivo in sorted(glob.glob(os.path.join(origen, '*.png'))):
     nombre = os.path.basename(archivo)[:-4]

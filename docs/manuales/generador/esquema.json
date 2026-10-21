@@ -1,888 +1,1142 @@
 {
-    "catalogo_suplemento": {
-        "cols": [
-            {
-                "n": "id_catalogo_suplemento",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "nombre",
-                "tipo": "varchar(80)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "presentacion",
-                "tipo": "varchar(60)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "orden",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 0"
-            },
-            {
-                "n": "activo",
-                "tipo": "tinyint(1)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 1"
-            }
-        ],
-        "pk": "id_catalogo_suplemento",
-        "fk": []
-    },
-    "catalogo_vacuna": {
-        "cols": [
-            {
-                "n": "id_catalogo_vacuna",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "nombre",
-                "tipo": "varchar(80)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "dosis",
-                "tipo": "varchar(30)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "edad_sugerida",
-                "tipo": "varchar(60)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "edad_meses",
-                "tipo": "smallint(5) unsigned",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "vigente",
-                "tipo": "tinyint(1)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 1"
-            },
-            {
-                "n": "equivale_a",
-                "tipo": "int(11)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "orden",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 0"
-            },
-            {
-                "n": "activo",
-                "tipo": "tinyint(1)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 1"
-            }
-        ],
-        "pk": "id_catalogo_vacuna",
-        "fk": {
-            "equivale_a": "catalogo_vacuna"
-        }
-    },
-    "oms_lms": {
-        "cols": [
-            {
-                "n": "id_lms",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "indicador",
-                "tipo": "enum('peso_edad','talla_edad','peso_longitud','peso_talla')",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "sexo",
-                "tipo": "enum('M','F')",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "x",
-                "tipo": "decimal(5,1)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "l",
-                "tipo": "decimal(10,6)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "m",
-                "tipo": "decimal(10,6)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "s",
-                "tipo": "decimal(10,6)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            }
-        ],
-        "pk": "id_lms",
-        "fk": []
-    },
-    "puesto_salud": {
-        "cols": [
-            {
-                "n": "id_puesto",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "nombre",
-                "tipo": "varchar(100)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "codigo",
-                "tipo": "varchar(20)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "distrito",
-                "tipo": "varchar(100)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "area_salud",
-                "tipo": "varchar(100)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "activo",
-                "tipo": "tinyint(1)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 1"
-            }
-        ],
-        "pk": "id_puesto",
-        "fk": []
-    },
-    "rol": {
-        "cols": [
-            {
-                "n": "id_rol",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "nombre",
-                "tipo": "varchar(50)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "descripcion",
-                "tipo": "varchar(200)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            }
-        ],
-        "pk": "id_rol",
-        "fk": []
-    },
-    "territorio": {
-        "cols": [
-            {
-                "n": "id_territorio",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_puesto",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "numero",
-                "tipo": "varchar(10)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "nombre",
-                "tipo": "varchar(100)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            }
-        ],
-        "pk": "id_territorio",
-        "fk": {
-            "id_puesto": "puesto_salud"
-        }
-    },
-    "sector": {
-        "cols": [
-            {
-                "n": "id_sector",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_territorio",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "letra",
-                "tipo": "varchar(5)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "descripcion",
-                "tipo": "varchar(100)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            }
-        ],
-        "pk": "id_sector",
-        "fk": {
-            "id_territorio": "territorio"
-        }
-    },
-    "usuario": {
-        "cols": [
-            {
-                "n": "id_usuario",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_rol",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_puesto",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_sector",
-                "tipo": "int(11)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "nombre_completo",
-                "tipo": "varchar(150)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "usuario",
-                "tipo": "varchar(50)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "contrasena_hash",
-                "tipo": "varchar(255)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "activo",
-                "tipo": "tinyint(1)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 1"
-            },
-            {
-                "n": "debe_cambiar_pass",
-                "tipo": "tinyint(1)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 0"
-            },
-            {
-                "n": "fecha_alta",
-                "tipo": "datetime",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT current_timestamp()"
-            },
-            {
-                "n": "fecha_baja",
-                "tipo": "datetime",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            }
-        ],
-        "pk": "id_usuario",
-        "fk": {
-            "id_puesto": "puesto_salud",
-            "id_rol": "rol",
-            "id_sector": "sector"
-        }
-    },
-    "bitacora": {
-        "cols": [
-            {
-                "n": "id_bitacora",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_usuario",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "accion",
-                "tipo": "varchar(50)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "tabla_afectada",
-                "tipo": "varchar(50)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_registro_afectado",
-                "tipo": "int(11)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "detalle",
-                "tipo": "varchar(300)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "fecha_hora",
-                "tipo": "datetime",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT current_timestamp()"
-            },
-            {
-                "n": "ip_origen",
-                "tipo": "varchar(45)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            }
-        ],
-        "pk": "id_bitacora",
-        "fk": {
-            "id_usuario": "usuario"
-        }
-    },
-    "paraje": {
-        "cols": [
-            {
-                "n": "id_paraje",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_sector",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "nombre",
-                "tipo": "varchar(100)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "activo",
-                "tipo": "tinyint(1)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 1"
-            }
-        ],
-        "pk": "id_paraje",
-        "fk": {
-            "id_sector": "sector"
-        }
-    },
-    "nino": {
-        "cols": [
-            {
-                "n": "id_nino",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_sector",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_paraje",
-                "tipo": "int(11)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "cui",
-                "tipo": "varchar(13)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "nombres",
-                "tipo": "varchar(100)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "apellidos",
-                "tipo": "varchar(100)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "fecha_nacimiento",
-                "tipo": "date",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "sexo",
-                "tipo": "enum('M','F')",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "pueblo",
-                "tipo": "tinyint(3) unsigned",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "comunidad_linguistica",
-                "tipo": "tinyint(3) unsigned",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "nombre_madre",
-                "tipo": "varchar(150)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "nombre_padre",
-                "tipo": "varchar(150)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "telefono",
-                "tipo": "varchar(20)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "direccion",
-                "tipo": "varchar(200)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "estado",
-                "tipo": "enum('activo','egresado','traslado')",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 'activo'"
-            },
-            {
-                "n": "fecha_egreso",
-                "tipo": "date",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "fecha_registro",
-                "tipo": "datetime",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT current_timestamp()"
-            }
-        ],
-        "pk": "id_nino",
-        "fk": {
-            "id_paraje": "paraje",
-            "id_sector": "sector"
-        }
-    },
-    "suplementacion": {
-        "cols": [
-            {
-                "n": "id_suplementacion",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_nino",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_usuario",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "tipo",
-                "tipo": "varchar(50)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "fecha_entrega",
-                "tipo": "date",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "cantidad",
-                "tipo": "varchar(50)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            }
-        ],
-        "pk": "id_suplementacion",
-        "fk": {
-            "id_nino": "nino",
-            "id_usuario": "usuario"
-        }
-    },
-    "vacuna_aplicada": {
-        "cols": [
-            {
-                "n": "id_vacuna_aplicada",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_nino",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_usuario",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "nombre_vacuna",
-                "tipo": "varchar(80)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "dosis",
-                "tipo": "varchar(30)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "fecha_aplicacion",
-                "tipo": "date",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "lote",
-                "tipo": "varchar(50)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "lugar_vacunacion",
-                "tipo": "tinyint(3) unsigned",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            }
-        ],
-        "pk": "id_vacuna_aplicada",
-        "fk": {
-            "id_nino": "nino",
-            "id_usuario": "usuario"
-        }
-    },
-    "cita": {
-        "cols": [
-            {
-                "n": "id_cita",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_nino",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_usuario",
-                "tipo": "int(11)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "fecha_programada",
-                "tipo": "date",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "estado",
-                "tipo": "enum('programada','cumplida','inasistencia','reprogramada')",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 'programada'"
-            },
-            {
-                "n": "aviso_enviado",
-                "tipo": "tinyint(1)",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 0"
-            },
-            {
-                "n": "fecha_asistencia",
-                "tipo": "date",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "motivo",
-                "tipo": "varchar(100)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "observaciones",
-                "tipo": "varchar(300)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            }
-        ],
-        "pk": "id_cita",
-        "fk": {
-            "id_nino": "nino",
-            "id_usuario": "usuario"
-        }
-    },
-    "medicion": {
-        "cols": [
-            {
-                "n": "id_medicion",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_nino",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_usuario",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "fecha_toma",
-                "tipo": "date",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "peso_kg",
-                "tipo": "decimal(5,2)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "talla_cm",
-                "tipo": "decimal(5,2)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "tipo_talla",
-                "tipo": "enum('longitud','talla')",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "edad_meses",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "observaciones",
-                "tipo": "varchar(300)",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            },
-            {
-                "n": "fecha_registro",
-                "tipo": "datetime",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT current_timestamp()"
-            }
-        ],
-        "pk": "id_medicion",
-        "fk": {
-            "id_nino": "nino",
-            "id_usuario": "usuario"
-        }
-    },
-    "alerta": {
-        "cols": [
-            {
-                "n": "id_alerta",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_nino",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "id_medicion",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "nivel",
-                "tipo": "enum('normal','cerca_umbral','riesgo','desnutricion_aguda','desnutricion_cronica','sobrepeso')",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "descripcion",
-                "tipo": "varchar(500)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "estado",
-                "tipo": "enum('activa','resuelta','seguimiento')",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT 'activa'"
-            },
-            {
-                "n": "fecha_generacion",
-                "tipo": "datetime",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT current_timestamp()"
-            },
-            {
-                "n": "fecha_resolucion",
-                "tipo": "datetime",
-                "nulo": true,
-                "resto": "DEFAULT NULL"
-            }
-        ],
-        "pk": "id_alerta",
-        "fk": {
-            "id_medicion": "medicion",
-            "id_nino": "nino"
-        }
-    },
-    "indicador": {
-        "cols": [
-            {
-                "n": "id_indicador",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL AUTO_INCREMENT"
-            },
-            {
-                "n": "id_medicion",
-                "tipo": "int(11)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "tipo",
-                "tipo": "enum('peso_edad','talla_edad','peso_longitud','peso_talla')",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "puntuacion_z",
-                "tipo": "decimal(5,2)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "clasificacion",
-                "tipo": "varchar(50)",
-                "nulo": false,
-                "resto": "NOT NULL"
-            },
-            {
-                "n": "fecha_calculo",
-                "tipo": "datetime",
-                "nulo": false,
-                "resto": "NOT NULL DEFAULT current_timestamp()"
-            }
-        ],
-        "pk": "id_indicador",
-        "fk": {
-            "id_medicion": "medicion"
-        }
-    }
+ "catalogo_suplemento": {
+  "cols": [
+   {
+    "n": "id_catalogo_suplemento",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "nombre",
+    "tipo": "varchar(80)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "presentacion",
+    "tipo": "varchar(60)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "indicacion",
+    "tipo": "varchar(100)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "edad_desde_meses",
+    "tipo": "tinyint(3)",
+    "nulo": true,
+    "resto": "unsigned DEFAULT NULL"
+   },
+   {
+    "n": "edad_hasta_meses",
+    "tipo": "tinyint(3)",
+    "nulo": true,
+    "resto": "unsigned DEFAULT NULL"
+   },
+   {
+    "n": "orden",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 0"
+   },
+   {
+    "n": "activo",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 1"
+   }
+  ],
+  "pk": "id_catalogo_suplemento",
+  "fk": {}
+ },
+ "catalogo_vacuna": {
+  "cols": [
+   {
+    "n": "id_catalogo_vacuna",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "nombre",
+    "tipo": "varchar(80)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "dosis",
+    "tipo": "varchar(30)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "edad_sugerida",
+    "tipo": "varchar(60)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "edad_meses",
+    "tipo": "smallint(5)",
+    "nulo": true,
+    "resto": "unsigned DEFAULT NULL"
+   },
+   {
+    "n": "vigente",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 1"
+   },
+   {
+    "n": "equivale_a",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "orden",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 0"
+   },
+   {
+    "n": "activo",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 1"
+   }
+  ],
+  "pk": "id_catalogo_vacuna",
+  "fk": {
+   "equivale_a": "catalogo_vacuna"
+  }
+ },
+ "oms_lms": {
+  "cols": [
+   {
+    "n": "id_lms",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "indicador",
+    "tipo": "enum('peso_edad','talla_edad','peso_longitud','peso_talla')",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "sexo",
+    "tipo": "enum('M','F')",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "x",
+    "tipo": "decimal(5,1)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "l",
+    "tipo": "decimal(10,6)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "m",
+    "tipo": "decimal(10,6)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "s",
+    "tipo": "decimal(10,6)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   }
+  ],
+  "pk": "id_lms",
+  "fk": {}
+ },
+ "puesto_salud": {
+  "cols": [
+   {
+    "n": "id_puesto",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "nombre",
+    "tipo": "varchar(100)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "codigo",
+    "tipo": "varchar(20)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "distrito",
+    "tipo": "varchar(100)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "area_salud",
+    "tipo": "varchar(100)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "activo",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 1"
+   }
+  ],
+  "pk": "id_puesto",
+  "fk": {}
+ },
+ "rol": {
+  "cols": [
+   {
+    "n": "id_rol",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "nombre",
+    "tipo": "varchar(50)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "descripcion",
+    "tipo": "varchar(200)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_rol",
+  "fk": {}
+ },
+ "territorio": {
+  "cols": [
+   {
+    "n": "id_territorio",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_puesto",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "numero",
+    "tipo": "varchar(10)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "nombre",
+    "tipo": "varchar(100)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   }
+  ],
+  "pk": "id_territorio",
+  "fk": {
+   "id_puesto": "puesto_salud"
+  }
+ },
+ "sector": {
+  "cols": [
+   {
+    "n": "id_sector",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_territorio",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "letra",
+    "tipo": "varchar(5)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "descripcion",
+    "tipo": "varchar(100)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_sector",
+  "fk": {
+   "id_territorio": "territorio"
+  }
+ },
+ "usuario": {
+  "cols": [
+   {
+    "n": "id_usuario",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_rol",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_puesto",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_sector",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "nombre_completo",
+    "tipo": "varchar(150)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "usuario",
+    "tipo": "varchar(50)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "correo",
+    "tipo": "varchar(150)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "contrasena_hash",
+    "tipo": "varchar(255)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "activo",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 1"
+   },
+   {
+    "n": "debe_cambiar_pass",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 0"
+   },
+   {
+    "n": "fecha_alta",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT current_timestamp()"
+   },
+   {
+    "n": "fecha_baja",
+    "tipo": "datetime",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_usuario",
+  "fk": {
+   "id_puesto": "puesto_salud",
+   "id_rol": "rol",
+   "id_sector": "sector"
+  }
+ },
+ "bitacora": {
+  "cols": [
+   {
+    "n": "id_bitacora",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_usuario",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "accion",
+    "tipo": "varchar(50)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "tabla_afectada",
+    "tipo": "varchar(50)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_registro_afectado",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "detalle",
+    "tipo": "varchar(300)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "fecha_hora",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT current_timestamp()"
+   },
+   {
+    "n": "ip_origen",
+    "tipo": "varchar(45)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_bitacora",
+  "fk": {
+   "id_usuario": "usuario"
+  }
+ },
+ "codigo_acceso": {
+  "cols": [
+   {
+    "n": "id_codigo",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_usuario",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "tipo",
+    "tipo": "enum('recuperacion','ingreso')",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "codigo_hash",
+    "tipo": "char(64)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "creado",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT current_timestamp()"
+   },
+   {
+    "n": "vence",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "usado",
+    "tipo": "datetime",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "intentos",
+    "tipo": "tinyint(3)",
+    "nulo": false,
+    "resto": "unsigned NOT NULL DEFAULT 0"
+   }
+  ],
+  "pk": "id_codigo",
+  "fk": {
+   "id_usuario": "usuario"
+  }
+ },
+ "dispositivo_confianza": {
+  "cols": [
+   {
+    "n": "id_dispositivo",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_usuario",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "token_hash",
+    "tipo": "char(64)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "descripcion",
+    "tipo": "varchar(150)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "creado",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT current_timestamp()"
+   },
+   {
+    "n": "vence",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL"
+   }
+  ],
+  "pk": "id_dispositivo",
+  "fk": {
+   "id_usuario": "usuario"
+  }
+ },
+ "paraje": {
+  "cols": [
+   {
+    "n": "id_paraje",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_sector",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "nombre",
+    "tipo": "varchar(100)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "activo",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 1"
+   }
+  ],
+  "pk": "id_paraje",
+  "fk": {
+   "id_sector": "sector"
+  }
+ },
+ "nino": {
+  "cols": [
+   {
+    "n": "id_nino",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_sector",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_paraje",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "cui",
+    "tipo": "varchar(13)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "numero_carnet",
+    "tipo": "varchar(20)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "nombres",
+    "tipo": "varchar(100)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "apellidos",
+    "tipo": "varchar(100)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "fecha_nacimiento",
+    "tipo": "date",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "sexo",
+    "tipo": "enum('M','F')",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "pueblo",
+    "tipo": "tinyint(3)",
+    "nulo": true,
+    "resto": "unsigned DEFAULT NULL"
+   },
+   {
+    "n": "comunidad_linguistica",
+    "tipo": "tinyint(3)",
+    "nulo": true,
+    "resto": "unsigned DEFAULT NULL"
+   },
+   {
+    "n": "nombre_madre",
+    "tipo": "varchar(150)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "nombre_padre",
+    "tipo": "varchar(150)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "telefono",
+    "tipo": "varchar(20)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "direccion",
+    "tipo": "varchar(200)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "estado",
+    "tipo": "enum('activo','egresado','traslado')",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 'activo'"
+   },
+   {
+    "n": "fecha_egreso",
+    "tipo": "date",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "fecha_registro",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT current_timestamp()"
+   }
+  ],
+  "pk": "id_nino",
+  "fk": {
+   "id_paraje": "paraje",
+   "id_sector": "sector"
+  }
+ },
+ "suplementacion": {
+  "cols": [
+   {
+    "n": "id_suplementacion",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_nino",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_usuario",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "tipo",
+    "tipo": "varchar(80)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "fecha_entrega",
+    "tipo": "date",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "cantidad",
+    "tipo": "varchar(50)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "anulado",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 0"
+   },
+   {
+    "n": "motivo_anulacion",
+    "tipo": "varchar(200)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "referencia_conocimiento",
+    "tipo": "varchar(60)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "anulado_por",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "fecha_anulacion",
+    "tipo": "datetime",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_suplementacion",
+  "fk": {
+   "anulado_por": "usuario",
+   "id_nino": "nino",
+   "id_usuario": "usuario"
+  }
+ },
+ "vacuna_aplicada": {
+  "cols": [
+   {
+    "n": "id_vacuna_aplicada",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_nino",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_usuario",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "nombre_vacuna",
+    "tipo": "varchar(80)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "dosis",
+    "tipo": "varchar(30)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "fecha_aplicacion",
+    "tipo": "date",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "lote",
+    "tipo": "varchar(50)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "lugar_vacunacion",
+    "tipo": "tinyint(3)",
+    "nulo": true,
+    "resto": "unsigned DEFAULT NULL"
+   },
+   {
+    "n": "anulado",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 0"
+   },
+   {
+    "n": "motivo_anulacion",
+    "tipo": "varchar(200)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "referencia_conocimiento",
+    "tipo": "varchar(60)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "anulado_por",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "fecha_anulacion",
+    "tipo": "datetime",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_vacuna_aplicada",
+  "fk": {
+   "anulado_por": "usuario",
+   "id_nino": "nino",
+   "id_usuario": "usuario"
+  }
+ },
+ "cita": {
+  "cols": [
+   {
+    "n": "id_cita",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_nino",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_usuario",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "fecha_programada",
+    "tipo": "date",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "estado",
+    "tipo": "enum('programada','cumplida','inasistencia','reprogramada')",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 'programada'"
+   },
+   {
+    "n": "aviso_enviado",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 0"
+   },
+   {
+    "n": "fecha_asistencia",
+    "tipo": "date",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "motivo",
+    "tipo": "varchar(100)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "observaciones",
+    "tipo": "varchar(300)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "anulado",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 0"
+   },
+   {
+    "n": "motivo_anulacion",
+    "tipo": "varchar(200)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "referencia_conocimiento",
+    "tipo": "varchar(60)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "anulado_por",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "fecha_anulacion",
+    "tipo": "datetime",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_cita",
+  "fk": {
+   "anulado_por": "usuario",
+   "id_nino": "nino",
+   "id_usuario": "usuario"
+  }
+ },
+ "medicion": {
+  "cols": [
+   {
+    "n": "id_medicion",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_nino",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_usuario",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "fecha_toma",
+    "tipo": "date",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "peso_kg",
+    "tipo": "decimal(5,2)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "talla_cm",
+    "tipo": "decimal(5,2)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "tipo_talla",
+    "tipo": "enum('longitud','talla')",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "edad_meses",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "observaciones",
+    "tipo": "varchar(300)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "fecha_registro",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT current_timestamp()"
+   },
+   {
+    "n": "anulado",
+    "tipo": "tinyint(1)",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 0"
+   },
+   {
+    "n": "motivo_anulacion",
+    "tipo": "varchar(200)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "referencia_conocimiento",
+    "tipo": "varchar(60)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "anulado_por",
+    "tipo": "int(11)",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   },
+   {
+    "n": "fecha_anulacion",
+    "tipo": "datetime",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_medicion",
+  "fk": {
+   "anulado_por": "usuario",
+   "id_nino": "nino",
+   "id_usuario": "usuario"
+  }
+ },
+ "alerta": {
+  "cols": [
+   {
+    "n": "id_alerta",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_nino",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "id_medicion",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "nivel",
+    "tipo": "enum('normal','cerca_umbral','riesgo','desnutricion_aguda','desnutricion_cronica','sobrepeso')",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "descripcion",
+    "tipo": "varchar(500)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "estado",
+    "tipo": "enum('activa','resuelta','seguimiento')",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT 'activa'"
+   },
+   {
+    "n": "fecha_generacion",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT current_timestamp()"
+   },
+   {
+    "n": "fecha_resolucion",
+    "tipo": "datetime",
+    "nulo": true,
+    "resto": "DEFAULT NULL"
+   }
+  ],
+  "pk": "id_alerta",
+  "fk": {
+   "id_medicion": "medicion",
+   "id_nino": "nino"
+  }
+ },
+ "indicador": {
+  "cols": [
+   {
+    "n": "id_indicador",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL AUTO_INCREMENT"
+   },
+   {
+    "n": "id_medicion",
+    "tipo": "int(11)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "tipo",
+    "tipo": "enum('peso_edad','talla_edad','peso_longitud','peso_talla')",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "puntuacion_z",
+    "tipo": "decimal(5,2)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "clasificacion",
+    "tipo": "varchar(50)",
+    "nulo": false,
+    "resto": "NOT NULL"
+   },
+   {
+    "n": "fecha_calculo",
+    "tipo": "datetime",
+    "nulo": false,
+    "resto": "NOT NULL DEFAULT current_timestamp()"
+   }
+  ],
+  "pk": "id_indicador",
+  "fk": {
+   "id_medicion": "medicion"
+  }
+ }
 }

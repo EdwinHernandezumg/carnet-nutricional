@@ -22,6 +22,9 @@ manual de usuario se toman del sistema local con Microsoft Edge sin ventana
 3. Manuales:
    `node manual_tecnico.js ..\manual-tecnico.docx`
    `node manual_usuario.js ..\manual-usuario.docx capturas-doc`
+   Materiales de la capacitación del 21 de octubre y de la entrega del 22 (agenda,
+   guía rápida, planilla de tiempos, lista de asistencia, constancia y acta):
+   `node capacitacion.js ..\..\visita\materiales-capacitacion-21-octubre.docx`
 4. Índice y PDF de cada uno:
    `.\actualizar.ps1 -Docx (Resolve-Path ..\manual-usuario.docx) -Pdf C:\ruta\manual-usuario.pdf`
    y copiar el PDF junto al Word.

@@ -249,7 +249,29 @@ las alertas y los indicadores. No corre con `APP_ENTORNO` en `'produccion'` ni
 en una base que ya tenga niños. Las cuentas para entrar (por ejemplo, las del
 asesor) se crean después desde Usuarios.
 
-Cada cambio del sistema se prueba primero aquí y después se pasa a producción:
+## Pasar de ambiente de prueba a producción
+
+Cuando el personal practicó en el sitio principal con niños inventados, antes
+de empezar a registrar niños reales se borran esos datos de prueba:
+
+1. **Respaldo** de la base: en el hPanel, Bases de datos → phpMyAdmin de la
+   base de producción → Exportar → Continuar. Guardar el archivo `.sql` en la
+   computadora.
+2. En la carpeta de producción:
+   ```
+   php -d display_errors=1 scripts/limpiar_datos_prueba.php
+   ```
+   Muestra cuánto va a borrar (niños, mediciones, puntuaciones Z, alertas,
+   vacunas, suplementos y citas) y pide escribir `BORRAR DATOS DE PRUEBA`.
+   Conserva las cuentas, los catálogos, las tablas de la OMS y la bitácora, y
+   deja en la bitácora la marca `inicio_produccion`: desde entonces se niega a
+   correr otra vez, porque los datos ya son reales. No corre en el ambiente de
+   demostración.
+3. En Usuarios, dar de baja las cuentas de prueba y revisar las del personal.
+
+## Actualizar los dos ambientes
+
+Cada cambio del sistema se prueba primero en la demostración y después se pasa a producción:
 `git pull` (y la migración, si la hay) en la carpeta de la demostración, se
 revisa, y luego lo mismo en la carpeta de producción.
 

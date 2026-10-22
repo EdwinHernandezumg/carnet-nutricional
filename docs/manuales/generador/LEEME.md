@@ -63,6 +63,35 @@ revisarlos.
    `.\actualizar.ps1 -Docx (Resolve-Path ..\manual-usuario.docx).Path -Pdf C:\xampp\htdocs\carnet-nutricional\docs\manuales\manual-usuario.pdf`
    (y lo mismo con `manual-tecnico`).
 
+## Video de capacitación (carpeta `video`)
+
+Video vertical para el teléfono, de unos 5 minutos y medio, con voz
+artificial (`es-GT-MartaNeural`), subtítulos y un círculo en cada toque:
+`docs/manuales/video-capacitacion.mp4`. Se graba solo, con los niños
+ficticios de `demo_local`, a 1080 x 1920.
+
+Requisitos además de los de arriba: `pip install edge-tts imageio-ffmpeg` (la
+voz se genera en línea; ffmpeg viene dentro del paquete) y Git Bash para
+`preparar_base.sh`.
+
+1. Voz: `python video\voz.py`. Solo vuelve a generar las frases que cambiaron
+   en `guion.json`. En `voz` va cómo se pronuncia cuando difiere del
+   subtítulo (por ejemplo "carné", para que no suene en inglés).
+2. Copiar `video\estudio.html` a `C:\xampp\htdocs\estudio-video\index.html`:
+   es la página con el teléfono, el título y los subtítulos, y debe estar en
+   localhost, junto al sistema.
+3. `bash video/preparar_base.sh`: copia `demo_local` en `video_local` y deja a
+   la enfermera ficticia del video con correo. Repetirlo antes de cada
+   grabación.
+4. `config.php` apuntando a `video_local` y al servidor de correo de prueba,
+   como en "Preparar las capturas", con `php servidor_correo_prueba.php`
+   encendido.
+5. `node video\grabar.js` (unos 6 minutos; si una acción falla, la anota con
+   FALLO y sigue).
+6. `python video\armar.py video-1080.mp4 1080` junta los cuadros con la voz
+   (el MP4 queda en la carpeta `video`). Devolver `config.php` y copiar el MP4
+   a `docs\manuales\video-capacitacion.mp4`.
+
 ## Diccionario de datos
 
 Si cambia una tabla de la base, regenerar primero `sql/esquema.sql` con

@@ -36,3 +36,13 @@ docs/manuales/generador/package-lock.json
 docs/manuales/generador/capturas/
 docs/manuales/generador/capturas-doc/
 docs/manuales/generador/buzon.jsonl
+
+# Generador del video: voz, cuadros y archivos intermedios
+docs/manuales/generador/video/voz/
+docs/manuales/generador/video/cuadros/
+docs/manuales/generador/video/duraciones.json
+docs/manuales/generador/video/tiempos.json
+docs/manuales/generador/video/cuadros.txt
+docs/manuales/generador/video/voz_completa.wav
+docs/manuales/generador/video/*.mp4
+docs/manuales/generador/video/*.png

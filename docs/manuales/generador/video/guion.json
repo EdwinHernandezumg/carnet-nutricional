@@ -1,0 +1,255 @@
+[
+  {
+    "seccion": "",
+    "frases": [
+      {
+        "id": "i1",
+        "texto": "Carnet Digital. Guía en video para el personal de enfermería del Puesto de Salud de Chivarreto.",
+        "voz": "Carné Digital. Guía en video para el personal de enfermería del Puesto de Salud de Chivarreto."
+      },
+      {
+        "id": "i2",
+        "texto": "Los datos de esta demostración no son reales. Veamos, paso a paso, el trabajo de todos los días."
+      }
+    ]
+  },
+  {
+    "seccion": "1. Entrar al sistema",
+    "frases": [
+      {
+        "id": "a1",
+        "texto": "Abra el navegador de su teléfono y entre a carnetchivarreto.com.",
+        "voz": "Abra el navegador de su teléfono y entre a carné chivarreto punto com."
+      },
+      {
+        "id": "a2",
+        "texto": "Escriba su usuario y su contraseña, y toque Ingresar."
+      },
+      {
+        "id": "a3",
+        "texto": "Si entra desde un teléfono nuevo, el sistema le manda un código de seis números a su correo."
+      },
+      {
+        "id": "a4",
+        "texto": "Escríbalo aquí. Si el teléfono es suyo, deje marcada la casilla: no se lo volverá a pedir en 90 días.",
+        "voz": "Escríbalo aquí. Si el teléfono es suyo, deje marcada la casilla: no se lo volverá a pedir en noventa días."
+      },
+      {
+        "id": "a5",
+        "texto": "Toque Confirmar. Cuando el navegador le ofrezca guardar la contraseña, acepte: la próxima vez la llena con su huella."
+      },
+      {
+        "id": "a6",
+        "texto": "Si pasan 20 minutos sin usarlo, el sistema se cierra solo, para proteger los datos de los niños.",
+        "voz": "Si pasan veinte minutos sin usarlo, el sistema se cierra solo, para proteger los datos de los niños."
+      }
+    ]
+  },
+  {
+    "seccion": "2. Buscar a un niño",
+    "frases": [
+      {
+        "id": "b1",
+        "texto": "El sistema abre en Niños. Aquí se busca a cualquier niño por su nombre o por su número de carnet.",
+        "voz": "El sistema abre en Niños. Aquí se busca a cualquier niño por su nombre o por su número de carné."
+      },
+      {
+        "id": "b2",
+        "texto": "Escriba el apellido y toque Buscar."
+      },
+      {
+        "id": "b3",
+        "texto": "Toque Ver para abrir el historial del niño."
+      },
+      {
+        "id": "b4",
+        "texto": "Arriba están sus datos y, en color, su alerta. Fernando está cerca del umbral de retardo de talla."
+      },
+      {
+        "id": "b5",
+        "texto": "Todavía no es desnutrición, pero se está acercando. Es justo lo que en la gráfica de papel no se alcanza a ver."
+      }
+    ]
+  },
+  {
+    "seccion": "3. Registrar una medición",
+    "frases": [
+      {
+        "id": "c1",
+        "texto": "Para pesarlo y medirlo, baje a Mediciones registradas y toque Nueva medición."
+      },
+      {
+        "id": "c2",
+        "texto": "La fecha de hoy ya viene puesta. Escriba el peso en kilos y la talla en centímetros."
+      },
+      {
+        "id": "c3",
+        "texto": "El sistema sugiere si se mide acostado o de pie, según la edad. Toque Guardar medición."
+      },
+      {
+        "id": "c4",
+        "texto": "Al guardar, el sistema calcula la puntuación Z con las tablas de la OMS y muestra la alerta al momento.",
+        "voz": "Al guardar, el sistema calcula la puntuación zeta con las tablas de la OMS y muestra la alerta al momento."
+      },
+      {
+        "id": "c5",
+        "texto": "Ya no hay que buscar en tablas ni dibujar el punto en la gráfica."
+      }
+    ]
+  },
+  {
+    "seccion": "4. Gráficas de crecimiento",
+    "frases": [
+      {
+        "id": "d1",
+        "texto": "Toque Ver gráficas de crecimiento."
+      },
+      {
+        "id": "d2",
+        "texto": "Cada punto es un control. La línea verde es la mediana de la OMS y las rojas son los límites."
+      },
+      {
+        "id": "d3",
+        "texto": "Si el recorrido baja hacia la línea roja de abajo, el niño necesita atención."
+      },
+      {
+        "id": "d4",
+        "texto": "Toque Volver al historial."
+      }
+    ]
+  },
+  {
+    "seccion": "5. Vacunas",
+    "frases": [
+      {
+        "id": "e1",
+        "texto": "Para las vacunas, baje a la sección de vacunas y toque Registrar vacunas."
+      },
+      {
+        "id": "e2",
+        "texto": "Ponga la fecha y el lugar una sola vez. Abajo aparecen las dosis que le tocan por su edad."
+      },
+      {
+        "id": "e3",
+        "texto": "Marque las que se pusieron hoy y escriba el lote de cada una."
+      },
+      {
+        "id": "e4",
+        "texto": "Toque Guardar."
+      },
+      {
+        "id": "e5",
+        "texto": "Ver esquema de vacunación completo muestra cada dosis en colores."
+      },
+      {
+        "id": "e6",
+        "texto": "Verde azulado, aplicada. Naranja, pendiente: ya le tocaba. Gris, próxima. Azul, cubierta por una dosis del carnet anterior.",
+        "voz": "Verde azulado, aplicada. Naranja, pendiente: ya le tocaba. Gris, próxima. Azul, cubierta por una dosis del carné anterior."
+      }
+    ]
+  },
+  {
+    "seccion": "6. Suplementos y citas",
+    "frases": [
+      {
+        "id": "f1",
+        "texto": "Para un suplemento, toque Registrar suplemento, elíjalo de la lista y escriba la cantidad entregada."
+      },
+      {
+        "id": "f2",
+        "texto": "Toque Guardar."
+      },
+      {
+        "id": "f3",
+        "texto": "Para la próxima visita, toque Programar cita, elija la fecha y el motivo, y toque Guardar."
+      },
+      {
+        "id": "f4",
+        "texto": "En Citas está el calendario del mes. El color de cada día avisa si ya hay muchas citas."
+      },
+      {
+        "id": "f5",
+        "texto": "Con Avisar por WhatsApp, su teléfono le manda el recordatorio a la madre, sin costo."
+      }
+    ]
+  },
+  {
+    "seccion": "7. Corregir o anular",
+    "frases": [
+      {
+        "id": "g1",
+        "texto": "Si se equivoca, nada se borra. Junto a cada registro del historial están Corregir y Anular."
+      },
+      {
+        "id": "g2",
+        "texto": "Toque Anular, escriba el motivo y confirme."
+      },
+      {
+        "id": "g3",
+        "texto": "Lo anulado queda tachado, con quién lo hizo, cuándo y por qué, como la línea roja del carnet.",
+        "voz": "Lo anulado queda tachado, con quién lo hizo, cuándo y por qué, como la línea roja del carné."
+      },
+      {
+        "id": "g4",
+        "texto": "Ya no cuenta en las alertas ni en los reportes. Si la atención es de un mes anterior, se pide también la referencia del conocimiento, como en SIGSA Web."
+      }
+    ]
+  },
+  {
+    "seccion": "8. Seguimiento",
+    "frases": [
+      {
+        "id": "h1",
+        "texto": "En Seguimiento están los niños con alerta en su último control, del más grave al menos grave."
+      },
+      {
+        "id": "h2",
+        "texto": "Las tarjetas dicen cuántos niños hay en cada condición. Rojo es desnutrición: se atiende primero."
+      },
+      {
+        "id": "h3",
+        "texto": "Amarillo es cerca del umbral: los niños a los que todavía se les puede prevenir."
+      },
+      {
+        "id": "h4",
+        "texto": "Abajo está la lista, con el detalle de cada niño y el botón Ver para abrir su historial."
+      }
+    ]
+  },
+  {
+    "seccion": "9. Reportes y documentos",
+    "frases": [
+      {
+        "id": "k1",
+        "texto": "En Reportes están los indicadores del puesto, con exportación a PDF, Excel y CSV."
+      },
+      {
+        "id": "k2",
+        "texto": "SIGSA 3 del día llena la hoja del registro diario con los niños atendidos, lista para imprimir."
+      },
+      {
+        "id": "k3",
+        "texto": "Y en el historial, Carnet para la familia prepara una copia del carnet para imprimir o enviar por WhatsApp.",
+        "voz": "Y en el historial, Carné para la familia prepara una copia del carné para imprimir o enviar por WhatsApp."
+      }
+    ]
+  },
+  {
+    "seccion": "",
+    "frases": [
+      {
+        "id": "z1",
+        "texto": "Para practicar sin miedo, entre a pruebas.carnetchivarreto.com, donde los datos no son reales.",
+        "voz": "Para practicar sin miedo, entre a pruebas punto carné chivarreto punto com, donde los datos no son reales."
+      },
+      {
+        "id": "z2",
+        "texto": "Si tiene dudas, consulte la guía rápida o el manual, o pregunte al administrador del sistema."
+      },
+      {
+        "id": "z3",
+        "texto": "Lo que usted registra una vez sirve para el historial, las alertas, los reportes y el SIGSA 3. Gracias por su trabajo."
+      }
+    ]
+  }
+]

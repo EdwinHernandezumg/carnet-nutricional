@@ -88,13 +88,41 @@ if (!empty($temporal)) {
     </a>
 </div>
 
+<?php
+// La lista se ordena por nombre o por rol. En la computadora se toca el
+// título de la columna; en el teléfono no hay títulos y se elige en "Ordenar".
+$ordenesUsuarios = [
+    'nombre' => 'Por nombre',
+    'rol'    => 'Por rol',
+];
+$urlOrdenUsuarios = fn(string $orden) => APP_URL . '/index.php?accion=usuarios&orden=' . $orden;
+$tituloOrden = function (string $titulo, string $orden) use ($ordenUsuarios, $urlOrdenUsuarios): string {
+    $activa = $orden === $ordenUsuarios;
+    return '<a href="' . htmlspecialchars($urlOrdenUsuarios($orden)) . '" class="orden' . ($activa ? ' activa' : '') . '"'
+         . ' title="Ordenar por ' . htmlspecialchars(mb_strtolower($titulo)) . '">'
+         . htmlspecialchars($titulo) . ' ' . Icono::ver($activa ? 'orden-asc' : 'ordenar', 16) . '</a>';
+};
+?>
+<p class="ayuda-tabla">Toque Nombre o Rol para ordenar la lista.</p>
+
+<div class="orden-tel">
+    <label for="orden-tel">Ordenar</label>
+    <select id="orden-tel" onchange="window.location.href = this.value">
+        <?php foreach ($ordenesUsuarios as $orden => $texto): ?>
+            <option value="<?= htmlspecialchars($urlOrdenUsuarios($orden)) ?>" <?= $orden === $ordenUsuarios ? 'selected' : '' ?>>
+                <?= htmlspecialchars($texto) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
 <table class="tabla tabla-tarjetas">
     <thead>
         <tr>
-            <th>Nombre</th>
+            <th<?= $ordenUsuarios === 'nombre' ? ' aria-sort="ascending"' : '' ?>><?= $tituloOrden('Nombre', 'nombre') ?></th>
             <th>Usuario</th>
             <th>Correo</th>
-            <th>Rol</th>
+            <th<?= $ordenUsuarios === 'rol' ? ' aria-sort="ascending"' : '' ?>><?= $tituloOrden('Rol', 'rol') ?></th>
             <th>Sector</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -106,7 +134,7 @@ if (!empty($temporal)) {
                 <td class="celda-titulo"><?= htmlspecialchars($u['nombre_completo']) ?></td>
                 <td data-label="Usuario"><?= htmlspecialchars($u['usuario']) ?></td>
                 <td data-label="Correo" class="celda-correo"><?= Formato::dato($u['correo'], 'Sin correo') ?></td>
-                <td data-label="Rol"><?= htmlspecialchars(ucfirst($u['rol'])) ?></td>
+                <td data-label="Rol"><?= htmlspecialchars($u['rol'] === 'enfermeria' ? 'Enfermería' : ucfirst($u['rol'])) ?></td>
                 <td data-label="Sector">
                     <?php if ($u['sector_letra']): ?>
                         T<?= htmlspecialchars($u['territorio_numero']) ?> · <?= htmlspecialchars($u['sector_letra']) ?>

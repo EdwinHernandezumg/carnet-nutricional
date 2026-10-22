@@ -49,6 +49,14 @@ function edadLegible(int $meses): string
 
     <div class="aviso-instrumento"><?= htmlspecialchars($instrumento) ?></div>
 
+    <?php if ($edadMeses >= 60): ?>
+        <!-- Las tablas de la OMS cargadas (oms_lms) cubren de 0 a 5 años, como WHO Anthro -->
+        <p class="aviso-carga carga-alta aviso-edad-oms" role="status">
+            Desde los 5 años el sistema guarda el peso y la talla, pero no calcula el peso para la edad
+            ni la talla para la edad: las tablas de la OMS que usa llegan hasta los 5 años.
+        </p>
+    <?php endif; ?>
+
     <form method="post" action="<?= APP_URL ?>/index.php?accion=medicion_guardar&id_nino=<?= (int)$nino['id_nino'] ?>" class="formulario">
 
         <div class="fila">

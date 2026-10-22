@@ -25,6 +25,26 @@ class Alerta
     ];
 
     /**
+     * Vuelve a generar las alertas de las mediciones del niño posteriores a
+     * una medición, para que su evolución ("mejoró", "empeoró") se compare con
+     * el control vigente anterior. Se usa al anular una medición y al
+     * registrar una con fecha anterior (por ejemplo, al pasar el carnet de
+     * papel al sistema en cualquier orden).
+     */
+    public static function regenerarPosteriores(int $idNino, string $fechaToma, int $idMedicion): void
+    {
+        $db = Database::obtener();
+        $stmt = $db->prepare("SELECT id_medicion FROM medicion
+                              WHERE id_nino = :nino AND anulado = 0
+                                AND (fecha_toma > :fecha1 OR (fecha_toma = :fecha2 AND id_medicion > :id))
+                              ORDER BY fecha_toma, id_medicion");
+        $stmt->execute([':nino' => $idNino, ':fecha1' => $fechaToma, ':fecha2' => $fechaToma, ':id' => $idMedicion]);
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $idPosterior) {
+            self::generar((int) $idPosterior, $idNino);
+        }
+    }
+
+    /**
      * Genera la alerta para una medición recién calculada. Se invoca desde
      * CU-03/CU-04 tras calcular los indicadores. Se puede volver a ejecutar
      * sobre la misma medición (por ejemplo, al recalcular): reemplaza la

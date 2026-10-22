@@ -9,10 +9,13 @@
 class Usuario
 {
     /**
-     * Lista todos los usuarios con su rol y sector.
+     * Lista todos los usuarios con su rol y sector. Con $orden 'rol' van
+     * primero los administradores, después enfermería y al final consulta;
+     * con 'nombre', por nombre. Los inactivos siempre van al final.
      */
-    public static function listar(): array
+    public static function listar(string $orden = 'nombre'): array
     {
+        $porRol = $orden === 'rol' ? "FIELD(r.nombre, 'administrador', 'enfermeria', 'consulta'), " : '';
         $db = Database::obtener();
         $sql = "SELECT u.id_usuario, u.nombre_completo, u.usuario, u.correo, u.activo,
                        u.debe_cambiar_pass, r.nombre AS rol,
@@ -21,7 +24,7 @@ class Usuario
                 JOIN rol r ON r.id_rol = u.id_rol
                 LEFT JOIN sector s ON s.id_sector = u.id_sector
                 LEFT JOIN territorio t ON t.id_territorio = s.id_territorio
-                ORDER BY u.activo DESC, u.nombre_completo";
+                ORDER BY u.activo DESC, {$porRol}u.nombre_completo";
         return $db->query($sql)->fetchAll();
     }
 

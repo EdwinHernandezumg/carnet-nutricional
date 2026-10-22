@@ -287,6 +287,9 @@ body {
 .ficha-nino strong { color: var(--marino); font-size: 1.25rem; }
 .ficha-nino span { font-size: 0.98rem; color: #4b5866; }
 
+/* Aviso de la medición para niños de 5 años o más */
+.aviso-edad-oms { margin: -0.5rem 0 1.25rem; }
+
 .aviso-instrumento {
     background: var(--teal-claro); color: var(--teal-osc);
     padding: 0.85rem 1.1rem; border-radius: var(--radio);

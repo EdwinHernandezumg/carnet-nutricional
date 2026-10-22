@@ -480,7 +480,8 @@ switch ($accion) {
         // ---------- Gestión de usuarios (solo administrador) ----------
     case 'usuarios':
         Auth::exigirRol(['administrador']);
-        $usuarios = Usuario::listar();
+        $ordenUsuarios = ($_GET['orden'] ?? '') === 'rol' ? 'rol' : 'nombre';
+        $usuarios = Usuario::listar($ordenUsuarios);
         $mensaje  = $_GET['ok'] ?? '';
         $temporal = $_SESSION['temporal_generada'] ?? '';
         $usuarioTemporal = $_SESSION['temporal_usuario'] ?? '';
@@ -1289,14 +1290,8 @@ function validarNino(array $d, bool $esNuevo = false, ?int $idNino = null): arra
         }
     }
 
-    // El número de carnet no se repite dentro del puesto de salud.
-    if ($d['numero_carnet'] !== '' && ctype_digit((string) $d['id_sector'])) {
-        $otro = Nino::carnetRepetido($d['numero_carnet'], (int) $d['id_sector'], $idNino);
-        if ($otro) {
-            $errores[] = 'Número de carnet: ya lo tiene ' . $otro['nombres'] . ' ' . $otro['apellidos']
-                       . '. Revise el número en el carnet.';
-        }
-    }
+    // El número de carnet puede repetirse: es el del cuadernillo y el año
+    // (por ejemplo 5-2024), compartido por varios niños (puesto, 21 de octubre de 2026).
 
     // Al menos un responsable del niño: la madre (o quien lo cuide) o el padre.
     if ($d['nombre_madre'] === '' && $d['nombre_padre'] === '') {

@@ -35,6 +35,9 @@ class Medicion
             $idMedicion = self::insertar($db, $datos, $idUsuario);
             Calculo::procesar($idMedicion);
             Alerta::generar($idMedicion, (int) $datos['id_nino']);
+            // Si tiene fecha anterior a otras (al pasar el carnet de papel),
+            // las posteriores se vuelven a comparar con su control anterior.
+            Alerta::regenerarPosteriores((int) $datos['id_nino'], $datos['fecha_toma'], $idMedicion);
             if ($transaccionPropia) {
                 $db->commit();
             }

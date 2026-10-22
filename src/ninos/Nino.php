@@ -185,26 +185,6 @@ class Nino
         return $r ?: null;
     }
 
-    /**
-     * Niño del mismo puesto de salud que ya tiene ese número de carnet, o
-     * null si nadie lo tiene. $idExcepto es el niño que se está editando.
-     */
-    public static function carnetRepetido(string $numero, int $idSector, ?int $idExcepto = null): ?array
-    {
-        $db = Database::obtener();
-        $sql = "SELECT n.id_nino, n.nombres, n.apellidos
-                FROM nino n
-                JOIN sector s ON s.id_sector = n.id_sector
-                JOIN territorio t ON t.id_territorio = s.id_territorio
-                WHERE n.numero_carnet = :numero AND n.id_nino <> :id
-                  AND t.id_puesto = (SELECT t2.id_puesto FROM sector s2
-                                     JOIN territorio t2 ON t2.id_territorio = s2.id_territorio
-                                     WHERE s2.id_sector = :id_sector)
-                LIMIT 1";
-        $stmt = $db->prepare($sql);
-        $stmt->execute([':numero' => $numero, ':id' => $idExcepto ?? 0, ':id_sector' => $idSector]);
-        return $stmt->fetch() ?: null;
-    }
 
     /**
      * Columnas por las que se puede ordenar la lista de niños (lista blanca).

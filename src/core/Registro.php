@@ -149,15 +149,7 @@ class Registro
             . '. Motivo: ' . $motivo . ($referencia !== '' ? '. Conocimiento: ' . $referencia : ''));
 
         if ($tipo === 'medicion') {
-            $stmt = $db->prepare("SELECT id_medicion FROM medicion
-                                  WHERE id_nino = :nino AND anulado = 0
-                                    AND (fecha_toma > :fecha1 OR (fecha_toma = :fecha2 AND id_medicion > :id))
-                                  ORDER BY fecha_toma, id_medicion");
-            $stmt->execute([':nino' => $registro['id_nino'], ':fecha1' => $registro['fecha_toma'],
-                            ':fecha2' => $registro['fecha_toma'], ':id' => $id]);
-            foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $idPosterior) {
-                Alerta::generar((int) $idPosterior, (int) $registro['id_nino']);
-            }
+            Alerta::regenerarPosteriores((int) $registro['id_nino'], $registro['fecha_toma'], $id);
         }
     }
 

@@ -128,7 +128,7 @@ const agenda = [
 
 // ------------------------------------------------------------- Guía rápida
 const guia1 = [
-  ...titulo('Guía rápida del Carnet Digital', 'Para el personal de enfermería  ·  Puesto de Salud de Chivarreto  ·  Versión del 21 de octubre de 2026'),
+  ...titulo('Guía rápida del Carnet Digital', 'Para el personal de enfermería  ·  Puesto de Salud de Chivarreto  ·  Versión del 27 de octubre de 2026'),
   seccion('1. Entrar al sistema'),
   new Table({
     width: { size: ANCHO, type: WidthType.DXA }, columnWidths: [2600, 7640],
@@ -139,7 +139,8 @@ const guia1 = [
     ].map(([a, v]) => new TableRow({ height: { value: 440, rule: HeightRule.ATLEAST }, children: [
       celda(a, 2600, { bold: true, fondo: GRIS, size: 19 }), celda(v, 7640, { size: 19 })] })),
   }),
-  paso([t('La primera vez, el sistema pide '), b('cambiar la contraseña'), t(' por una suya: mínimo 8 caracteres, con letras y números. Toque '), b('Guardar y continuar'), t('.')], { before: 80 }),
+  paso([b('Instale la aplicación: '), t('en Chrome, menú '), b('⋮'), t(' y '), b('Instalar aplicación'), t('. Queda el ícono verde '), b('Carnet Digital'), t(' junto a sus aplicaciones. En iPhone: Safari, '), b('Compartir'), t(' y '), b('Agregar a inicio'), t('.')], { before: 80 }),
+  paso([t('La primera vez, el sistema pide '), b('cambiar la contraseña'), t(' por una suya: mínimo 8 caracteres, con letras y números. Toque '), b('Guardar y continuar'), t('.')]),
   paso([t('Si entra desde un teléfono nuevo, le llega un '), b('código de 6 números a su correo'), t(' (también en el asunto del correo). Escríbalo y toque '), b('Confirmar'), t('. Deje marcada la casilla '), b('"No volver a pedirlo en este dispositivo por 90 días"'), t(' si el teléfono es suyo.')]),
   paso([t('Cuando Chrome pregunte si quiere '), b('guardar la contraseña'), t(', toque Guardar. La próxima vez, Chrome la llena sola con su huella.')]),
   paso([t('Si no usa el sistema por '), b('20 minutos'), t(', se cierra solo para proteger los datos. Vuelva a entrar.')]),
@@ -191,7 +192,7 @@ const guia2 = [
   vineta([b('Ver gráficas de crecimiento: '), t('el recorrido del niño frente a las líneas de la OMS.')]),
   vineta([b('Carnet para la familia: '), t('copia del carnet en dos hojas, para imprimir o enviar como PDF por WhatsApp. Lleva firma y sello del puesto.')]),
   vineta([b('SIGSA 3 del día '), t('(en Reportes): la hoja del registro diario ya llena con los niños atendidos.')]),
-  vineta([b('Para practicar: '), t('pruebas.carnetchivarreto.com tiene niños inventados (franja amarilla arriba). Pida su cuenta al administrador y pruebe sin miedo.')]),
+  vineta([b('Para practicar: '), t('pruebas.carnetchivarreto.com tiene niños inventados (franja amarilla arriba; instalada, su ícono es naranja). Pida su cuenta al administrador y pruebe sin miedo.')]),
   espacio(40),
   p([t('Dudas o problemas: Wilson Hernández, teléfono ______________________.   Manual completo y video: se envían por WhatsApp.', { size: 18, italics: true, color: '555555' })], { after: 0 }),
 ];

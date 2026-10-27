@@ -31,6 +31,7 @@ const cuerpo = [
   ...tabla(['Versión', 'Fecha', 'Descripción'], [
     ['1.0', '16 de octubre de 2026', 'Versión inicial, para la prueba con el personal del Puesto de Salud de Chivarreto.'],
     ['1.1', '21 de octubre de 2026', 'Código de ingreso al correo y recuperación de contraseña; inicio en Niños; número de carnet; registrar varias vacunas a la vez y dosis cubiertas; corregir y anular registros; aviso de edad en suplementos; editar cuentas, enfermería de apoyo y catálogo de suplementos; ambiente de demostración.'],
+    ['1.2', '27 de octubre de 2026', 'Instalar la aplicación en el teléfono (Android y iPhone) y aviso sin conexión; preguntas frecuentes sobre la aplicación.'],
   ], [1200, 2400, 5760], { titulo: 'Control de versiones del documento' }),
   ...C.indice(),
 
@@ -55,9 +56,20 @@ const cuerpo = [
   vineta('Un **correo electrónico propio** (por ejemplo, el Gmail de su teléfono), registrado en su cuenta: ahí le llega el código de ingreso y el enlace si olvida la contraseña.'),
   H2('2.2 La dirección del sistema'),
   P('Escriba en el navegador: **carnetchivarreto.com**'),
-  ...nota('**Consejo para el teléfono:** para abrirlo como una aplicación, entre a la dirección en Chrome, toque el menú de los tres puntos (arriba a la derecha) y elija **Agregar a la pantalla principal**. Aparecerá un icono junto a sus otras aplicaciones.'),
   P('**Para practicar:** en **pruebas.carnetchivarreto.com** está el ambiente de demostración, con niños inventados y una franja amarilla arriba. Ahí se puede probar todo sin tocar los datos reales. La cuenta de ese ambiente la da el administrador.'),
-  H2('2.3 Cómo leer los resultados'),
+  H2('2.3 Instalar la aplicación en el teléfono'),
+  P('El Carnet Digital se instala como una aplicación más del teléfono: queda con su ícono verde junto a las demás y se abre a pantalla completa, sin la barra del navegador. No se descarga de la tienda de aplicaciones ni ocupa espacio: es el mismo sistema, con los mismos datos.'),
+  P('**En un teléfono Android (Chrome):**', { keepNext: true }),
+  numerado('Abra **carnetchivarreto.com** en Chrome y espere unos segundos con la página abierta.', 'pasos11'),
+  numerado('Toque el menú de los **tres puntos** (arriba a la derecha) y elija **Instalar aplicación**. En algunos teléfonos dice **Agregar a la pantalla principal** y después **Instalar**.', 'pasos11'),
+  numerado('Confirme con **Instalar**. Aparece **Carnet Digital** entre sus aplicaciones.', 'pasos11'),
+  P('**En un iPhone (Safari):**', { keepNext: true }),
+  numerado('Abra **carnetchivarreto.com** en Safari.', 'pasos12'),
+  numerado('Toque el botón **Compartir** (el cuadro con la flecha hacia arriba) y elija **Agregar a inicio**.', 'pasos12'),
+  numerado('Toque **Agregar**.', 'pasos12'),
+  ...nota('Si antes creó un **acceso directo** (un ícono con la letra C que se abre dentro de Chrome), bórrelo e instale la aplicación. El ambiente de práctica se instala igual desde pruebas.carnetchivarreto.com: su ícono es **naranja** y se llama **Carnet pruebas**, para no confundirlo con el real.'),
+  P('La aplicación necesita internet, igual que la página. Sin conexión muestra el aviso **Sin conexión a internet** con el botón **Volver a intentar**. Por seguridad, no guarda en el teléfono ningún dato de los niños.'),
+  H2('2.4 Cómo leer los resultados'),
   P('El sistema compara el peso y la talla del niño con millones de niños sanos medidos por la OMS. El resultado se llama **puntuación Z**: 0 es el niño promedio; los números negativos indican que está por debajo y los positivos, por encima. Usted no necesita calcular nada; el sistema lo traduce a colores y palabras:'),
   ...tabla(['Color', 'Nivel', 'Qué significa', 'Qué hacer'], [
     ['Rojo', 'Desnutrición aguda o crónica', 'El niño ya está por debajo del límite de la OMS (Z menor que -2).', 'Atención y seguimiento prioritarios.'],
@@ -323,6 +335,8 @@ const cuerpo = [
     ['¿Por qué me pide el código otra vez?', 'Entró desde otro teléfono o computadora, pasaron 90 días, le restablecieron la contraseña o es administrador.'],
     ['No encuentro a un niño', 'Revise los filtros de sector y estado: puede estar como egresado si ya cumplió 7 años.'],
     ['No aparecen las gráficas', 'Las gráficas necesitan internet. Revise la conexión y recargue la página.'],
+    ['No me aparece "Instalar aplicación"', 'Espere unos segundos con la página abierta en Chrome y recárguela. En iPhone, use Safari: Compartir y Agregar a inicio (sección 2.3).'],
+    ['La aplicación dice "Sin conexión a internet"', 'Revise los datos móviles o el wifi y toque Volver a intentar.'],
     ['El sistema dice que un valor parece imposible', 'Revise el peso, la talla y la fecha de nacimiento. Si el dato es correcto, confirme.'],
     ['Me equivoqué en una medición, vacuna o cita', 'Use Corregir o Anular en el historial del niño, con el motivo (capítulo 14).'],
     ['Una vacuna aparece como "cubierta"', 'El niño recibió la dosis equivalente del carnet de 2018. No se repite; revise el carnet.'],
@@ -353,7 +367,7 @@ const cuerpo = [
 const doc = C.documento({
   titulo: 'Manual de usuario, Carnet Digital de Monitoreo Nutricional Infantil',
   nombreCorto: 'Manual de usuario',
-  portadaHijos: C.portada('MANUAL DE USUARIO', '1.1', 'octubre de 2026'),
+  portadaHijos: C.portada('MANUAL DE USUARIO', '1.2', 'octubre de 2026'),
   cuerpo,
 });
 C.guardar(doc, SALIDA);

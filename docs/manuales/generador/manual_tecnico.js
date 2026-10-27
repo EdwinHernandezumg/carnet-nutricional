@@ -83,6 +83,7 @@ const cuerpo = [
   ...C.tabla(['Versión', 'Fecha', 'Descripción'], [
     ['1.0', '16 de octubre de 2026', 'Versión inicial. Sistema desplegado en el ambiente de pruebas https://carnetchivarreto.com.'],
     ['1.1', '21 de octubre de 2026', 'Código de ingreso y recuperación de contraseña por correo (RF-13); corregir y anular registros; registrar varias vacunas a la vez; número de carnet; catálogo de suplementos; editar usuarios y enfermería de apoyo; ambientes de producción y demostración; scripts de demostración, limpieza y prueba de correo.'],
+    ['1.2', '27 de octubre de 2026', 'Aplicación instalable (PWA): manifiesto, service worker y página sin conexión; número de carnet compartido; alertas que se vuelven a comparar al registrar fechas anteriores; aviso desde los 5 años; usuarios por rol; actualizaciones de seguridad de PHP.'],
   ], [1200, 2400, 5760], { titulo: 'Control de versiones del documento' }),
   ...C.indice(),
 
@@ -135,6 +136,7 @@ const cuerpo = [
   H2('3.2 Equipos de los usuarios'),
   vineta('Teléfono Android o computadora con un navegador actualizado (Chrome, Edge o Firefox).'),
   vineta('Pantalla desde 375 píxeles de ancho: el sistema se diseñó primero para el teléfono.'),
+  vineta('En el teléfono se puede instalar como aplicación (PWA), sin tienda de aplicaciones: Chrome en Android (menú, Instalar aplicación) o Safari en iPhone (Compartir, Agregar a inicio).'),
   vineta('Conexión a internet. Las gráficas usan Chart.js 4.4.1 desde cdnjs; los iconos están incrustados y no dependen de servicios externos.'),
   H2('3.3 Ambiente de desarrollo'),
   vineta('Windows 11, XAMPP con PHP 8.2.12 y MariaDB 10.4.32, Visual Studio Code y Git 2.51.'),
@@ -194,8 +196,8 @@ const cuerpo = [
     ['src/carnet/', 'Vacuna, Suplementacion, Cita y CarnetFamilia.'],
     ['src/reportes/', 'Reporte (panel de indicadores), LibroExcel (generador .xlsx propio) y FormatoSigsa3.'],
     ['src/usuarios/', 'Usuario.'],
-    ['public/', 'Única carpeta visible desde el navegador: index.php, .htaccess, css/, js/ y assets/.'],
-    ['views/', 'Vistas por módulo: auth, layouts, ninos, mediciones, alertas, carnet, usuarios y reportes.'],
+    ['public/', 'Única carpeta visible desde el navegador: index.php, .htaccess, css/, js/, manifest.php y sw.php (aplicación instalable), sin-conexion.html y assets/pwa/ (íconos de la aplicación: verdes en producción, naranjas en la demostración).'],
+    ['views/', 'Vistas por módulo: auth, layouts, ninos, mediciones, alertas, carnet, usuarios y reportes. layouts/pwa.php lleva al encabezado de cada página el manifiesto, los íconos y el registro del service worker.'],
     ['sql/', 'esquema.sql, datos_iniciales.sql, oms_lms.sql y migraciones/.'],
     ['scripts/', 'Instalación, administrador de emergencia, exportación del esquema, recálculo de indicadores, datos de demostración, limpieza de datos de prueba y prueba del correo.'],
     ['pruebas/', 'prueba_motor.php: pruebas del motor de cálculo.'],
@@ -297,6 +299,8 @@ const cuerpo = [
     ['Archivos', 'Solo public/ es visible; registros de errores fuera de public/ y bloqueados por .htaccess.'],
     ['Transporte', 'HTTPS obligatorio; http y www redirigen a https://carnetchivarreto.com.'],
     ['Errores', 'En producción no se muestran errores técnicos; se guardan en errores_php.log.'],
+    ['Aplicación instalable', 'El service worker no guarda en caché ninguna página del sistema (datos de salud de menores y teléfonos compartidos) ni interviene en formularios y descargas; solo muestra un aviso cuando no hay conexión. Manifiesto y service worker son PHP para que el CDN del hosting no los guarde.'],
+    ['Versión de PHP', 'Las fallas de PHP las corrige el hosting. La versión que ve el navegador (encabezado X-Powered-By) puede no cambiar con un parche: se comprueba la fecha de compilación (sección 12.7).'],
   ], [2300, 7060], { size: 18 }),
   ...nota('Si `config.php` no tiene los datos del buzón (SMTP), el sistema funciona sin correo: no pide código ni ofrece recuperar la contraseña. Quien no tiene correo registrado entra como antes, y queda anotado en la bitácora. El ingreso con la huella del teléfono (WebAuthn) queda como trabajo futuro.'),
 
@@ -368,6 +372,12 @@ const cuerpo = [
 
   H2('12.6 Paso de ambiente de prueba a producción'),
   P('Antes de usar el sistema con niños reales: respaldo de la base desde phpMyAdmin, `php scripts/limpiar_datos_prueba.php` (pide escribir BORRAR DATOS DE PRUEBA) y baja de las cuentas de prueba desde Usuarios.'),
+  H2('12.7 Actualizaciones de seguridad de PHP'),
+  P('En un hosting compartido, PHP lo actualiza el proveedor. Cuando se publique una falla de PHP:'),
+  vineta('Comprobar el parche en el panel: sitio, PHP Info, línea **Build Date**. Debe ser igual o posterior a la fecha de la corrección. Así se confirmó, el 23 de octubre de 2026, el parche de las fallas CVE-2026-109618 y CVE-2026-109619 (fecha de compilación del 21 de octubre), aunque el número de versión siguió en 8.2.34.'),
+  vineta('Revisar que nadie haya dejado archivos en el servidor: `git status --short --ignored` en las carpetas de producción y de la demostración. Solo deben aparecer `config/config.php` y, en producción, el enlace `public/pruebas`.'),
+  vineta('**PHP 8.2 deja de recibir correcciones el 31 de diciembre de 2026.** Antes de esa fecha, cambiar la versión en el panel (Avanzado, Configuración de PHP) a 8.3 o superior: primero en la demostración, revisar las pantallas principales, y después en producción, fuera del horario del puesto.'),
+  vineta('Si se cambia la página sin conexión, subir la versión (`VERSION`) en `public/sw.php` para que los teléfonos la descarguen de nuevo.'),
 
   H1('13. Solución de problemas'),
   ...tabla(['Síntoma', 'Causa y solución'], [
@@ -380,6 +390,7 @@ const cuerpo = [
     ['La consola SSH se queda congelada', 'Hostinger cierra la conexión tras un rato sin uso. Presionar Enter, ~ y . o cerrar la ventana y volver a entrar.'],
     ['"Invalid parameter number" en PDO', 'Un marcador de posición repetido en la consulta; cada uno necesita nombre propio.'],
     ['Las gráficas no aparecen', 'Sin conexión a internet no carga Chart.js desde cdnjs.'],
+    ['Chrome no ofrece Instalar aplicación', 'Debe abrirse por https, con manifest.php y sw.php respondiendo y los íconos de assets/pwa/ en el servidor. En las herramientas de desarrollador de Chrome, pestaña Application, Manifest muestra la causa.'],
     ['No llega el código o el enlace', 'Revisar la carpeta de spam y el correo registrado en Usuarios. Probar el envío con php scripts/probar_correo.php; los errores de envío quedan en la bitácora (error_correo) y en errores_php.log.'],
     ['"MySQL server has gone away" en un script', 'El servidor cerró la conexión mientras se escribía. Desde la versión 1.1 los scripts reconectan después de cada pregunta; si la instalación ya creó las tablas, crear el administrador con crear_administrador.php.'],
   ], [3300, 6060], { size: 18 }),
@@ -388,6 +399,7 @@ const cuerpo = [
   vineta('Formato SIGSA 5a (cuaderno por comunidad) y segunda fase del panel de indicadores.'),
   vineta('Ingreso con la huella del teléfono (WebAuthn, llaves de acceso).'),
   vineta('Integración con SIGSA Web, cuando el Ministerio lo permita.'),
+  vineta('Cambiar a PHP 8.3 o superior antes del 31 de diciembre de 2026 (sección 12.7).'),
   vineta('Código CIE-10 del control de crecimiento y del suplemento en el SIGSA 3, cuando el puesto lo confirme (FormatoSigsa3::CIE10).'),
   vineta('Validación con el personal del puesto de los grupos de edad de los reportes y de la tolerancia de 7 días para los controles atrasados.'),
 ];
@@ -395,7 +407,7 @@ const cuerpo = [
 const doc = C.documento({
   titulo: 'Manual técnico, Carnet Digital de Monitoreo Nutricional Infantil',
   nombreCorto: 'Manual técnico',
-  portadaHijos: C.portada('MANUAL TÉCNICO', '1.1', 'octubre de 2026'),
+  portadaHijos: C.portada('MANUAL TÉCNICO', '1.2', 'octubre de 2026'),
   cuerpo,
 });
 C.guardar(doc, SALIDA);

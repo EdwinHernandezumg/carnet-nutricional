@@ -25,6 +25,7 @@ if (!function_exists('nav_activo')) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($titulo ?? APP_NOMBRE) ?></title>
     <link rel="stylesheet" href="<?= Recurso::url('css/estilos.css') ?>">
+    <?php require __DIR__ . '/pwa.php'; ?>
 </head>
 <body>
 <?php require __DIR__ . '/franja_demostracion.php'; ?>

@@ -18,6 +18,7 @@ $porEnlace = $claveEnlace !== null;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cambiar contraseña · <?= htmlspecialchars(APP_NOMBRE) ?></title>
     <link rel="stylesheet" href="<?= Recurso::url('css/estilos.css') ?>">
+    <?php require __DIR__ . '/../layouts/pwa.php'; ?>
 </head>
 
 <script src="<?= Recurso::url('js/fuerza-contrasena.js') ?>"></script>

@@ -132,7 +132,7 @@ $cita = $carnet['proxima_cita'];
     </style>
 </head>
 <body>
-<?php require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
+<?php $marcaImpresion = true; require __DIR__ . '/../layouts/franja_demostracion.php'; ?>
 
 <div class="barra-pantalla">
     <button type="button" onclick="window.print()">Imprimir o guardar como PDF</button>

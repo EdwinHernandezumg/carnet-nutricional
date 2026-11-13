@@ -225,9 +225,11 @@ niños. Probada en Hostinger el 19 de octubre de 2026
 5. **`config.php`**: copiar el de producción y cambiarle, con el Administrador
    de archivos del hPanel, `DB_NAME`, `DB_USER`, `DB_PASS`, `APP_URL` (el
    subdominio) y `APP_ENTORNO` en `'demostracion'`. Así no muestra errores
-   técnicos y cada pantalla lleva arriba la franja "Ambiente de demostración:
-   todos los datos son ficticios", también al imprimir. El correo usa el mismo
-   buzón.
+   técnicos y se distingue de producción por la marca en naranja, con la
+   etiqueta "Pruebas" junto al nombre del sistema, y por la línea "Ambiente de
+   pruebas" en las hojas de impresión (`views/layouts/franja_demostracion.php`;
+   hasta el 13 de noviembre de 2026 era una franja amarilla). El correo usa el
+   mismo buzón.
    ```
    cp carnet-nutricional/config/config.php carnet-demostracion/config/config.php
    php -l carnet-demostracion/config/config.php && grep -E "DB_NAME|DB_USER|APP_URL|APP_ENTORNO" carnet-demostracion/config/config.php
